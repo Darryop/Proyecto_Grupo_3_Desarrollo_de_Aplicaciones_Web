@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <title>Servicios - KVestética</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4">
+            <h1>Nuestros Servicios</h1>
+            <div th:each="tratamiento : ${tratamientos}">
+                <h3 th:text="${tratamiento.nombre}"></h3>
+                <p th:text="${tratamiento.descripcion}"></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
