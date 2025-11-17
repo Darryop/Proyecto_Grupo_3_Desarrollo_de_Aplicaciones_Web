@@ -27,9 +27,28 @@ public class TratamientoController {
     private CategoriaTratamientoService categoriaService;
     
     @GetMapping
-    public String listarTratamientos(Model model) {
-        List<Tratamiento> tratamientos = tratamientoService.obtenerActivos();
+    public String listarTratamientos(
+        @RequestParam(required = false) Long categoria,
+        Model model) {
+
+        List<Tratamiento> tratamientos;
+        List<CategoriaTratamiento> categorias = categoriaService.obtenerActivas();
+
+        if (categoria != null) {
+            Optional<CategoriaTratamiento> categoriaOpt = categoriaService.obtenerPorId(categoria);
+            if (categoriaOpt.isPresent()) {
+                tratamientos = tratamientoService.obtenerPorCategoria(categoriaOpt.get());
+                model.addAttribute("categoriaFiltro", categoria);
+            } else {
+                tratamientos = tratamientoService.obtenerActivos();
+            }
+        } else {
+            tratamientos = tratamientoService.obtenerActivos();
+        }
+
         model.addAttribute("tratamientos", tratamientos);
+        model.addAttribute("categorias", categorias);
+
         return "tratamientos/lista";
     }
     
