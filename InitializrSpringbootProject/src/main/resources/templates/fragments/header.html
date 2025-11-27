@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <th:block th:fragment="header">
+        <header>
+            <div class="container header-container">
+                <a th:href="@{/}" class="logo">KV<span>Estética</span></a>
+                <nav>
+                    <ul class="main-nav">
+                        <li><a th:href="@{/}">Inicio</a></li>
+                        <li><a th:href="@{/productos}">Productos</a></li>
+                        <li><a th:href="@{/tratamientos}">Tratamientos</a></li>
+                        <li><a th:href="@{/nosotros}">Nosotros</a></li>
+                        <li><a th:href="@{/contacto}">Contacto</a></li>
+                        <li><a th:href="@{/carrito}">Carrito</a></li>
+                    </ul>
+                    
+                    <ul class="user-nav">
+                        <!-- Usuario NO autenticado -->
+                        <li sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/auth/login}" class="nav-link">Iniciar Sesión</a>
+                        </li>
+                        <li sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/auth/registro}" class="nav-link btn-outline">Registrarse</a>
+                        </li>
+                        
+                        <!-- Usuario autenticado -->
+                        <li sec:authorize="isAuthenticated()" class="user-menu">
+                            <div class="user-dropdown">
+                                <button class="user-toggle">
+                                    <span class="user-name" sec:authentication="name"></span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <div class="user-info">
+                                        <strong sec:authentication="name"></strong>
+                                        <small sec:authorize="hasRole('SUPER_ADMIN')">Super Administrador</small>
+                                        <small sec:authorize="hasRole('ADMIN')">Administrador</small>
+                                        <small sec:authorize="hasRole('EMPLEADO')">Empleado</small>
+                                        <small sec:authorize="hasRole('CLIENTE')">Cliente</small>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a th:href="@{/citas}" sec:authorize="hasRole('CLIENTE')">📅 Mis Citas</a>
+                                    <a th:href="@{/carrito}">🛒 Mi Carrito</a>
+                                    <div sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                                        <div class="dropdown-divider"></div>
+                                        <a th:href="@{/admin}" class="admin-link">⚙️ Panel Administración</a>
+                                    </div>
+                                    <div sec:authorize="hasRole('EMPLEADO')">
+                                        <div class="dropdown-divider"></div>
+                                        <a th:href="@{/empleado}" class="admin-link">📊 Panel Empleado</a>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <form th:action="@{/auth/logout}" method="post" style="display: inline;">
+                                        <button type="submit" class="logout-btn">🚪 Cerrar Sesión</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+    </th:block>
+</body>
+</html>

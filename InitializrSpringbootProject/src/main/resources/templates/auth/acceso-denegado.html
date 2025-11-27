@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Denegado - KV Estética</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="error-container">
+                <div class="error-icon">🚫</div>
+                <h1>Acceso Denegado</h1>
+                <p>No tienes permisos para acceder a esta página.</p>
+                <p class="error-detail">Si crees que esto es un error, contacta al administrador.</p>
+                <div class="error-actions">
+                    <a th:href="@{/}" class="btn btn-primary">Volver al Inicio</a>
+                    <a th:href="@{/auth/logout}" class="btn btn-outline">Iniciar Sesión con otra cuenta</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

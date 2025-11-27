@@ -1,15 +1,70 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Contacto - KVestética</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - KV Estética</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-    <div layout:fragment="content">
-        <div class="container mt-4">
-            <h1>Contacto</h1>
-            <p>Información de contacto...</p>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>Contacto</h1>
+                <p>Estamos aquí para ayudarte</p>
+            </div>
+
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2>Información de Contacto</h2>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <h3>📍 Dirección</h3>
+                            <p>Calle Principal #123<br>Ciudad, Estado 12345</p>
+                        </div>
+                        <div class="contact-item">
+                            <h3>📞 Teléfono</h3>
+                            <p>(123) 456-7890</p>
+                        </div>
+                        <div class="contact-item">
+                            <h3>✉️ Email</h3>
+                            <p>info@kvestetica.com</p>
+                        </div>
+                        <div class="contact-item">
+                            <h3>🕒 Horario</h3>
+                            <p>Lunes a Viernes: 9:00 - 18:00<br>Sábados: 9:00 - 14:00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-container">
+                    <h2>Envíanos un Mensaje</h2>
+                    <form class="contact-form">
+                        <div class="form-group">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" id="nombre" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="asunto">Asunto</label>
+                            <input type="text" id="asunto" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mensaje">Mensaje</label>
+                            <textarea id="mensaje" class="form-control" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+                    </form>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

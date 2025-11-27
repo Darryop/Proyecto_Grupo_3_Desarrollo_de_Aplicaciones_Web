@@ -1,155 +1,77 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Productos - KVestética</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - KV Estética</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-    <div layout:fragment="content">
-        <!-- Header -->
-        <div class="row mb-4 fade-in">
-            <div class="col">
-                <h1 class="display-5 fw-bold text-color2">
-                    <i class="fas fa-shopping-bag me-2"></i>Nuestros Productos
-                </h1>
-                <p class="lead text-color4">Descubre nuestra exclusiva colección de productos de belleza y cuidado personal</p>
-            </div>
-        </div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
-        <!-- Filtros -->
-        <div class="card filter-section mb-4 fade-in">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text bg-color5"><i class="fas fa-search text-color2"></i></span>
-                            <input type="text" class="form-control" placeholder="Buscar productos..." 
-                                   th:value="${query}" id="searchInput">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-select" id="categoriaFilter">
-                            <option value="">Todas las categorías</option>
-                            <option th:each="categoria : ${categorias}" 
-                                    th:value="${categoria.id}" 
-                                    th:text="${categoria.nombre}">
-                            </option>
-                        </select>
-                    </div>
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>Nuestros Productos</h1>
+                <p>Descubre nuestra selección de productos de belleza y cuidado personal</p>
+            </div>
+
+            <!-- Mensajes flash -->
+            <div th:if="${mensaje}" class="flash-message flash-success" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="flash-message flash-error" th:text="${error}"></div>
+
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <form th:action="@{/productos/buscar}" method="get" class="search-form">
+                    <input type="text" name="query" placeholder="Buscar productos..." class="form-control search-input">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </form>
+            </div>
+
+            <!-- Filtros por categoría -->
+            <div class="category-filters">
+                <h3>Filtrar por categoría:</h3>
+                <div class="filter-buttons">
+                    <a th:href="@{/productos}" class="btn btn-outline">Todos</a>
+                    <a th:each="categoria : ${categorias}" 
+                       th:href="@{/productos/categoria/{id}(id=${categoria.id})}" 
+                       class="btn btn-outline" 
+                       th:text="${categoria.nombre}"></a>
                 </div>
             </div>
-        </div>
 
-        <!-- Lista de Productos -->
-        <div class="row fade-in">
-            <div class="col-md-4 mb-4" th:each="producto : ${productos}">
-                <div class="card product-card h-100">
-                    <div class="position-relative">
-                        <img th:src="${producto.imagenUrl}" class="card-img-top product-image" 
-                             th:alt="${producto.nombre}" onerror="this.src='https://via.placeholder.com/300x200?text=Producto'">
-                        <div class="position-absolute top-0 end-0 m-2">
-                            <span th:if="${producto.stock > 0}" class="badge bg-success">Disponible</span>
-                            <span th:if="${producto.stock <= 0}" class="badge bg-danger">Agotado</span>
-                        </div>
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold text-color2" th:text="${producto.nombre}"></h5>
-                        <p class="card-text flex-grow-1 text-muted" th:text="${producto.descripcion}"></p>
-                        
-                        <div class="mt-auto">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="h4 fw-bold text-color1 mb-0" 
-                                      th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></span>
-                                <small class="text-muted" th:text="'Stock: ' + ${producto.stock}"></small>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-primary" 
-                                        th:onclick="|agregarAlCarrito(${producto.id})|"
+            <!-- Lista de productos -->
+            <div class="grid" th:if="${not productos.empty}">
+                <div th:each="producto : ${productos}" class="card">
+                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="card-img">
+                    <div class="card-body">
+                        <h3 class="card-title" th:text="${producto.nombre}"></h3>
+                        <p class="card-text" th:text="${producto.descripcion}"></p>
+                        <p class="card-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
+                        <p class="card-stock" th:if="${producto.stock > 0}" 
+                           th:text="'En stock: ' + ${producto.stock} + ' unidades'"></p>
+                        <p class="card-stock out-of-stock" th:if="${producto.stock <= 0}">Agotado</p>
+                        <div class="card-actions">
+                            <a th:href="@{/productos/{id}(id=${producto.id})}" class="btn btn-outline">Ver Detalle</a>
+                            <form th:action="@{/carrito/agregar/producto/{id}(id=${producto.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-primary" 
                                         th:disabled="${producto.stock <= 0}">
-                                    <i class="fas fa-cart-plus me-2"></i>
-                                    <span th:text="${producto.stock > 0} ? 'Agregar al Carrito' : 'Agotado'"></span>
+                                    Agregar al Carrito
                                 </button>
-                                <a th:href="@{/productos/{id}(id=${producto.id})}" 
-                                   class="btn btn-outline-secondary">
-                                    <i class="fas fa-info-circle me-2"></i>Ver Detalles
-                                </a>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Mensaje si no hay productos -->
+            <div th:if="${productos.empty}" class="no-results">
+                <h3>No se encontraron productos</h3>
+                <p>Intenta con otros términos de búsqueda o categorías.</p>
+            </div>
         </div>
+    </main>
 
-        <!-- Mensaje cuando no hay productos -->
-        <div th:if="${productos.empty}" class="text-center py-5 fade-in">
-            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-            <h4 class="text-color2">No se encontraron productos</h4>
-            <p class="text-muted">Intenta con otros términos de búsqueda o categorías</p>
-        </div>
-    </div>
-
-    <div layout:fragment="scripts">
-        <script>
-            // Búsqueda en tiempo real
-            document.getElementById('searchInput').addEventListener('input', function() {
-                const query = this.value;
-                const categoria = document.getElementById('categoriaFilter').value;
-                
-                if (query.length >= 3 || query.length === 0) {
-                    let url = '/productos/buscar?query=' + encodeURIComponent(query);
-                    if (categoria) {
-                        url += '&categoria=' + categoria;
-                    }
-                    window.location.href = url;
-                }
-            });
-
-            // Filtro por categoría
-            document.getElementById('categoriaFilter').addEventListener('change', function() {
-                const query = document.getElementById('searchInput').value;
-                const categoria = this.value;
-                
-                let url = '/productos';
-                if (categoria) {
-                    url = '/productos/categoria/' + categoria;
-                }
-                if (query) {
-                    url += (url.includes('?') ? '&' : '?') + 'query=' + encodeURIComponent(query);
-                }
-                window.location.href = url;
-            });
-
-            function agregarAlCarrito(productoId) {
-                fetch('/carrito/agregar/producto/' + productoId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                }).then(response => {
-                    if(response.ok) {
-                        // Mostrar mensaje de éxito
-                        const alert = document.createElement('div');
-                        alert.className = 'alert alert-success alert-dismissible fade show';
-                        alert.innerHTML = `
-                            <i class="fas fa-check-circle me-2"></i>
-                            <span>Producto agregado al carrito exitosamente</span>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        `;
-                        document.querySelector('main').prepend(alert);
-                    } else {
-                        alert('Error al agregar producto al carrito');
-                    }
-                }).catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al agregar producto al carrito');
-                });
-            }
-        </script>
-    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

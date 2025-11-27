@@ -1,15 +1,61 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Nosotros - KVestética</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosotros - KV Estética</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-    <div layout:fragment="content">
-        <div class="container mt-4">
-            <h1>Nosotros</h1>
-            <p>Información sobre KVestética...</p>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>Sobre Nosotros</h1>
+                <p>Conoce más sobre KV Estética y nuestra misión</p>
+            </div>
+
+            <div class="about-content">
+                <div class="about-section">
+                    <h2>Nuestra Historia</h2>
+                    <p>KV Estética nació con la visión de ofrecer servicios de belleza y bienestar de la más alta calidad, combinando técnicas tradicionales con tecnología de vanguardia.</p>
+                </div>
+
+                <div class="about-section">
+                    <h2>Nuestra Misión</h2>
+                    <p>Brindar a nuestros clientes una experiencia única de cuidado personal, realzando su belleza natural y promoviendo su bienestar integral.</p>
+                </div>
+
+                <div class="about-section">
+                    <h2>Nuestro Equipo</h2>
+                    <p>Contamos con profesionales certificados y con amplia experiencia en el sector de la estética y el cuidado personal.</p>
+                </div>
+
+                <div class="about-features">
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h3>💎 Calidad</h3>
+                            <p>Productos y técnicas de primera calidad</p>
+                        </div>
+                        <div class="feature-item">
+                            <h3>👩‍⚕️ Profesionalismo</h3>
+                            <p>Equipo especializado y certificado</p>
+                        </div>
+                        <div class="feature-item">
+                            <h3>🌟 Experiencia</h3>
+                            <p>Años de experiencia en el sector</p>
+                        </div>
+                        <div class="feature-item">
+                            <h3>❤️ Confianza</h3>
+                            <p>Clientes satisfechos nos respaldan</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>
