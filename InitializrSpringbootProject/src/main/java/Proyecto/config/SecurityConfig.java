@@ -1,45 +1,86 @@
-package config;
+package Proyecto.config;
 
 /**
  *
  * @author darry
  */
 
+import Proyecto.model.Ruta;
+import Proyecto.service.RutaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig {   
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(auth -> auth
-                // Permitir acceso público a estos recursos
-                .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/auth/**", "/productos/**", "/tratamientos/**", "/servicios", "/nosotros", "/contacto").permitAll()
-                // Restringir panel admin solo a administradores
-                .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                // El resto requiere autenticación
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, @Lazy RutaService rutaService) throws Exception {
+        var rutas = rutaService.getRutas();
+        
+        http.authorizeHttpRequests(requests -> {
+            // Rutas públicas
+            requests.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/auth/**", 
+                                   "/productos/**", "/tratamientos/**", "/servicios", 
+                                   "/nosotros", "/contacto", "/error").permitAll();
+            
+            // Configurar rutas dinámicas desde la base de datos
+            for (Ruta ruta : rutas) {
+                if (ruta.getRequiereRol()) {
+                    requests.requestMatchers(ruta.getRuta()).hasAuthority(ruta.getRol().getNombre());
+                } else {
+                    requests.requestMatchers(ruta.getRuta()).permitAll();
+                }
+            }
+            
+            // Rutas de administración
+            requests.requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN");
+            
+            // Cualquier otra ruta requiere autenticación
+            requests.anyRequest().authenticated();
+        });
+
+        http.formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/login")
-                .defaultSuccessUrl("/")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/auth/login?error=true")
                 .permitAll()
-            )
-            .logout(logout -> logout
+        ).logout(logout -> logout
                 .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("/")
+                .logoutSuccessUrl("/auth/login?logout=true")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
-            )
-            // Deshabilitar CSRF temporalmente para desarrollo
-            .csrf(csrf -> csrf.disable());
-
+        ).exceptionHandling(exceptions -> exceptions
+                .accessDeniedPage("/auth/acceso-denegado")
+        ).sessionManagement(session -> session
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
+        );
+        
+        // Temporal para desarrollo
+        http.csrf(csrf -> csrf.disable());
+        
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Autowired
+    public void configurerGlobal(AuthenticationManagerBuilder build, 
+                               @Lazy PasswordEncoder passwordEncoder, 
+                               @Lazy UserDetailsService userDetailsService) throws Exception {
+        build.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     }
 }
