@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <!-- Incluye el head con título personalizado -->
+    <head th:replace="~{fragments/header :: head('Gestión de Usuarios - KWestética')}">
+        <!-- Este contenido será reemplazado por el fragmento head -->
+    </head>
+    
+    <body class="admin-body">
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde otro template -->
+            <div th:replace="~{admin/dashboard :: sidebar}"></div>
+            
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa; min-height: 100vh;">
+                <!-- Header -->
+                <div class="admin-header mb-4">
+                    <h1 class="display-6 fw-bold mb-2" style="color: var(--color-logo);">
+                        <i class="bi bi-people me-2"></i>Gestión de Usuarios
+                    </h1>
+                    <p class="text-muted">Administra los usuarios registrados en el sistema</p>
+                </div>
+                
+                <!-- Estadísticas rápidas -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="fw-bold mb-1" th:text="${usuarios.size()}">0</h3>
+                                        <p class="text-muted mb-0 small">Total Usuarios</p>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
+                                        <i class="bi bi-people-fill fs-4" style="color: var(--color-principal);"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="fw-bold mb-1" th:text="${usuarios.?[roles.?[nombre == 'ROLE_CLIENTE'].size() > 0].size()}">0</h3>
+                                        <p class="text-muted mb-0 small">Clientes</p>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-2 rounded-circle">
+                                        <i class="bi bi-person fs-4" style="color: #17a2b8;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="fw-bold mb-1" th:text="${usuarios.?[roles.?[nombre == 'ROLE_EMPLEADO'].size() > 0].size()}">0</h3>
+                                        <p class="text-muted mb-0 small">Empleados</p>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-2 rounded-circle">
+                                        <i class="bi bi-person-badge fs-4" style="color: #ffc107;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="fw-bold mb-1" th:text="${usuarios.?[roles.?[nombre == 'ROLE_ADMIN'].size() > 0].size()}">0</h3>
+                                        <p class="text-muted mb-0 small">Administradores</p>
+                                    </div>
+                                    <div class="bg-danger bg-opacity-10 p-2 rounded-circle">
+                                        <i class="bi bi-shield-check fs-4" style="color: #dc3545;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filtros y búsqueda -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" 
+                                           placeholder="Buscar por nombre, email o teléfono..." 
+                                           onkeyup="filterUsers()">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="roleFilter" onchange="filterUsers()">
+                                    <option value="">Todos los roles</option>
+                                    <option value="CLIENTE">Clientes</option>
+                                    <option value="EMPLEADO">Empleados</option>
+                                    <option value="ADMIN">Administradores</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="statusFilter" onchange="filterUsers()">
+                                    <option value="">Todos los estados</option>
+                                    <option value="active">Activos</option>
+                                    <option value="inactive">Inactivos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary w-100" onclick="exportUsers()">
+                                    <i class="bi bi-download me-1"></i>Exportar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de usuarios -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" style="color: var(--color-logo);">
+                            <i class="bi bi-list-ul me-2"></i>Usuarios Registrados
+                            <span class="badge bg-primary ms-2" th:text="${usuarios.size()}"></span>
+                        </h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success" onclick="createNewUser()">
+                                <i class="bi bi-person-plus me-1"></i>Nuevo Usuario
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="usersTable">
+                                <thead style="background-color: var(--color-logo); color: white;">
+                                    <tr>
+                                        <th width="70">ID</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th width="120">Teléfono</th>
+                                        <th width="150">Rol</th>
+                                        <th width="120">Registro</th>
+                                        <th width="100">Estado</th>
+                                        <th width="200" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="usuario : ${usuarios}" class="user-row" 
+                                        th:attr="data-role=${usuario.roles[0]?.nombre?.replace('ROLE_', '')}, 
+                                                data-status=${usuario.activo} ? 'active' : 'inactive'">
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${usuario.id}"></span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--color-principal), var(--color-logo)); 
+                                                                border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                                        <span th:text="${usuario.nombre?.charAt(0)} + ${usuario.apellido?.charAt(0)}"></span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <strong th:text="${usuario.nombre} + ' ' + ${usuario.apellido}"></strong>
+                                                    <div class="small text-muted">
+                                                        <i class="bi bi-calendar3 me-1"></i>
+                                                        <span th:text="${#dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy')}" 
+                                                              th:if="${usuario.fechaNacimiento}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <a th:href="'mailto:' + ${usuario.email}" class="text-decoration-none">
+                                                    <i class="bi bi-envelope me-1"></i>
+                                                    <span th:text="${usuario.email}"></span>
+                                                </a>
+                                            </div>
+                                            <div class="small text-muted" th:text="${usuario.direccion}" 
+                                                 th:if="${usuario.direccion}"></div>
+                                        </td>
+                                        <td>
+                                            <div th:if="${usuario.telefono}">
+                                                <a th:href="'tel:' + ${usuario.telefono}" class="text-decoration-none">
+                                                    <i class="bi bi-telephone me-1"></i>
+                                                    <span th:text="${usuario.telefono}"></span>
+                                                </a>
+                                            </div>
+                                            <div th:unless="${usuario.telefono}" class="text-muted small">
+                                                <i class="bi bi-telephone-x"></i> No registrado
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:each="rol : ${usuario.roles}" class="d-block mb-1">
+                                                <span class="badge d-flex align-items-center gap-1"
+                                                      th:classappend="${rol.nombre == 'ROLE_ADMIN'} ? 'bg-danger' : 
+                                                                     ${rol.nombre == 'ROLE_EMPLEADO'} ? 'bg-warning text-dark' : 'bg-primary'">
+                                                    <i th:classappend="${rol.nombre == 'ROLE_ADMIN'} ? 'bi bi-shield-check' : 
+                                                                      ${rol.nombre == 'ROLE_EMPLEADO'} ? 'bi bi-person-badge' : 'bi bi-person'"
+                                                       class="me-1"></i>
+                                                    <span th:text="${rol.nombre.replace('ROLE_', '')}"></span>
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="small">
+                                                <i class="bi bi-calendar-check me-1"></i>
+                                                <span th:text="${#dates.format(usuario.fechaRegistro, 'dd/MM/yyyy')}"></span>
+                                            </div>
+                                            <div class="small text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                <span th:text="${#dates.format(usuario.fechaRegistro, 'HH:mm')}"></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${usuario.activo}" 
+                                                  class="badge bg-success d-flex align-items-center gap-1">
+                                                <i class="bi bi-check-circle"></i> Activo
+                                            </span>
+                                            <span th:unless="${usuario.activo}" 
+                                                  class="badge bg-danger d-flex align-items-center gap-1">
+                                                <i class="bi bi-x-circle"></i> Inactivo
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <button class="btn btn-sm btn-outline-info" 
+                                                        th:onclick="'viewUserDetails(' + ${usuario.id} + ')'"
+                                                        title="Ver detalles">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning" 
+                                                        th:onclick="'editUser(' + ${usuario.id} + ')'"
+                                                        title="Editar usuario">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button th:if="${usuario.activo}"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        th:onclick="'toggleUserStatus(' + ${usuario.id} + ', false)'"
+                                                        title="Desactivar usuario">
+                                                    <i class="bi bi-person-x"></i>
+                                                </button>
+                                                <button th:unless="${usuario.activo}"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        th:onclick="'toggleUserStatus(' + ${usuario.id} + ', true)'"
+                                                        title="Activar usuario">
+                                                    <i class="bi bi-person-check"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                        th:onclick="'changeUserRole(' + ${usuario.id} + ')'"
+                                                        title="Cambiar rol">
+                                                    <i class="bi bi-person-gear"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Mensaje si no hay usuarios -->
+                                    <tr th:if="${usuarios.isEmpty()}">
+                                        <td colspan="8" class="text-center py-5">
+                                            <i class="bi bi-people" style="font-size: 3rem; color: #6c757d;"></i>
+                                            <h5 class="mt-3" style="color: var(--color-logo);">No hay usuarios registrados</h5>
+                                            <p class="text-muted">Los usuarios aparecerán aquí una vez que se registren.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Paginación (si aplica) -->
+                        <div th:if="${!usuarios.isEmpty()}" class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="text-muted small">
+                                Mostrando <span th:text="${usuarios.size()}"></span> usuarios
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">Anterior</a>
+                                    </li>
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">1</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Siguiente</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal para cambiar rol -->
+        <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cambiar Rol de Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="selectedUserId">
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">Seleccionar Nuevo Rol</label>
+                            <select class="form-select" id="newRole">
+                                <option value="CLIENTE">Cliente</option>
+                                <option value="EMPLEADO">Empleado</option>
+                                <option value="ADMIN">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Los cambios de rol afectarán los permisos del usuario inmediatamente.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmRoleChange()">Cambiar Rol</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Incluye los scripts generales -->
+        <div th:replace="~{fragments/header :: scripts}"></div>
+        
+        <!-- Script específico para gestión de usuarios -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Inicializar tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            });
+            
+            function filterUsers() {
+                const searchInput = document.getElementById('searchInput').value.toLowerCase();
+                const roleFilter = document.getElementById('roleFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                const rows = document.querySelectorAll('.user-row');
+                
+                rows.forEach(row => {
+                    const name = row.cells[1].textContent.toLowerCase();
+                    const email = row.cells[2].textContent.toLowerCase();
+                    const phone = row.cells[3].textContent.toLowerCase();
+                    const role = row.getAttribute('data-role');
+                    const status = row.getAttribute('data-status');
+                    
+                    const matchesSearch = name.includes(searchInput) || email.includes(searchInput) || phone.includes(searchInput);
+                    const matchesRole = !roleFilter || role === roleFilter;
+                    const matchesStatus = !statusFilter || status === statusFilter;
+                    
+                    row.style.display = (matchesSearch && matchesRole && matchesStatus) ? '' : 'none';
+                });
+            }
+            
+            function viewUserDetails(userId) {
+                // Implementar vista de detalles
+                showToast('Vista de detalles pendiente de implementar', 'info');
+            }
+            
+            function editUser(userId) {
+                // Redirigir a edición de usuario
+                window.location.href = `/admin/usuarios/editar/${userId}`;
+            }
+            
+            function createNewUser() {
+                // Redirigir a creación de usuario
+                window.location.href = `/admin/usuarios/nuevo`;
+            }
+            
+            let currentUserId = null;
+            
+            function changeUserRole(userId) {
+                currentUserId = userId;
+                const modal = new bootstrap.Modal(document.getElementById('roleModal'));
+                modal.show();
+            }
+            
+            function confirmRoleChange() {
+                const newRole = document.getElementById('newRole').value;
+                if (currentUserId && newRole) {
+                    fetch(`/admin/usuarios/${currentUserId}/rol`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({ rol: newRole })
+                    }).then(response => {
+                        if (response.ok) {
+                            showToast('Rol actualizado correctamente', 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast('Error al actualizar rol', 'danger');
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        showToast('Error de conexión', 'danger');
+                    });
+                    
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('roleModal')).hide();
+                }
+            }
+            
+            function toggleUserStatus(userId, activate) {
+                const action = activate ? 'activar' : 'desactivar';
+                if (confirm(`¿Está seguro de que desea ${action} este usuario?`)) {
+                    fetch(`/admin/usuarios/${userId}/estado`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({ activo: activate })
+                    }).then(response => {
+                        if (response.ok) {
+                            showToast(`Usuario ${activate ? 'activado' : 'desactivado'} correctamente`, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast('Error al actualizar estado', 'danger');
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        showToast('Error de conexión', 'danger');
+                    });
+                }
+            }
+            
+            function exportUsers() {
+                // Implementar exportación
+                alert('Funcionalidad de exportación pendiente de implementar');
+            }
+            
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                toast.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+            
+            function getCsrfToken() {
+                const metaTag = document.querySelector('meta[name="_csrf"]');
+                return metaTag ? metaTag.getAttribute('content') : '';
+            }
+        </script>
+    </body>
+</html>

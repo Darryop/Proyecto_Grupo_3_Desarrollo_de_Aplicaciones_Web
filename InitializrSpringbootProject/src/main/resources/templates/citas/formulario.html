@@ -1,54 +1,152 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendar Cita - KV Estética</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <th:block th:insert="~{fragments/header :: head}">
+        <title>Agendar Cita | KWestética</title>
+    </th:block>
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 </head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
-
-    <main class="main-content">
-        <div class="container">
-            <div class="page-header">
-                <h1>Agendar Nueva Cita</h1>
-                <p>Selecciona el tratamiento y la fecha para tu cita</p>
-            </div>
-
-            <!-- Mensajes flash -->
-            <div th:if="${mensaje}" class="flash-message flash-success" th:text="${mensaje}"></div>
-            <div th:if="${error}" class="flash-message flash-error" th:text="${error}"></div>
-
-            <div class="appointment-form-container">
-                <form th:action="@{/citas/nueva}" method="post" th:object="${cita}">
-                    <div class="form-group">
-                        <label for="tratamientoId">Tratamiento</label>
-                        <select id="tratamientoId" name="tratamientoId" class="form-control" required>
-                            <option value="">Selecciona un tratamiento</option>
-                            <option th:each="tratamiento : ${tratamientos}" 
-                                    th:value="${tratamiento.id}" 
-                                    th:text="${tratamiento.nombre + ' - $' + #numbers.formatDecimal(tratamiento.precio, 1, 2) + ' (' + tratamiento.duracionMinutos + ' min)'}"></option>
-                        </select>
+    <th:block th:insert="~{fragments/header :: body}">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0" style="color: var(--color-logo);">Agendar Nueva Cita</h3>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/citas/nueva}" method="post">
+                                <!-- Tratamiento -->
+                                <div class="mb-3">
+                                    <label for="tratamientoid" class="form-label">Seleccionar Tratamiento *</label>
+                                    <select class="form-select" id="tratamientoid" name="tratamientoid" required>
+                                        <option value="">Selecciona un tratamiento...</option>
+                                        <option th:each="tratamiento : ${tratamientos}"
+                                                th:value="${tratamiento.id}"
+                                                th:text="${tratamiento.nombre + ' ($' + #numbers.formatDecimal(tratamiento.precio, 1, 2) + ')'}"
+                                                th:selected="${tratamientoSeleccionado != null and tratamiento.id == tratamientoSeleccionado}">
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Fecha y Hora -->
+                                <div class="mb-3">
+                                    <label for="fechaCita" class="form-label">Fecha y Hora *</label>
+                                    <input type="datetime-local" class="form-control" id="fechaCita" name="fechaCita" required>
+                                    <small class="text-muted">Selecciona una fecha y hora disponible.</small>
+                                </div>
+                                
+                                <!-- Notas -->
+                                <div class="mb-3">
+                                    <label for="notas" class="form-label">Notas Adicionales</label>
+                                    <textarea class="form-control" id="notas" name="notas" rows="3" 
+                                              placeholder="¿Alguna preferencia especial o comentario?"></textarea>
+                                </div>
+                                
+                                <!-- Información del tratamiento seleccionado -->
+                                <div id="tratamientoInfo" class="mb-4 p-3 border rounded" style="display: none;">
+                                    <h5>Información del Tratamiento</h5>
+                                    <p id="tratamientoDescripcion"></p>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Duración:</strong> <span id="tratamientoDuracion"></span> minutos</li>
+                                        <li><strong>Precio:</strong> $<span id="tratamientoPrecio"></span></li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a th:href="@{/citas}" class="btn btn-outline-secondary me-md-2">Cancelar</a>
+                                    <button type="submit" class="btn btn-primary">Agendar Cita</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="fechaCita">Fecha y Hora</label>
-                        <input type="datetime-local" id="fechaCita" name="fechaCita" class="form-control" required>
+                    
+                    <!-- Lista de tratamientos para selección rápida -->
+                    <div class="mt-4">
+                        <h4 class="mb-3" style="color: var(--color-logo);">Nuestros Tratamientos</h4>
+                        <div class="row">
+                            <div th:each="tratamiento : ${tratamientos}" class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 th:text="${tratamiento.nombre}"></h5>
+                                        <p class="card-text" th:text="${#strings.abbreviate(tratamiento.descripcion, 100)}"></p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="price" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></span>
+                                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                                    th:onclick="`seleccionarTratamiento(${tratamiento.id})`">
+                                                Seleccionar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="notas">Notas (opcional)</label>
-                        <textarea id="notas" name="notas" class="form-control" rows="4" 
-                                  placeholder="Alguna preferencia o información adicional..."></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Agendar Cita</button>
-                        <a th:href="@{/citas}" class="btn btn-outline">Cancelar</a>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-    </main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
+        <!-- Flatpickr para selección de fecha/hora -->
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+        <script>
+            // Configurar Flatpickr
+            flatpickr("#fechaCita", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                locale: "es",
+                disable: [
+                    function(date) {
+                        // Deshabilitar domingos
+                        return (date.getDay() === 0);
+                    }
+                ]
+            });
+            
+            // Datos de los tratamientos (podrían cargarse desde el servidor)
+            const tratamientos = [
+                <th:block th:each="tratamiento : ${tratamientos}">
+                {
+                    id: [[${tratamiento.id}]],
+                    nombre: "[[${tratamiento.nombre}]]",
+                    descripcion: "[[${tratamiento.descripcion}]]",
+                    duracion: [[${tratamiento.duracionMinutos}]],
+                    precio: [[${tratamiento.precio}]]
+                },
+                </th:block>
+            ];
+            
+            function seleccionarTratamiento(tratamientoId) {
+                const select = document.getElementById('tratamientoid');
+                select.value = tratamientoId;
+                
+                // Mostrar información del tratamiento
+                const tratamiento = tratamientos.find(t => t.id == tratamientoId);
+                if (tratamiento) {
+                    document.getElementById('tratamientoInfo').style.display = 'block';
+                    document.getElementById('tratamientoDescripcion').textContent = tratamiento.descripcion;
+                    document.getElementById('tratamientoDuracion').textContent = tratamiento.duracion;
+                    document.getElementById('tratamientoPrecio').textContent = tratamiento.precio;
+                }
+            }
+            
+            // Si hay un tratamiento seleccionado por parámetro, seleccionarlo automáticamente
+            const tratamientoSeleccionado = [[${tratamientoSeleccionado}]];
+            if (tratamientoSeleccionado) {
+                seleccionarTratamiento(tratamientoSeleccionado);
+            }
+            
+            // Actualizar información cuando cambia la selección
+            document.getElementById('tratamientoid').addEventListener('change', function() {
+                if (this.value) {
+                    seleccionarTratamiento(this.value);
+                } else {
+                    document.getElementById('tratamientoInfo').style.display = 'none';
+                }
+            });
+        </script>
+    </th:block>
 </body>
 </html>

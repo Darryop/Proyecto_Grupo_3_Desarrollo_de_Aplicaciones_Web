@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <!-- Incluye el head con título personalizado -->
+    <head th:replace="~{fragments/header :: head('Reporte de Ventas - KWestética')}">
+        <!-- Este contenido será reemplazado por el fragmento head -->
+    </head>
+    
+    <body class="admin-body">
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde otro template -->
+            <div th:replace="~{admin/dashboard :: sidebar}"></div>
+            
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa; min-height: 100vh;">
+                <!-- Header -->
+                <div class="admin-header mb-4">
+                    <h1 class="display-6 fw-bold mb-2" style="color: var(--color-logo);">
+                        <i class="bi bi-graph-up me-2"></i>Reporte de Ventas
+                    </h1>
+                    <p class="text-muted">Estadísticas y análisis de ventas del sistema</p>
+                    
+                    <!-- Filtros de fecha -->
+                    <div class="row mt-3">
+                        <div class="col-md-8">
+                            <div class="d-flex gap-2 align-items-center">
+                                <div>
+                                    <label class="form-label small">Filtrar por:</label>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm active" onclick="setDateFilter('today')">Hoy</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('week')">Esta semana</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('month')">Este mes</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('year')">Este año</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('custom')">Personalizado</button>
+                                    </div>
+                                </div>
+                                <div id="customDateRange" style="display: none;">
+                                    <div class="input-group input-group-sm">
+                                        <input type="date" class="form-control" id="startDate">
+                                        <span class="input-group-text">al</span>
+                                        <input type="date" class="form-control" id="endDate">
+                                        <button class="btn btn-primary" type="button" onclick="applyCustomDate()">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportSalesReport()">
+                                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm ms-2" onclick="printReport()">
+                                <i class="bi bi-printer me-1"></i>Imprimir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resumen de ventas -->
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--color-principal);">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 2)}">$0.00</h3>
+                                        <p class="text-muted mb-0">Ingresos Totales</p>
+                                        <small class="text-success" th:if="${ingresosTotales > 0}">
+                                            <i class="bi bi-arrow-up me-1"></i>
+                                            <span th:text="${#numbers.formatDecimal(ingresosTotales * 0.15, 1, 2)}">0</span> vs mes pasado
+                                        </small>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-cash-stack fs-4" style="color: var(--color-principal);"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #28a745;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="${ventas != null ? ventas.size() : 0}">0</h3>
+                                        <p class="text-muted mb-0">Ventas Totales</p>
+                                        <small class="text-success" th:if="${ventas != null && ventas.size() > 0}">
+                                            <i class="bi bi-arrow-up me-1"></i>
+                                            <span th:text="${ventas.size() * 0.1}">0</span> vs mes pasado
+                                        </small>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-receipt fs-4" style="color: #28a745;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #17a2b8;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="${ventasCompletadas != null ? ventasCompletadas : 0}">0</h3>
+                                        <p class="text-muted mb-0">Ventas Completadas</p>
+                                        <small class="text-muted">
+                                            Tasa de éxito: 
+                                            <span th:if="${ventas != null && ventas.size() > 0}" 
+                                                  th:text="${#numbers.formatDecimal((ventasCompletadas / ventas.size()) * 100, 1, 0)}">0</span>%
+                                        </small>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-check-circle fs-4" style="color: #17a2b8;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="${ventasTarjeta != null ? ventasTarjeta : 0}">0</h3>
+                                        <p class="text-muted mb-0">Ventas con Tarjeta</p>
+                                        <small class="text-muted">
+                                            <span th:if="${ventas != null && ventas.size() > 0}" 
+                                                  th:text="${#numbers.formatDecimal((ventasTarjeta / ventas.size()) * 100, 1, 0)}">0</span>% del total
+                                        </small>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-credit-card fs-4" style="color: #ffc107;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gráficos -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-bar-chart me-2"></i>Ventas por Mes
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 300px;">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-pie-chart me-2"></i>Métodos de Pago
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 300px;">
+                                    <canvas id="paymentMethodChart"></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between small">
+                                        <span><span class="badge bg-primary me-1">■</span> Tarjeta</span>
+                                        <span><span class="badge bg-success me-1">■</span> Efectivo</span>
+                                        <span><span class="badge bg-info me-1">■</span> Transferencia</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top productos y tratamientos -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-bag me-2"></i>Productos Más Vendidos
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${productosMasVendidos != null and !productosMasVendidos.isEmpty()}">
+                                    <div th:each="producto, stat : ${productosMasVendidos}" class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-primary me-3" th:text="${stat.index + 1}"></span>
+                                                <div>
+                                                    <strong th:text="${producto.nombre}"></strong>
+                                                    <div class="small text-muted">
+                                                        Vendidos: <span th:text="${producto.cantidadVendida}"></span> unidades
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="fw-bold" style="color: var(--color-principal);"
+                                                  th:text="'$' + ${#numbers.formatDecimal(producto.totalVendido, 1, 2)}">
+                                            </span>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 th:style="'width: ' + ${producto.porcentaje} + '%;'"
+                                                 th:attr="aria-valuenow=${producto.porcentaje}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:if="${productosMasVendidos == null or productosMasVendidos.isEmpty()}" class="text-center py-4">
+                                    <i class="bi bi-bag-x" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <p class="text-muted mt-2 mb-0">No hay datos de productos vendidos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-scissors me-2"></i>Tratamientos Más Solicitados
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${tratamientosMasSolicitados != null and !tratamientosMasSolicitados.isEmpty()}">
+                                    <div th:each="tratamiento, stat : ${tratamientosMasSolicitados}" class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-primary me-3" th:text="${stat.index + 1}"></span>
+                                                <div>
+                                                    <strong th:text="${tratamiento.nombre}"></strong>
+                                                    <div class="small text-muted">
+                                                        Solicitudes: <span th:text="${tratamiento.cantidadSolicitada}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="fw-bold" style="color: var(--color-principal);"
+                                                  th:text="'$' + ${#numbers.formatDecimal(tratamiento.ingresosGenerados, 1, 2)}">
+                                            </span>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 5px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 th:style="'width: ' + ${tratamiento.porcentaje} + '%;'"
+                                                 th:attr="aria-valuenow=${tratamiento.porcentaje}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:if="${tratamientosMasSolicitados == null or tratamientosMasSolicitados.isEmpty()}" class="text-center py-4">
+                                    <i class="bi bi-scissors" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <p class="text-muted mt-2 mb-0">No hay datos de tratamientos solicitados</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Historial de ventas -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" style="color: var(--color-logo);">
+                            <i class="bi bi-clock-history me-2"></i>Historial de Ventas
+                            <span class="badge bg-primary ms-2" th:text="${ventas != null ? ventas.size() : 0}"></span>
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="statusFilter" onchange="filterSales()" style="width: auto;">
+                                <option value="">Todos los estados</option>
+                                <option value="COMPLETADA">Completadas</option>
+                                <option value="PENDIENTE">Pendientes</option>
+                                <option value="RECHAZADA">Rechazadas</option>
+                            </select>
+                            <select class="form-select form-select-sm" id="paymentFilter" onchange="filterSales()" style="width: auto;">
+                                <option value="">Todos los pagos</option>
+                                <option value="TARJETA">Tarjeta</option>
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="TRANSFERENCIA">Transferencia</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="salesTable">
+                                <thead style="background-color: var(--color-logo); color: white;">
+                                    <tr>
+                                        <th width="80">ID</th>
+                                        <th>Cliente</th>
+                                        <th width="150">Fecha</th>
+                                        <th width="120">Total</th>
+                                        <th width="140">Método de Pago</th>
+                                        <th width="120">Estado</th>
+                                        <th width="140" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="venta : ${ventas}" class="sale-row"
+                                        th:attr="data-status=${venta.estado.name()}, 
+                                                data-payment=${venta.metodoPago.name()}">
+                                        <td>
+                                            <span class="badge bg-secondary">#<span th:text="${venta.id}"></span></span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong th:text="${venta.usuario.nombre} + ' ' + ${venta.usuario.apellido}"></strong>
+                                                <div class="small text-muted" th:text="${venta.usuario.email}"></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="small">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                <span th:text="${#dates.format(venta.fechaVenta, 'dd/MM/yyyy')}"></span>
+                                            </div>
+                                            <div class="small text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                <span th:text="${#dates.format(venta.fechaVenta, 'HH:mm')}"></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold" style="color: var(--color-principal);"
+                                                  th:text="'$' + ${#numbers.formatDecimal(venta.total, 1, 2)}">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:switch="${venta.metodoPago}">
+                                                <span th:case="TARJETA" class="badge bg-primary d-flex align-items-center gap-1">
+                                                    <i class="bi bi-credit-card"></i> Tarjeta
+                                                </span>
+                                                <span th:case="EFECTIVO" class="badge bg-success d-flex align-items-center gap-1">
+                                                    <i class="bi bi-cash"></i> Efectivo
+                                                </span>
+                                                <span th:case="TRANSFERENCIA" class="badge bg-info d-flex align-items-center gap-1">
+                                                    <i class="bi bi-bank"></i> Transferencia
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:switch="${venta.estado}">
+                                                <span th:case="PENDIENTE" class="badge bg-warning d-flex align-items-center gap-1">
+                                                    <i class="bi bi-clock"></i> Pendiente
+                                                </span>
+                                                <span th:case="COMPLETADA" class="badge bg-success d-flex align-items-center gap-1">
+                                                    <i class="bi bi-check-circle"></i> Completada
+                                                </span>
+                                                <span th:case="RECHAZADA" class="badge bg-danger d-flex align-items-center gap-1">
+                                                    <i class="bi bi-x-circle"></i> Rechazada
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <button class="btn btn-sm btn-outline-info" 
+                                                        th:onclick="'viewSaleDetails(' + ${venta.id} + ')'"
+                                                        title="Ver detalles">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button th:if="${venta.estado.name() == 'PENDIENTE'}"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"COMPLETADA\")'"
+                                                        title="Marcar como completada">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                                <button th:if="${venta.estado.name() == 'PENDIENTE'}"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"RECHAZADA\")'"
+                                                        title="Marcar como rechazada">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Mensaje si no hay ventas -->
+                                    <tr th:if="${ventas == null or ventas.isEmpty()}">
+                                        <td colspan="7" class="text-center py-5">
+                                            <i class="bi bi-receipt" style="font-size: 3rem; color: #6c757d;"></i>
+                                            <h5 class="mt-3" style="color: var(--color-logo);">No hay ventas registradas</h5>
+                                            <p class="text-muted">Las ventas aparecerán aquí una vez que se realicen transacciones.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Incluye Chart.js y scripts generales -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <div th:replace="~{fragments/header :: scripts}"></div>
+        
+        <!-- Script específico para reportes de ventas -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Inicializar tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+                
+                // Inicializar gráficos
+                initializeCharts();
+                
+                // Establecer fechas por defecto
+                const today = new Date();
+                const startDateInput = document.getElementById('startDate');
+                const endDateInput = document.getElementById('endDate');
+                
+                if (startDateInput && endDateInput) {
+                    startDateInput.value = today.toISOString().split('T')[0];
+                    endDateInput.value = today.toISOString().split('T')[0];
+                }
+            });
+            
+            function initializeCharts() {
+                // Gráfico de ventas por mes
+                const salesCtx = document.getElementById('salesChart').getContext('2d');
+                const salesChart = new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                        datasets: [{
+                            label: 'Ventas ($)',
+                            data: [1200, 1900, 1500, 2100, 1800, 2400, 2200, 2600, 2300, 2800, 2500, 3000],
+                            borderColor: 'rgba(196, 105, 110, 1)',
+                            backgroundColor: 'rgba(196, 105, 110, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString('es-MX');
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Ventas: $' + context.parsed.y.toLocaleString('es-MX');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Gráfico de métodos de pago
+                const paymentCtx = document.getElementById('paymentMethodChart').getContext('2d');
+                const paymentChart = new Chart(paymentCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Tarjeta', 'Efectivo', 'Transferencia'],
+                        datasets: [{
+                            data: [65, 25, 10],
+                            backgroundColor: [
+                                'rgba(82, 49, 76, 0.8)',   // color-logo
+                                'rgba(196, 105, 110, 0.8)', // color-principal
+                                'rgba(157, 107, 108, 0.8)'  // color-secundario
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function setDateFilter(range) {
+                // Activar botón correspondiente
+                document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                // Mostrar/ocultar selector de fechas personalizadas
+                const customRange = document.getElementById('customDateRange');
+                if (range === 'custom') {
+                    customRange.style.display = 'block';
+                } else {
+                    customRange.style.display = 'none';
+                    // Aquí implementarías la lógica para filtrar por el rango seleccionado
+                    console.log('Filtrar por:', range);
+                }
+            }
+            
+            function applyCustomDate() {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (startDate && endDate) {
+                    console.log('Filtrar desde', startDate, 'hasta', endDate);
+                    // Aquí implementarías la lógica para filtrar las ventas por fecha
+                }
+            }
+            
+            function filterSales() {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const paymentFilter = document.getElementById('paymentFilter').value;
+                const rows = document.querySelectorAll('.sale-row');
+                
+                rows.forEach(row => {
+                    const status = row.getAttribute('data-status');
+                    const payment = row.getAttribute('data-payment');
+                    
+                    const matchesStatus = !statusFilter || status === statusFilter;
+                    const matchesPayment = !paymentFilter || payment === paymentFilter;
+                    
+                    row.style.display = (matchesStatus && matchesPayment) ? '' : 'none';
+                });
+            }
+            
+            function viewSaleDetails(saleId) {
+                // Redirigir a vista de detalles de venta
+                window.location.href = `/admin/ventas/${saleId}`;
+            }
+            
+            function updateSaleStatus(saleId, status) {
+                const statusText = status === 'COMPLETADA' ? 'completada' : 'rechazada';
+                if (confirm(`¿Está seguro de marcar la venta #${saleId} como ${statusText}?`)) {
+                    fetch(`/admin/ventas/${saleId}/estado`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({ estado: status })
+                    }).then(response => {
+                        if (response.ok) {
+                            showToast(`Venta marcada como ${statusText} correctamente`, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast('Error al actualizar estado', 'danger');
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        showToast('Error de conexión', 'danger');
+                    });
+                }
+            }
+            
+            function exportSalesReport() {
+                // Implementar exportación a Excel
+                showToast('Exportando reporte...', 'info');
+                // window.location.href = '/admin/ventas/exportar/excel';
+            }
+            
+            function printReport() {
+                window.print();
+            }
+            
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                toast.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+            
+            function getCsrfToken() {
+                const metaTag = document.querySelector('meta[name="_csrf"]');
+                return metaTag ? metaTag.getAttribute('content') : '';
+            }
+        </script>
+    </body>
+</html>

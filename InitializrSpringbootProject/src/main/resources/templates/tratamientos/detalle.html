@@ -1,68 +1,74 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${tratamiento.nombre} + ' - KV Estética'">Detalle Tratamiento - KV Estética</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <th:block th:insert="~{fragments/header :: head}">
+        <title th:text="${tratamiento.nombre} + ' | KWestética'">Tratamiento | KWestética</title>
+    </th:block>
 </head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
-
-    <main class="main-content">
-        <div class="container">
-            <!-- Mensajes flash -->
-            <div th:if="${mensaje}" class="flash-message flash-success" th:text="${mensaje}"></div>
-            <div th:if="${error}" class="flash-message flash-error" th:text="${error}"></div>
-
-            <div th:if="${tratamiento}" class="treatment-detail">
-                <div class="treatment-detail-grid">
-                    <div class="treatment-info">
-                        <h1 th:text="${tratamiento.nombre}"></h1>
-                        <p class="treatment-category" th:text="'Categoría: ' + ${tratamiento.categoria.nombre}"></p>
-                        <p class="treatment-description" th:text="${tratamiento.descripcion}"></p>
-                        <p class="treatment-price" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></p>
-                        <p class="treatment-duration" th:text="'Duración: ' + ${tratamiento.duracionMinutos} + ' minutos'"></p>
-
-                        <div class="treatment-actions">
-                            <a th:href="@{/citas/nueva}" class="btn btn-primary btn-large">Agendar Cita</a>
-                            <a th:href="@{/tratamientos}" class="btn btn-outline">Volver a Tratamientos</a>
+    <th:block th:insert="~{fragments/header :: body}">
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a th:href="@{/}">Inicio</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/tratamientos}">Tratamientos</a></li>
+                            <li class="breadcrumb-item active" th:text="${tratamiento.nombre}"></li>
+                        </ol>
+                    </nav>
+                    
+                    <h1 th:text="${tratamiento.nombre}" style="color: var(--color-logo);"></h1>
+                    <p class="text-muted" th:text="${tratamiento.categoria.nombre}"></p>
+                    
+                    <div class="my-4">
+                        <h2 class="price" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></h2>
+                        <p><i class="bi bi-clock"></i> Duración: <span th:text="${tratamiento.duracionMinutos}"></span> minutos</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Descripción</h5>
+                        <p th:text="${tratamiento.descripcion}"></p>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-block">
+                        <a th:href="@{/citas/nueva(tratamientoid=${tratamiento.id})}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-calendar-plus"></i> Agendar Cita
+                        </a>
+                        <a th:href="@{/servicios}" class="btn btn-outline-primary btn-lg ms-2">
+                            <i class="bi bi-list-ul"></i> Ver Todos los Servicios
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Información del Tratamiento</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><strong>Categoría:</strong> <span th:text="${tratamiento.categoria.nombre}"></span></li>
+                                <li class="mb-2"><strong>Duración:</strong> <span th:text="${tratamiento.duracionMinutos}"></span> minutos</li>
+                                <li class="mb-2"><strong>Precio:</strong> <span th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></span></li>
+                                <li class="mb-2"><strong>Disponibilidad:</strong> <span class="text-success">Disponible</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">¿Necesitas ayuda?</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Contáctanos para más información sobre este tratamiento.</p>
+                            <a th:href="@{/contacto}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-envelope"></i> Contactar
+                            </a>
                         </div>
                     </div>
                 </div>
-
-                <!-- Reseñas del tratamiento -->
-                <div class="reviews-section">
-                    <h2>Reseñas</h2>
-                    <div th:if="${reseñas and not reseñas.empty}">
-                        <div th:each="resena : ${reseñas}" class="review-card">
-                            <div class="review-header">
-                                <span class="review-author" th:text="${resena.usuario.nombre}"></span>
-                                <span class="review-rating">
-                                    <span th:each="i : ${#numbers.sequence(1, 5)}">
-                                        <span th:if="${i <= resena.calificacion}">★</span>
-                                        <span th:if="${i > resena.calificacion}">☆</span>
-                                    </span>
-                                </span>
-                            </div>
-                            <p class="review-comment" th:text="${resena.comentario}"></p>
-                            <small class="review-date" th:text="${#temporals.format(resena.fechaCreacion, 'dd/MM/yyyy')}"></small>
-                        </div>
-                    </div>
-                    <div th:if="${!reseñas or reseñas.empty}" class="no-reviews">
-                        <p>Este tratamiento aún no tiene reseñas.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div th:unless="${tratamiento}" class="error-message">
-                <h2>Tratamiento no encontrado</h2>
-                <p>El tratamiento que buscas no está disponible.</p>
-                <a th:href="@{/tratamientos}" class="btn btn-primary">Volver a Tratamientos</a>
             </div>
         </div>
-    </main>
-
-    <div th:replace="~{fragments/footer :: footer}"></div>
+    </th:block>
 </body>
 </html>

@@ -1,87 +1,98 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${producto.nombre} + ' - KV Estética'">Detalle Producto - KV Estética</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <th:block th:insert="~{fragments/header :: head}">
+        <title th:text="${producto.nombre} + ' | KWestética'">Producto | KWestética</title>
+    </th:block>
 </head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
-
-    <main class="main-content">
-        <div class="container">
-            <!-- Mensajes flash -->
-            <div th:if="${mensaje}" class="flash-message flash-success" th:text="${mensaje}"></div>
-            <div th:if="${error}" class="flash-message flash-error" th:text="${error}"></div>
-
-            <div th:if="${producto}" class="product-detail">
-                <div class="product-detail-grid">
-                    <div class="product-image">
-                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="detail-img">
+    <th:block th:insert="~{fragments/header :: body}">
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-6">
+                    <img th:src="${producto.imagenUrl}" class="img-fluid rounded" alt="Producto">
+                </div>
+                <div class="col-md-6">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a th:href="@{/}">Inicio</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/productos}">Productos</a></li>
+                            <li class="breadcrumb-item active" th:text="${producto.nombre}"></li>
+                        </ol>
+                    </nav>
+                    
+                    <h1 th:text="${producto.nombre}" style="color: var(--color-logo);"></h1>
+                    <p class="text-muted" th:text="${producto.categoria.nombre}"></p>
+                    
+                    <div class="my-4">
+                        <h2 class="price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></h2>
+                        <p th:if="${producto.stock > 0}" class="text-success">
+                            <i class="bi bi-check-circle"></i> En stock: <span th:text="${producto.stock}"></span> unidades
+                        </p>
+                        <p th:unless="${producto.stock > 0}" class="text-danger">
+                            <i class="bi bi-x-circle"></i> Agotado
+                        </p>
                     </div>
-                    <div class="product-info">
-                        <h1 th:text="${producto.nombre}"></h1>
-                        <p class="product-category" th:text="'Categoría: ' + ${producto.categoria.nombre}"></p>
-                        <p class="product-description" th:text="${producto.descripcion}"></p>
-                        <p class="product-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
-                        
-                        <div class="stock-info">
-                            <p th:if="${producto.stock > 0}" 
-                               th:text="'En stock: ' + ${producto.stock} + ' unidades'" 
-                               class="in-stock"></p>
-                            <p th:if="${producto.stock <= 0}" class="out-of-stock">Producto agotado</p>
+                    
+                    <div class="mb-4">
+                        <h5>Descripción</h5>
+                        <p th:text="${producto.descripcion}"></p>
+                    </div>
+                    
+                    <div th:if="${producto.stock > 0}" class="d-flex gap-3">
+                        <div class="input-group" style="width: 150px;">
+                            <button class="btn btn-outline-secondary" type="button" onclick="decrementQuantity()">-</button>
+                            <input type="number" id="quantity" class="form-control text-center" value="1" min="1" th:max="${producto.stock}">
+                            <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity()">+</button>
                         </div>
-
-                        <div class="product-actions">
-                            <form th:action="@{/carrito/agregar/producto/{id}(id=${producto.id})}" method="post" class="add-to-cart-form">
-                                <div class="quantity-selector">
-                                    <label for="cantidad">Cantidad:</label>
-                                    <input type="number" id="cantidad" name="cantidad" value="1" min="1" 
-                                           th:max="${producto.stock}" class="form-control quantity-input">
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-large" 
-                                        th:disabled="${producto.stock <= 0}">
-                                    Agregar al Carrito
-                                </button>
-                            </form>
-                            <a th:href="@{/productos}" class="btn btn-outline">Volver a Productos</a>
-                        </div>
+                        <button class="btn btn-primary flex-grow-1" onclick="addToCart()">
+                            <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                        </button>
+                    </div>
+                    
+                    <div th:unless="${producto.stock > 0}">
+                        <button class="btn btn-secondary" disabled>
+                            <i class="bi bi-cart-x"></i> Producto Agotado
+                        </button>
                     </div>
                 </div>
-
-                <!-- Reseñas del producto -->
-                <div class="reviews-section">
-                    <h2>Reseñas</h2>
-                    <div th:if="${reseñas and not reseñas.empty}">
-                        <div th:each="resena : ${reseñas}" class="review-card">
-                            <div class="review-header">
-                                <span class="review-author" th:text="${resena.usuario.nombre}"></span>
-                                <span class="review-rating">
-                                    <span th:each="i : ${#numbers.sequence(1, 5)}">
-                                        <span th:if="${i <= resena.calificacion}">★</span>
-                                        <span th:if="${i > resena.calificacion}">☆</span>
-                                    </span>
-                                </span>
-                            </div>
-                            <p class="review-comment" th:text="${resena.comentario}"></p>
-                            <small class="review-date" th:text="${#temporals.format(resena.fechaCreacion, 'dd/MM/yyyy')}"></small>
-                        </div>
-                    </div>
-                    <div th:if="${!reseñas or reseñas.empty}" class="no-reviews">
-                        <p>Este producto aún no tiene reseñas.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div th:unless="${producto}" class="error-message">
-                <h2>Producto no encontrado</h2>
-                <p>El producto que buscas no está disponible.</p>
-                <a th:href="@{/productos}" class="btn btn-primary">Volver a Productos</a>
             </div>
         </div>
-    </main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
+        <script>
+            function incrementQuantity() {
+                const input = document.getElementById('quantity');
+                const max = parseInt(input.getAttribute('max'));
+                if (parseInt(input.value) < max) {
+                    input.value = parseInt(input.value) + 1;
+                }
+            }
+
+            function decrementQuantity() {
+                const input = document.getElementById('quantity');
+                if (parseInt(input.value) > 1) {
+                    input.value = parseInt(input.value) - 1;
+                }
+            }
+
+            function addToCart() {
+                const quantity = document.getElementById('quantity').value;
+                const productId = [[${producto.id}]];
+                
+                fetch(`/carrito/agregar/producto/${productId}?cantidad=${quantity}`, {
+                    method: 'POST'
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Producto agregado al carrito');
+                        updateCartCount();
+                    } else {
+                        alert('Error al agregar al carrito');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        </script>
+    </th:block>
 </body>
 </html>

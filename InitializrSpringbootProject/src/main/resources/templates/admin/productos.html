@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <!-- Incluye el head con título personalizado -->
+    <head th:replace="~{fragments/header :: head('Gestión de Productos - KWestética')}">
+        <!-- Este contenido será reemplazado por el fragmento head -->
+    </head>
+    
+    <body class="admin-body">
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde otro template -->
+            <div th:replace="~{admin/dashboard :: sidebar}"></div>
+            
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa; min-height: 100vh;">
+                <!-- Header -->
+                <div class="admin-header mb-4">
+                    <h1 class="display-6 fw-bold mb-2" style="color: var(--color-logo);">
+                        <i class="bi bi-bag me-2"></i>Gestión de Productos
+                    </h1>
+                    <p class="text-muted">Administra el catálogo de productos de la tienda</p>
+                </div>
+                
+                <!-- Mensajes Flash -->
+                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- Formulario para agregar nuevo producto -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0" style="color: var(--color-logo);">
+                            <i class="bi bi-plus-circle me-2"></i>Agregar Nuevo Producto
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/productos}" method="post" th:object="${nuevoProducto}">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="codigoProducto" class="form-label">Código del Producto *</label>
+                                    <input type="text" class="form-control" id="codigoProducto" 
+                                           th:field="*{codigoProducto}" required 
+                                           placeholder="PROD-001">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="nombre" class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" id="nombre" 
+                                           th:field="*{nombre}" required 
+                                           placeholder="Nombre del producto">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="categoriaId" class="form-label">Categoría *</label>
+                                    <select class="form-select" id="categoriaId" name="categoriaId" required>
+                                        <option value="">Selecciona una categoría...</option>
+                                        <option th:each="categoria : ${categorias}"
+                                                th:value="${categoria.id}"
+                                                th:text="${categoria.nombre}">
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <label for="precio" class="form-label">Precio *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="precio" 
+                                               th:field="*{precio}" step="0.01" min="0" required 
+                                               placeholder="0.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <label for="stock" class="form-label">Stock Inicial *</label>
+                                    <input type="number" class="form-control" id="stock" 
+                                           th:field="*{stock}" min="0" required 
+                                           placeholder="0">
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="descripcion" class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="descripcion" 
+                                              th:field="*{descripcion}" rows="3"
+                                              placeholder="Describe las características del producto..."></textarea>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="imagenUrl" class="form-label">URL de la Imagen</label>
+                                    <input type="url" class="form-control" id="imagenUrl" 
+                                           th:field="*{imagenUrl}" 
+                                           placeholder="https://ejemplo.com/imagen-producto.jpg">
+                                    <div class="form-text">
+                                        Puedes usar un servicio como Imgur, Cloudinary o subir la imagen a tu servidor.
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="activo" th:field="*{activo}" checked>
+                                        <label class="form-check-label" for="activo">
+                                            Producto activo (visible en la tienda)
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mt-3">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="bi bi-save me-2"></i>Guardar Producto
+                                        </button>
+                                        <button type="reset" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-clockwise me-2"></i>Limpiar Formulario
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Lista de productos -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" style="color: var(--color-logo);">
+                            <i class="bi bi-list-ul me-2"></i>Lista de Productos
+                            <span class="badge bg-primary ms-2" th:text="${productos.size()}"></span>
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="exportToExcel()">
+                                <i class="bi bi-download me-1"></i>Exportar
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="printTable()">
+                                <i class="bi bi-printer me-1"></i>Imprimir
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Filtros -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" 
+                                           placeholder="Buscar por nombre o código..." 
+                                           onkeyup="filterProducts()">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-filter"></i>
+                                    </span>
+                                    <select class="form-select" id="categoryFilter" onchange="filterProducts()">
+                                        <option value="">Todas las categorías</option>
+                                        <option th:each="categoria : ${categorias}"
+                                                th:value="${categoria.id}"
+                                                th:text="${categoria.nombre}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabla de productos -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="productsTable">
+                                <thead style="background-color: var(--color-logo); color: white;">
+                                    <tr>
+                                        <th width="100">Código</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th width="120">Precio</th>
+                                        <th width="120">Stock</th>
+                                        <th width="100">Estado</th>
+                                        <th width="180" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="producto : ${productos}" class="product-row" 
+                                        th:attr="data-category=${producto.categoria.id}">
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${producto.codigoProducto}"></span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div th:if="${producto.imagenUrl}" class="me-3">
+                                                    <img th:src="${producto.imagenUrl}" alt="Imagen producto" 
+                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                                </div>
+                                                <div>
+                                                    <strong th:text="${producto.nombre}"></strong>
+                                                    <div class="small text-muted" th:text="${#strings.abbreviate(producto.descripcion, 50)}" 
+                                                         th:if="${producto.descripcion}"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:style="'background-color: ' + ${producto.categoria.color} + ';'"
+                                                  th:text="${producto.categoria.nombre}">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold" style="color: var(--color-principal);"
+                                                  th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span th:text="${producto.stock}" 
+                                                      th:class="${producto.stock < 10} ? 'text-danger fw-bold' : ''"></span>
+                                                <div class="ms-2">
+                                                    <button class="btn btn-sm btn-outline-primary py-0 px-2" 
+                                                            th:onclick="'updateStock(' + ${producto.id} + ')'"
+                                                            title="Actualizar stock">
+                                                        <i class="bi bi-arrow-clockwise"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div th:if="${producto.stock < 10}" class="small text-danger">
+                                                <i class="bi bi-exclamation-triangle"></i> Bajo stock
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${producto.activo}" 
+                                                  class="badge bg-success d-flex align-items-center gap-1">
+                                                <i class="bi bi-check-circle"></i> Activo
+                                            </span>
+                                            <span th:unless="${producto.activo}" 
+                                                  class="badge bg-danger d-flex align-items-center gap-1">
+                                                <i class="bi bi-x-circle"></i> Inactivo
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <a th:href="@{/productos/{id}(id=${producto.id})}" 
+                                                   class="btn btn-sm btn-outline-info" 
+                                                   title="Ver en tienda" target="_blank">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-warning" 
+                                                        th:onclick="'editProduct(' + ${producto.id} + ')'"
+                                                        title="Editar producto">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button th:if="${producto.activo}"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        th:onclick="'toggleProductStatus(' + ${producto.id} + ', false)'"
+                                                        title="Desactivar producto">
+                                                    <i class="bi bi-toggle-off"></i>
+                                                </button>
+                                                <button th:unless="${producto.activo}"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        th:onclick="'toggleProductStatus(' + ${producto.id} + ', true)'"
+                                                        title="Activar producto">
+                                                    <i class="bi bi-toggle-on"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Mensaje si no hay productos -->
+                                    <tr th:if="${productos.isEmpty()}">
+                                        <td colspan="7" class="text-center py-5">
+                                            <i class="bi bi-bag-x" style="font-size: 3rem; color: #6c757d;"></i>
+                                            <h5 class="mt-3" style="color: var(--color-logo);">No hay productos registrados</h5>
+                                            <p class="text-muted">Comienza agregando tu primer producto usando el formulario superior.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Información de stock -->
+                        <div th:if="!${productos.isEmpty()}" class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card bg-primary bg-opacity-10 border-0">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-muted">Total de Productos</small>
+                                                <h5 class="mb-0 fw-bold" th:text="${productos.size()}"></h5>
+                                            </div>
+                                            <i class="bi bi-box-seam fs-4" style="color: var(--color-principal);"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-success bg-opacity-10 border-0">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-muted">Productos Activos</small>
+                                                <h5 class="mb-0 fw-bold" th:text="${productos.?[activo == true].size()}"></h5>
+                                            </div>
+                                            <i class="bi bi-check-circle fs-4" style="color: #28a745;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-warning bg-opacity-10 border-0">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-muted">Bajo Stock (< 10)</small>
+                                                <h5 class="mb-0 fw-bold" th:text="${productos.?[stock < 10].size()}"></h5>
+                                            </div>
+                                            <i class="bi bi-exclamation-triangle fs-4" style="color: #ffc107;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Incluye los scripts generales -->
+        <div th:replace="~{fragments/header :: scripts}"></div>
+        
+        <!-- Script específico para gestión de productos -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Inicializar tooltips de Bootstrap
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            });
+            
+            function filterProducts() {
+                const searchInput = document.getElementById('searchInput').value.toLowerCase();
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                const rows = document.querySelectorAll('.product-row');
+                
+                rows.forEach(row => {
+                    const name = row.cells[1].textContent.toLowerCase();
+                    const code = row.cells[0].textContent.toLowerCase();
+                    const category = row.getAttribute('data-category');
+                    
+                    const matchesSearch = name.includes(searchInput) || code.includes(searchInput);
+                    const matchesCategory = !categoryFilter || category === categoryFilter;
+                    
+                    row.style.display = (matchesSearch && matchesCategory) ? '' : 'none';
+                });
+            }
+            
+            function updateStock(productId) {
+                const currentStock = prompt('Ingrese el nuevo stock:');
+                if (currentStock !== null && currentStock !== '' && !isNaN(currentStock)) {
+                    fetch(`/admin/productos/${productId}/stock`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({ stock: parseInt(currentStock) })
+                    }).then(response => {
+                        if (response.ok) {
+                            showToast('Stock actualizado correctamente', 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast('Error al actualizar stock', 'danger');
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        showToast('Error de conexión', 'danger');
+                    });
+                }
+            }
+            
+            function editProduct(productId) {
+                // Redirigir a formulario de edición (debes crear esta ruta en tu controlador)
+                window.location.href = `/admin/productos/editar/${productId}`;
+            }
+            
+            function toggleProductStatus(productId, activate) {
+                const action = activate ? 'activar' : 'desactivar';
+                if (confirm(`¿Está seguro de que desea ${action} este producto?`)) {
+                    fetch(`/admin/productos/${productId}/estado`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({ activo: activate })
+                    }).then(response => {
+                        if (response.ok) {
+                            showToast(`Producto ${activate ? 'activado' : 'desactivado'} correctamente`, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast('Error al actualizar estado', 'danger');
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        showToast('Error de conexión', 'danger');
+                    });
+                }
+            }
+            
+            function exportToExcel() {
+                // Implementar exportación a Excel
+                alert('Funcionalidad de exportación a Excel pendiente de implementar');
+            }
+            
+            function printTable() {
+                const printContent = document.getElementById('productsTable').outerHTML;
+                const originalContent = document.body.innerHTML;
+                
+                document.body.innerHTML = `
+                    <html>
+                        <head>
+                            <title>Lista de Productos - KWestética</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; }
+                                table { width: 100%; border-collapse: collapse; }
+                                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                                th { background-color: #52314C; color: white; }
+                                tr:nth-child(even) { background-color: #f2f2f2; }
+                                .badge { padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+                                @media print {
+                                    .no-print { display: none; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <h2>Lista de Productos - KWestética</h2>
+                            <p>Fecha: ${new Date().toLocaleDateString('es-MX')}</p>
+                            ${printContent}
+                            <script>
+                                window.onload = function() {
+                                    window.print();
+                                    setTimeout(function() {
+                                        document.body.innerHTML = originalContent;
+                                        location.reload();
+                                    }, 500);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                `;
+            }
+            
+            function showToast(message, type = 'info') {
+                // Crear un toast simple
+                const toast = document.createElement('div');
+                toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                toast.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(toast);
+                
+                // Auto eliminar después de 3 segundos
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+            
+            function getCsrfToken() {
+                // Obtener token CSRF de los meta tags (si usas Spring Security)
+                const metaTag = document.querySelector('meta[name="_csrf"]');
+                return metaTag ? metaTag.getAttribute('content') : '';
+            }
+        </script>
+    </body>
+</html>

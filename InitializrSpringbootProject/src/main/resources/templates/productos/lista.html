@@ -1,77 +1,99 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productos - KV Estética</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <th:block th:insert="~{fragments/header :: head}">
+        <title>Productos | KWestética</title>
+    </th:block>
 </head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
-
-    <main class="main-content">
-        <div class="container">
-            <div class="page-header">
-                <h1>Nuestros Productos</h1>
-                <p>Descubre nuestra selección de productos de belleza y cuidado personal</p>
-            </div>
-
-            <!-- Mensajes flash -->
-            <div th:if="${mensaje}" class="flash-message flash-success" th:text="${mensaje}"></div>
-            <div th:if="${error}" class="flash-message flash-error" th:text="${error}"></div>
-
-            <!-- Barra de búsqueda -->
-            <div class="search-bar">
-                <form th:action="@{/productos/buscar}" method="get" class="search-form">
-                    <input type="text" name="query" placeholder="Buscar productos..." class="form-control search-input">
-                    <button type="submit" class="btn btn-primary">Buscar</button>
-                </form>
+    <th:block th:insert="~{fragments/header :: body}">
+        <div class="container py-5">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h1 style="color: var(--color-logo);">Nuestros Productos</h1>
+                    <p class="text-muted">Descubre nuestra selección de productos de belleza y cuidado personal.</p>
+                </div>
+                <div class="col-md-4">
+                    <form th:action="@{/productos/buscar}" method="get" class="d-flex">
+                        <input type="text" name="query" class="form-control me-2" placeholder="Buscar productos...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <!-- Filtros por categoría -->
-            <div class="category-filters">
-                <h3>Filtrar por categoría:</h3>
-                <div class="filter-buttons">
-                    <a th:href="@{/productos}" class="btn btn-outline">Todos</a>
-                    <a th:each="categoria : ${categorias}" 
-                       th:href="@{/productos/categoria/{id}(id=${categoria.id})}" 
-                       class="btn btn-outline" 
-                       th:text="${categoria.nombre}"></a>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="btn-group" role="group">
+                        <a th:href="@{/productos}" class="btn btn-outline-primary">Todos</a>
+                        <a th:each="categoria : ${categorias}" 
+                           th:href="@{/productos/categoria/{id}(id=${categoria.id})}" 
+                           class="btn btn-outline-primary" 
+                           th:text="${categoria.nombre}">
+                        </a>
+                    </div>
                 </div>
             </div>
 
             <!-- Lista de productos -->
-            <div class="grid" th:if="${not productos.empty}">
-                <div th:each="producto : ${productos}" class="card">
-                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="card-img">
-                    <div class="card-body">
-                        <h3 class="card-title" th:text="${producto.nombre}"></h3>
-                        <p class="card-text" th:text="${producto.descripcion}"></p>
-                        <p class="card-price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
-                        <p class="card-stock" th:if="${producto.stock > 0}" 
-                           th:text="'En stock: ' + ${producto.stock} + ' unidades'"></p>
-                        <p class="card-stock out-of-stock" th:if="${producto.stock <= 0}">Agotado</p>
-                        <div class="card-actions">
-                            <a th:href="@{/productos/{id}(id=${producto.id})}" class="btn btn-outline">Ver Detalle</a>
-                            <form th:action="@{/carrito/agregar/producto/{id}(id=${producto.id})}" method="post" style="display: inline;">
-                                <button type="submit" class="btn btn-primary" 
-                                        th:disabled="${producto.stock <= 0}">
-                                    Agregar al Carrito
-                                </button>
-                            </form>
+            <div class="row">
+                <div th:each="producto : ${productos}" class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100">
+                        <img th:src="${producto.imagenUrl}" class="card-img-top" alt="Producto" style="height: 200px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title" th:text="${producto.nombre}"></h5>
+                            <p class="card-text flex-grow-1" th:text="${#strings.abbreviate(producto.descripcion, 100)}"></p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></span>
+                                    <div>
+                                        <a th:href="@{/productos/{id}(id=${producto.id})}" class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button th:if="${#authentication.principal != 'anonymousUser' and #authorization.expression('hasRole(''ROLE_CLIENTE'')')}"
+                                                class="btn btn-sm btn-primary"
+                                                th:onclick="'addToCart(' + ${producto.id} + ')'">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Mensaje si no hay productos -->
-            <div th:if="${productos.empty}" class="no-results">
-                <h3>No se encontraron productos</h3>
-                <p>Intenta con otros términos de búsqueda o categorías.</p>
+            <div th:if="${productos.isEmpty()}" class="text-center py-5">
+                <i class="bi bi-emoji-frown" style="font-size: 4rem; color: var(--color-details);"></i>
+                <h3 class="mt-3" style="color: var(--color-logo);">No se encontraron productos</h3>
+                <p class="text-muted">Intenta con otra búsqueda o categoría.</p>
             </div>
         </div>
-    </main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
+        <script>
+            function addToCart(productId) {
+                fetch(`/carrito/agregar/producto/${productId}`, {
+                    method: 'POST'
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Producto agregado al carrito');
+                        updateCartCount();
+                    } else {
+                        alert('Error al agregar al carrito');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+
+            function updateCartCount() {
+                // Implementar la actualización del contador del carrito
+                console.log('Actualizar contador del carrito');
+            }
+        </script>
+    </th:block>
 </body>
 </html>

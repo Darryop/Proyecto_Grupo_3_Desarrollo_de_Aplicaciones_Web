@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <!-- Incluye el head con título personalizado -->
+    <head th:replace="~{fragments/header :: head('Gestión de Tratamientos - KWestética')}">
+        <!-- Este contenido será reemplazado por el fragmento head -->
+    </head>
+    
+    <body class="admin-body">
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde otro template -->
+            <div th:replace="~{admin/dashboard :: sidebar}"></div>
+            
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa; min-height: 100vh;">
+                <!-- Header -->
+                <div class="admin-header mb-4">
+                    <h1 class="display-6 fw-bold mb-2" style="color: var(--color-logo);">
+                        <i class="bi bi-scissors me-2"></i>Gestión de Tratamientos
+                    </h1>
+                    <p class="text-muted">Administra los tratamientos estéticos del centro</p>
+                </div>
+                
+                <!-- Mensajes Flash -->
+                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- Formulario para agregar nuevo tratamiento -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0" style="color: var(--color-logo);">
+                            <i class="bi bi-plus-circle me-2"></i>Agregar Nuevo Tratamiento
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/tratamientos}" method="post" th:object="${nuevoTratamiento}">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="codigoTratamiento" class="form-label">Código del Tratamiento *</label>
+                                    <input type="text" class="form-control" id="codigoTratamiento" 
+                                           th:field="*{codigoTratamiento}" required 
+                                           placeholder="TRAT-001">
+                                    <div class="form-text">
+                                        Código único para identificar el tratamiento
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="nombre" class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" id="nombre" 
+                                           th:field="*{nombre}" required 
+                                           placeholder="Nombre del tratamiento">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="categoriaId" class="form-label">Categoría *</label>
+                                    <select class="form-select" id="categoriaId" name="categoriaId" required>
+                                        <option value="">Selecciona una categoría...</option>
+                                        <option th:each="categoria : ${categorias}"
+                                                th:value="${categoria.id}"
+                                                th:text="${categoria.nombre}">
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <label for="precio" class="form-label">Precio *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="precio" 
+                                               th:field="*{precio}" step="0.01" min="0" required 
+                                               placeholder="0.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <label for="duracionMinutos" class="form-label">Duración *</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="duracionMinutos" 
+                                               th:field="*{duracionMinutos}" min="15" step="15" required 
+                                               placeholder="60">
+                                        <span class="input-group-text">min</span>
+                                    </div>
+                                    <div class="form-text">
+                                        Múltiplos de 15 minutos
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="descripcion" class="form-label">Descripción Detallada *</label>
+                                    <textarea class="form-control" id="descripcion" 
+                                              th:field="*{descripcion}" rows="4" required
+                                              placeholder="Describe el tratamiento, beneficios, procedimiento..."></textarea>
+                                    <div class="form-text">
+                                        Esta descripción se mostrará a los clientes
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="imagenUrl" class="form-label">URL de la Imagen</label>
+                                    <input type="url" class="form-control" id="imagenUrl" 
+                                           th:field="*{imagenUrl}" 
+                                           placeholder="https://ejemplo.com/imagen-tratamiento.jpg">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="materialesIncluidos" class="form-label">Materiales Incluidos</label>
+                                    <input type="text" class="form-control" id="materialesIncluidos" 
+                                           th:field="*{materialesIncluidos}" 
+                                           placeholder="Ej: Mascarilla, crema, guantes...">
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="requiereConsulta" th:field="*{requiereConsulta}">
+                                        <label class="form-check-label" for="requiereConsulta">
+                                            Requiere consulta previa
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="activo" th:field="*{activo}" checked>
+                                        <label class="form-check-label" for="activo">
+                                            Tratamiento activo (visible en la agenda)
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mt-3">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="bi bi-save me-2"></i>Guardar Tratamiento
+                                        </button>
+                                        <button type="reset" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-clockwise me-2"></i>Limpiar Formulario
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Lista de tratamientos -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" style="color: var(--color-logo);">
+                            <i class="bi bi-list-ul me-2"></i>Lista de Tratamientos
+                            <span class="badge bg-primary ms-2" th:text="${tratamientos.size()}"></span>
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="exportTreatments()">
+                                <i class="bi bi-download me-1"></i>Exportar
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="printTreatmentsTable()">
+                                <i class="bi bi-printer me-1"></i>Imprimir
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Filtros -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" 
+                                           placeholder="Buscar por nombre o código..." 
+                                           onkeyup="filterTreatments()">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-filter"></i>
+                                    </span>
+                                    <select class="form-select" id="categoryFilter" onchange="filterTreatments()">
+                                        <option value="">Todas las categorías</option>
+                                        <option th:each="categoria : ${categorias}"
+                                                th:value="${categoria.id}"
+                                                th:text="${categoria.nombre}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabla de tratamientos -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="treatmentsTable">
+                                <thead style="background-color: var(--color-logo); color: white;">
+                                    <tr>
+                                        <th width="100">Código</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th width="120">Precio</th>
+                                        <th width="120">Duración</th>
+                                        <th width="120">Consulta</th>
+                                        <th width="100">Estado</th>
+                                        <th width="180" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="tratamiento : ${tratamientos}" class="treatment-row" 
+                                        th:attr="data-category=${tratamiento.categoria.id}">
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${tratamiento.codigoTratamiento}"></span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div th:if="${tratamiento.imagenUrl}" class="me-3">
+                                                    <img th:src="${tratamiento.imagenUrl}" alt="Imagen tratamiento" 
+                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                                </div>
+                                                <div>
+                                                    <strong th:text="${tratamiento.nombre}"></strong>
+                                                    <div class="small text-muted" th:text="${#strings.abbreviate(tratamiento.descripcion, 50)}"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:style="'background-color: ' + ${tratamiento.categoria.color} + ';'"
+                                                  th:text="${tratamiento.categoria.nombre}">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold" style="color: var(--color-principal);"
+                                                  th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${tratamiento.duracionMinutos} + ' min'"></span>
+                                            <div class="small text-muted">
+                                                <i class="bi bi-clock"></i>
+                                                <span th:switch="${tratamiento.duracionMinutos}">
+                                                    <span th:case="15">Rápido</span>
+                                                    <span th:case="30">Corto</span>
+                                                    <span th:case="45">Moderado</span>
+                                                    <span th:case="60">Estándar</span>
+                                                    <span th:case="90">Extenso</span>
+                                                    <span th:case="*">Largo</span>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${tratamiento.requiereConsulta}" 
+                                                  class="badge bg-warning text-dark d-flex align-items-center gap-1">
+                                                <i class="bi bi-clipboard-check"></i> Requerida
+                                            </span>
+                                            <span th:unless="${tratamiento.requiereConsulta}" 
+                                                  class="badge bg-info d-flex align-items-center gap-1">
+                                                <i class="bi bi-clipboard"></i> Opcional
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${tratamiento.activo}" 
+                                                  class="badge bg-success d-flex align-items-center gap-1">
+                                                <i class="bi bi-check-circle"></i> Activo
+                                            </span>
+                                            <span th:unless="${tratamiento.activo}" 
+                                                  class="badge bg-danger d-flex align-items-center gap-1">
+                                                <i class="bi bi-x-circle"></i> Inactivo
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <a th:href="@{/tratamientos/{id}(id=${tratamiento.id})}" 
+                                                   class="btn btn-sm btn-outline-info" 
+                                                   title="Ver en sitio" target="_blank">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-warning" 
+                                                        th:onclick="'editTreatment(' + ${tratamiento.id} + ')'"
+                                                        title="Editar tratamiento">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button th:if="${tratamiento.activo}"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        th:onclick="'toggleTreatmentStatus(' + ${tratamiento.id} + ', false)'"
+                                                        title="Desactivar tratamiento">
+                                                    <i class="bi bi-toggle-off"></i>
+                                                </button>
+                                                <button th:unless="${tratamiento.activo}"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        th:onclick="'toggleTreatmentStatus(' + ${tratamiento.id} + ', true)'"
+                                                        title="Activar tratamiento">
+                                                    <i class="bi bi-toggle-on"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Mensaje si no hay tratamientos -->
+                                    <tr th:if="${tratamientos.isEmpty()}">
+                                        <td colspan="8" class="text-center py-5">
+                                            <i class="bi bi-scissors" style="font-size: 3rem; color: #6c757d;"></i>
+                                            <h5 class="mt-3" style="color: var(--color-logo);">No hay tratamientos registrados</h5>
+                                            <p class="text-muted">Comienza agregando tu primer tratamiento usando el formulario superior.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Estadísticas -->
+                        <div th:if="!${tratamientos.isEmpty()}" class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary bg-opacity-10 border-0">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-muted">Total de Tratamientos</small>
+                                                <h5 class="mb-0 fw-bold" th:text="${tratamientos.size()}"></h5>
+                                            </div>
+                                            <i class="bi bi-scissors fs-4" style="color: var(--color-principal);"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success bg-opacity-10 border-0">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-muted">Tratamientos Activos</small>
+                                                <h5 class="mb-0 fw-bold" th:text="${tratamientos.?[activo == true].size()}"></h5>
+                                            </div>
+                                            <i class="bi bi-check-circle fs-4" style="color: #28a745;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning bg-opacity-10 border-0">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-muted">Con Consulta Obligatoria</small>
+                                                <h5 class="mb-0 fw-bold" th:text="${tratamientos.?[requiereConsulta == true].size()}"></h5>
+                                            </div>
+                                            <i class="bi bi-clipboard-check fs-4" style="color: #ffc107;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info bg-opacity-10 border-0">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <small class="text-muted">Duración Promedio</small>
+                                                <h5 class="mb-0 fw-bold">
+                                                    <span th:text="${#numbers.formatDecimal(tratamientos.![duracionMinutos].average(), 0, 0)}"></span> min
+                                                </h5>
+                                            </div>
+                                            <i class="bi bi-clock fs-4" style="color: #17a2b8;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Incluye los scripts generales -->
+        <div th:replace="~{fragments/header :: scripts}"></div>
+        
+        <!-- Script específico para gestión de tratamientos -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Inicializar tooltips de Bootstrap
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+                
+                // Calcular duración automáticamente basada en precio (opcional)
+                const precioInput = document.getElementById('precio');
+                const duracionInput = document.getElementById('duracionMinutos');
+                
+                if (precioInput && duracionInput) {
+                    precioInput.addEventListener('input', function() {
+                        const precio = parseFloat(this.value);
+                        if (precio && !duracionInput.value) {
+                            // Sugerir duración basada en precio
+                            if (precio < 50) duracionInput.value = 30;
+                            else if (precio < 100) duracionInput.value = 45;
+                            else if (precio < 200) duracionInput.value = 60;
+                            else duracionInput.value = 90;
+                        }
+                    });
+                }
+            });
+            
+            function filterTreatments() {
+                const searchInput = document.getElementById('searchInput').value.toLowerCase();
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                const rows = document.querySelectorAll('.treatment-row');
+                
+                rows.forEach(row => {
+                    const name = row.cells[1].textContent.toLowerCase();
+                    const code = row.cells[0].textContent.toLowerCase();
+                    const category = row.getAttribute('data-category');
+                    
+                    const matchesSearch = name.includes(searchInput) || code.includes(searchInput);
+                    const matchesCategory = !categoryFilter || category === categoryFilter;
+                    
+                    row.style.display = (matchesSearch && matchesCategory) ? '' : 'none';
+                });
+            }
+            
+            function editTreatment(treatmentId) {
+                // Redirigir a formulario de edición (debes crear esta ruta en tu controlador)
+                window.location.href = `/admin/tratamientos/editar/${treatmentId}`;
+            }
+            
+            function toggleTreatmentStatus(treatmentId, activate) {
+                const action = activate ? 'activar' : 'desactivar';
+                if (confirm(`¿Está seguro de que desea ${action} este tratamiento?`)) {
+                    fetch(`/admin/tratamientos/${treatmentId}/estado`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({ activo: activate })
+                    }).then(response => {
+                        if (response.ok) {
+                            showToast(`Tratamiento ${activate ? 'activado' : 'desactivado'} correctamente`, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast('Error al actualizar estado', 'danger');
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        showToast('Error de conexión', 'danger');
+                    });
+                }
+            }
+            
+            function exportTreatments() {
+                // Implementar exportación
+                alert('Funcionalidad de exportación pendiente de implementar');
+            }
+            
+            function printTreatmentsTable() {
+                const printContent = document.getElementById('treatmentsTable').outerHTML;
+                const originalContent = document.body.innerHTML;
+                
+                document.body.innerHTML = `
+                    <html>
+                        <head>
+                            <title>Lista de Tratamientos - KWestética</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; }
+                                table { width: 100%; border-collapse: collapse; }
+                                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                                th { background-color: #52314C; color: white; }
+                                tr:nth-child(even) { background-color: #f2f2f2; }
+                                .badge { padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+                                @media print {
+                                    .no-print { display: none; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <h2>Lista de Tratamientos - KWestética</h2>
+                            <p>Fecha: ${new Date().toLocaleDateString('es-MX')}</p>
+                            ${printContent}
+                            <script>
+                                window.onload = function() {
+                                    window.print();
+                                    setTimeout(function() {
+                                        document.body.innerHTML = originalContent;
+                                        location.reload();
+                                    }, 500);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                `;
+            }
+            
+            function showToast(message, type = 'info') {
+                // Crear un toast simple
+                const toast = document.createElement('div');
+                toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                toast.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(toast);
+                
+                // Auto eliminar después de 3 segundos
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+            
+            function getCsrfToken() {
+                // Obtener token CSRF de los meta tags
+                const metaTag = document.querySelector('meta[name="_csrf"]');
+                return metaTag ? metaTag.getAttribute('content') : '';
+            }
+        </script>
+    </body>
+</html>
