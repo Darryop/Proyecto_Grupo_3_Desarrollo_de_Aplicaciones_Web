@@ -1,10 +1,5 @@
 package Proyecto.controller;
 
-/**
- *
- * @author darry
- */
-
 import Proyecto.model.Tratamiento;
 import Proyecto.model.CategoriaTratamiento;
 import Proyecto.service.TratamientoService;
@@ -15,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors; // ← AÑADE ESTE IMPORT
 
 @Controller
 @RequestMapping("/tratamientos")
@@ -56,7 +52,18 @@ public class TratamientoController {
     public String verTratamiento(@PathVariable Long id, Model model) {
         Optional<Tratamiento> tratamientoOpt = tratamientoService.obtenerPorId(id);
         if (tratamientoOpt.isPresent()) {
-            model.addAttribute("tratamiento", tratamientoOpt.get());
+            Tratamiento tratamiento = tratamientoOpt.get();
+            model.addAttribute("tratamiento", tratamiento);
+            
+            // Obtener tratamientos relacionados (misma categoría, excluyendo el actual)
+            List<Tratamiento> tratamientosRelacionados = tratamientoService
+                .obtenerPorCategoria(tratamiento.getCategoria())
+                .stream()
+                .filter(t -> !t.getId().equals(tratamiento.getId()))
+                .limit(3)
+                .collect(Collectors.toList());
+            model.addAttribute("tratamientosRelacionados", tratamientosRelacionados);
+            
             return "tratamientos/detalle";
         } else {
             return "redirect:/tratamientos";

@@ -6,7 +6,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
@@ -29,7 +29,7 @@
                         <div class="input-group">
                             <span class="input-group-text bg-color5"><i class="fas fa-search text-color2"></i></span>
                             <input type="text" class="form-control" placeholder="Buscar productos..." 
-                                   th:value="${query}" id="searchInput">
+                                   th:value="${busqueda}" id="searchInput">
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -37,7 +37,8 @@
                             <option value="">Todas las categorías</option>
                             <option th:each="categoria : ${categorias}" 
                                     th:value="${categoria.id}" 
-                                    th:text="${categoria.nombre}">
+                                    th:text="${categoria.nombre}"
+                                    th:selected="${categoria.id == categoriaFiltro}">
                             </option>
                         </select>
                     </div>
@@ -50,15 +51,24 @@
             <div class="col-md-4 mb-4" th:each="producto : ${productos}">
                 <div class="card product-card h-100">
                     <div class="position-relative">
-                        <img th:src="${producto.imagenUrl}" class="card-img-top product-image" 
-                             th:alt="${producto.nombre}" onerror="this.src='https://via.placeholder.com/300x200?text=Producto'">
+                        <!-- ENLACE A DETALLES EN LA IMAGEN -->
+                        <a th:href="@{/productos/{id}(id=${producto.id})}">
+                            <img th:src="${producto.imagenUrl}" class="card-img-top product-image" 
+                                 th:alt="${producto.nombre}" onerror="this.src='https://via.placeholder.com/300x200?text=Producto'">
+                        </a>
                         <div class="position-absolute top-0 end-0 m-2">
                             <span th:if="${producto.stock > 0}" class="badge bg-success">Disponible</span>
                             <span th:if="${producto.stock <= 0}" class="badge bg-danger">Agotado</span>
                         </div>
                     </div>
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold text-color2" th:text="${producto.nombre}"></h5>
+                        <!-- ENLACE A DETALLES EN EL TÍTULO -->
+                        <h5 class="card-title fw-bold text-color2">
+                            <a th:href="@{/productos/{id}(id=${producto.id})}" 
+                               class="text-color2 text-decoration-none">
+                                <span th:text="${producto.nombre}"></span>
+                            </a>
+                        </h5>
                         <p class="card-text flex-grow-1 text-muted" th:text="${producto.descripcion}"></p>
                         
                         <div class="mt-auto">
@@ -74,6 +84,7 @@
                                     <i class="fas fa-cart-plus me-2"></i>
                                     <span th:text="${producto.stock > 0} ? 'Agregar al Carrito' : 'Agotado'"></span>
                                 </button>
+                                <!-- BOTÓN VER DETALLES -->
                                 <a th:href="@{/productos/{id}(id=${producto.id})}" 
                                    class="btn btn-outline-secondary">
                                     <i class="fas fa-info-circle me-2"></i>Ver Detalles

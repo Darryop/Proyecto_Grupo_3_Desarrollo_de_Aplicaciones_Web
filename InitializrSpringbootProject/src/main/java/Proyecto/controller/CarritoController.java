@@ -1,10 +1,5 @@
 package Proyecto.controller;
 
-/**
- *
- * @author darry
- */
-
 import Proyecto.model.Usuario;
 import Proyecto.model.Producto;
 import Proyecto.model.Cita;
@@ -98,6 +93,69 @@ public class CarritoController {
         return "redirect:/citas";
     }
     
+    // NUEVO: Endpoint para actualizar cantidad por itemId (para el template actual)
+    @PostMapping("/actualizar/{itemId}")
+    public String actualizarCantidadItem(@PathVariable Long itemId,
+                                        @RequestParam int cantidad,
+                                        RedirectAttributes redirectAttributes) {
+        Usuario usuario = obtenerUsuarioTemporal();
+        if (usuario == null) {
+            return "redirect:/auth/login";
+        }
+        
+        try {
+            carritoService.actualizarCantidadItem(itemId, cantidad);
+            redirectAttributes.addFlashAttribute("mensaje", "Cantidad actualizada");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar la cantidad: " + e.getMessage());
+        }
+        
+        return "redirect:/carrito";
+    }
+    
+    // NUEVO: Endpoint para eliminar item por itemId (para el template actual)
+    @PostMapping("/eliminar/{itemId}")
+    public String eliminarItem(@PathVariable Long itemId,
+                              RedirectAttributes redirectAttributes) {
+        Usuario usuario = obtenerUsuarioTemporal();
+        if (usuario == null) {
+            return "redirect:/auth/login";
+        }
+        
+        try {
+            carritoService.eliminarItem(itemId);
+            redirectAttributes.addFlashAttribute("mensaje", "Item eliminado del carrito");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar el item: " + e.getMessage());
+        }
+        
+        return "redirect:/carrito";
+    }
+    
+    // MÉTODOS EXISTENTES (se mantienen para compatibilidad)
+    @PostMapping("/actualizar/producto/{productoId}")
+    public String actualizarCantidadProducto(@PathVariable Long productoId,
+                                           @RequestParam int cantidad,
+                                           RedirectAttributes redirectAttributes) {
+        Usuario usuario = obtenerUsuarioTemporal();
+        if (usuario == null) {
+            return "redirect:/auth/login";
+        }
+        
+        Optional<Producto> productoOpt = productoService.obtenerPorId(productoId);
+        if (productoOpt.isPresent() && cantidad > 0) {
+            carritoService.actualizarCantidadProducto(usuario, productoOpt.get(), cantidad);
+            redirectAttributes.addFlashAttribute("mensaje", "Cantidad actualizada");
+        } else if (cantidad <= 0) {
+            carritoService.eliminarProductoDelCarrito(usuario, productoOpt.get());
+            redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado");
+        }
+        
+        return "redirect:/carrito";
+    }
+    
     @PostMapping("/eliminar/producto/{productoId}")
     public String eliminarProducto(@PathVariable Long productoId,
                                   RedirectAttributes redirectAttributes) {
@@ -110,6 +168,25 @@ public class CarritoController {
         if (productoOpt.isPresent()) {
             carritoService.eliminarProductoDelCarrito(usuario, productoOpt.get());
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
+        }
+        
+        return "redirect:/carrito";
+    }
+    
+    @PostMapping("/eliminar/cita/{citaId}")
+    public String eliminarCita(@PathVariable Long citaId,
+                              RedirectAttributes redirectAttributes) {
+        Usuario usuario = obtenerUsuarioTemporal();
+        if (usuario == null) {
+            return "redirect:/auth/login";
+        }
+        
+        Optional<Cita> citaOpt = citaService.obtenerPorId(citaId);
+        if (citaOpt.isPresent()) {
+            carritoService.eliminarCitaDelCarrito(usuario, citaOpt.get());
+            redirectAttributes.addFlashAttribute("mensaje", "Cita eliminada del carrito");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Cita no encontrada");
         }
         
         return "redirect:/carrito";

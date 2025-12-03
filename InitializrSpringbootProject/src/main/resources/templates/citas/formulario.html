@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout}">
 <head>
     <title>Agendar Cita - KVestética</title>
@@ -7,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
@@ -22,24 +23,45 @@
                             </h4>
                         </div>
                         <div class="card-body p-4">
+                            <!-- Mensajes de éxito/error -->
+                            <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span th:text="${mensaje}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span th:text="${error}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+
                             <form th:action="@{/citas/nueva}" method="post" th:object="${cita}">
+                                <!-- CAMPO OCULTO PARA tratamientoId - CORRECCIÓN DEL ERROR -->
+                                <input type="hidden" name="tratamientoId" id="hiddenTratamientoId" 
+                                       th:value="${tratamientoSeleccionado}">
+
                                 <!-- Selección de Tratamiento -->
                                 <div class="mb-4">
                                     <h5 class="fw-bold text-color2 mb-3">
                                         <i class="fas fa-spa me-2"></i>Paso 1: Selecciona tu Tratamiento
                                     </h5>
+                                    <div class="alert alert-warning" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <strong>Importante:</strong> Debes seleccionar un tratamiento para continuar
+                                    </div>
                                     <div class="row">
                                         <div class="col-md-6" th:each="tratamiento : ${tratamientos}">
                                             <div class="card mb-3 treatment-option" 
                                                  th:classappend="${tratamientoSeleccionado == tratamiento.id} ? 'border-primary selected' : ''"
-                                                 th:onclick="|selectTreatment(${tratamiento.id})|"
+                                                 onclick="selectTreatment([[${tratamiento.id}]])"
                                                  style="cursor: pointer;">
                                                 <div class="card-body">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" 
                                                                th:id="'tratamiento_' + ${tratamiento.id}"
                                                                th:value="${tratamiento.id}" 
-                                                               th:field="*{tratamiento.id}">
+                                                               name="tratamientoRadio"
+                                                               required>
                                                         <label class="form-check-label fw-bold" 
                                                                th:for="'tratamiento_' + ${tratamiento.id}"
                                                                th:text="${tratamiento.nombre}">
@@ -67,7 +89,7 @@
                                         <div class="col-md-6">
                                             <label for="fechaCita" class="form-label fw-bold">Fecha de la Cita</label>
                                             <input type="datetime-local" class="form-control" id="fechaCita" 
-                                                   name="fechaCita" required th:field="*{fechaCita}">
+                                                   name="fechaCita" required>
                                             <small class="form-text text-muted">
                                                 Selecciona la fecha y hora que prefieras para tu cita
                                             </small>
@@ -98,8 +120,7 @@
                                     <div class="mb-3">
                                         <label for="notas" class="form-label fw-bold">Notas Especiales</label>
                                         <textarea class="form-control" id="notas" name="notas" rows="4" 
-                                                  placeholder="Por favor, comparte cualquier información relevante como alergias, condiciones médicas, preferencias específicas, o cualquier detalle que debamos conocer para brindarte el mejor servicio..."
-                                                  th:field="*{notas}"></textarea>
+                                                  placeholder="Por favor, comparte cualquier información relevante como alergias, condiciones médicas, preferencias específicas, o cualquier detalle que debamos conocer para brindarte el mejor servicio..."></textarea>
                                         <small class="form-text text-muted">
                                             Esta información nos ayuda a prepararnos para tu cita
                                         </small>
@@ -137,6 +158,12 @@
                                     </div>
                                 </div>
 
+                                <!-- Validación antes de enviar -->
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Por favor, verifica que toda la información sea correcta antes de confirmar tu cita.
+                                </div>
+
                                 <!-- Botones de Acción -->
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                     <a th:href="@{/citas}" class="btn btn-secondary me-md-2">
@@ -145,7 +172,7 @@
                                     <a th:href="@{/tratamientos}" class="btn btn-outline-primary me-md-2">
                                         <i class="fas fa-spa me-2"></i>Ver Más Tratamientos
                                     </a>
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
                                         <i class="fas fa-calendar-check me-2"></i>Confirmar Cita
                                     </button>
                                 </div>
@@ -158,6 +185,9 @@
     </div>
 
     <div layout:fragment="scripts">
+        <!-- Bootstrap Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        
         <script>
             // Datos de tratamientos para el resumen
             const tratamientos = {
@@ -178,11 +208,23 @@
                     document.getElementById('selectedTreatmentDuration').textContent = treatment.duracion;
                     document.getElementById('selectedTreatmentPrice').textContent = '$' + treatment.precio;
                     
+                    // Actualizar el campo oculto - ESTO CORRIGE EL ERROR 400
+                    document.getElementById('hiddenTratamientoId').value = tratamientoId;
+                    
+                    // Marcar el radio button correspondiente
+                    const radioButton = document.querySelector('input[value="' + tratamientoId + '"]');
+                    if (radioButton) {
+                        radioButton.checked = true;
+                    }
+                    
                     // Marcar visualmente como seleccionado
                     document.querySelectorAll('.treatment-option').forEach(option => {
                         option.classList.remove('border-primary', 'selected');
                     });
                     event.currentTarget.classList.add('border-primary', 'selected');
+                    
+                    // Habilitar el botón de enviar si hay fecha seleccionada
+                    validateForm();
                 }
             }
 
@@ -198,18 +240,66 @@
                     minute: '2-digit'
                 });
                 document.getElementById('selectedDateTime').textContent = formattedDate;
+                
+                // Habilitar el botón de enviar si hay tratamiento seleccionado
+                validateForm();
             });
 
-            // Establecer fecha mínima como hoy
-            const today = new Date().toISOString().slice(0, 16);
-            document.getElementById('fechaCita').min = today;
-
-            // Si hay un tratamiento pre-seleccionado, seleccionarlo
-            const tratamientoSeleccionado = [[${tratamientoSeleccionado}]];
-            if (tratamientoSeleccionado) {
-                selectTreatment(tratamientoSeleccionado);
-                document.querySelector(`input[value="${tratamientoSeleccionado}"]`).checked = true;
+            // Validar formulario antes de enviar
+            function validateForm() {
+                const tratamientoId = document.getElementById('hiddenTratamientoId').value;
+                const fechaCita = document.getElementById('fechaCita').value;
+                const submitBtn = document.getElementById('submitBtn');
+                
+                if (tratamientoId && fechaCita) {
+                    submitBtn.disabled = false;
+                    submitBtn.title = "Confirmar cita";
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.title = "Debes seleccionar un tratamiento y una fecha";
+                }
             }
+
+            // Inicialización cuando se carga la página
+            document.addEventListener('DOMContentLoaded', function() {
+                // Establecer fecha mínima como hoy
+                const today = new Date();
+                const minDate = today.toISOString().slice(0, 16);
+                document.getElementById('fechaCita').min = minDate;
+                
+                // Si hay un tratamiento pre-seleccionado, seleccionarlo
+                const tratamientoSeleccionado = [[${tratamientoSeleccionado != null} ? ${tratamientoSeleccionado} : 'null']];
+                if (tratamientoSeleccionado && tratamientoSeleccionado !== 'null') {
+                    selectTreatment(tratamientoSeleccionado);
+                }
+                
+                // Validar formulario inicialmente
+                validateForm();
+            });
+
+            // Validar antes de enviar el formulario
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const tratamientoId = document.getElementById('hiddenTratamientoId').value;
+                const fechaCita = document.getElementById('fechaCita').value;
+                
+                if (!tratamientoId) {
+                    e.preventDefault();
+                    alert('Por favor, selecciona un tratamiento antes de confirmar la cita.');
+                    return false;
+                }
+                
+                if (!fechaCita) {
+                    e.preventDefault();
+                    alert('Por favor, selecciona una fecha y hora para la cita.');
+                    return false;
+                }
+                
+                // Confirmación final
+                if (!confirm('¿Estás seguro de que deseas agendar esta cita?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
         </script>
 
         <style>
@@ -223,14 +313,26 @@
             }
             
             .treatment-option.selected {
-                border: 2px solid var(--color1);
-                background-color: rgba(157, 107, 108, 0.05);
+                border: 2px solid #007bff;
+                background-color: rgba(0, 123, 255, 0.05);
             }
             
             .form-check-input:checked {
-                background-color: var(--color1);
-                border-color: var(--color1);
+                background-color: #007bff;
+                border-color: #007bff;
             }
+            
+            #submitBtn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            
+            .bg-color1 { background-color: #9d6b6c; }
+            .bg-color2 { background-color: #6d6875; }
+            .bg-color4 { background-color: #b5838d; }
+            .bg-color5 { background-color: #f8f9fa; }
+            .text-color1 { color: #9d6b6c; }
+            .text-color2 { color: #6d6875; }
         </style>
     </div>
 </body>

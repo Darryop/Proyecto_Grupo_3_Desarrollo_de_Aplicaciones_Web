@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragmento reutilizable para el contenido de la cita -->
+    <div th:fragment="cita-content">
+        <p class="card-text text-muted mb-3" th:text="${cita.tratamiento.descripcion}"></p>
+        
+        <div class="tratamiento-info mb-3">
+            <div class="mb-2">
+                <i class="fas fa-clock text-color1 me-2"></i>
+                <strong>Duración:</strong> 
+                <span th:text="${cita.tratamiento.duracionMinutos} + ' minutos'"></span>
+            </div>
+            <div class="mb-2">
+                <i class="fas fa-calendar text-color1 me-2"></i>
+                <strong>Fecha y Hora:</strong> 
+                <span th:text="${#temporals.format(cita.fechaCita, 'dd/MM/yyyy HH:mm')}"></span>
+            </div>
+            <div class="mb-2">
+                <i class="fas fa-dollar-sign text-color1 me-2"></i>
+                <strong>Precio:</strong> 
+                <span th:text="'$' + ${#numbers.formatDecimal(cita.tratamiento.precio, 1, 2)}"></span>
+            </div>
+            <div class="mb-2">
+                <i class="fas fa-tag text-color1 me-2"></i>
+                <strong>Categoría:</strong> 
+                <span th:text="${cita.tratamiento.categoria.nombre}"></span>
+            </div>
+        </div>
+
+        <div th:if="${cita.notas}" class="mb-3">
+            <strong>Notas:</strong>
+            <p th:text="${cita.notas}" class="mb-0 text-muted"></p>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                Creado: <span th:text="${#temporals.format(cita.fechaCreacion, 'dd/MM/yyyy')}"></span>
+            </small>
+            <div th:if="${cita.estado.name() == 'PENDIENTE'}">
+                <button class="btn btn-outline-danger btn-sm" 
+                        th:onclick="'cancelarCita(' + ${cita.id} + ')'">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button class="btn btn-outline-primary btn-sm ms-2" 
+                        th:onclick="'agregarAlCarrito(' + ${cita.id} + ')'">
+                    <i class="fas fa-cart-plus me-1"></i>Agregar al Carrito
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

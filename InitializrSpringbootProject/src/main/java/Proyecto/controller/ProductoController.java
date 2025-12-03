@@ -1,10 +1,5 @@
 package Proyecto.controller;
 
-/**
- *
- * @author darry
- */
-
 import Proyecto.model.Producto;
 import Proyecto.model.CategoriaProducto;
 import Proyecto.service.ProductoService;
@@ -13,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors; // ← AÑADE ESTE IMPORT
 
 @Controller
 @RequestMapping("/productos")
@@ -55,14 +50,25 @@ public class ProductoController {
         model.addAttribute("busqueda", query);
         model.addAttribute("categoriaFiltro", categoria);
         
-        return "productos/lista"; // Cambiado para que coincida con la estructura
+        return "productos/lista";
     }
     
     @GetMapping("/{id}")
     public String verProducto(@PathVariable Long id, Model model) {
         Optional<Producto> productoOpt = productoService.obtenerPorId(id);
         if (productoOpt.isPresent()) {
-            model.addAttribute("producto", productoOpt.get());
+            Producto producto = productoOpt.get();
+            model.addAttribute("producto", producto);
+            
+            // Obtener productos relacionados (misma categoría, excluyendo el actual)
+            List<Producto> productosRelacionados = productoService
+                .obtenerPorCategoria(producto.getCategoria())
+                .stream()
+                .filter(p -> !p.getId().equals(producto.getId()))
+                .limit(4)
+                .collect(Collectors.toList());
+            model.addAttribute("productosRelacionados", productosRelacionados);
+            
             return "productos/detalle";
         } else {
             return "redirect:/productos";

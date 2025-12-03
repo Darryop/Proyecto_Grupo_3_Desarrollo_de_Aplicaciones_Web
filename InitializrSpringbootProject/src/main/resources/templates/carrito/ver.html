@@ -5,7 +5,7 @@
     <title>Carrito de Compras - KVestética</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
@@ -14,6 +14,18 @@
             <h1 class="mb-4">
                 <i class="fas fa-shopping-cart me-2 text-color1"></i>Mi Carrito de Compras
             </h1>
+
+            <!-- Mensajes de éxito/error -->
+            <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${mensaje}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
 
             <div th:if="${items.empty}">
                 <div class="alert alert-info text-center py-5">
@@ -87,6 +99,7 @@
                                                         th:disabled="${item.cantidad <= 1}">-</button>
                                                 <input type="number" class="form-control text-center" 
                                                        th:value="${item.cantidad}" min="1" 
+                                                       th:id="'cantidad-' + ${item.id}"
                                                        th:onchange="|actualizarCantidad(${item.id}, this.value)|">
                                                 <button class="btn btn-outline-secondary" 
                                                         th:onclick="|incrementarCantidad(${item.id})|">+</button>
@@ -112,6 +125,15 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón Vaciar Carrito -->
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <button class="btn btn-outline-danger btn-lg" th:onclick="vaciarCarrito()">
+                                    <i class="fas fa-trash me-2"></i>Vaciar Carrito Completo
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -144,9 +166,6 @@
                                     <a th:href="@{/ventas/procesar}" class="btn btn-primary btn-lg">
                                         <i class="fas fa-credit-card me-2"></i>Proceder al Pago
                                     </a>
-                                    <button class="btn btn-outline-danger" th:onclick="vaciarCarrito()">
-                                        <i class="fas fa-trash me-2"></i>Vaciar Carrito
-                                    </button>
                                     <a th:href="@{/productos}" class="btn btn-outline-secondary">
                                         <i class="fas fa-shopping-bag me-2"></i>Seguir Comprando
                                     </a>
@@ -161,24 +180,55 @@
 
     <div layout:fragment="scripts">
         <script>
+            // Obtener el token CSRF
+            function getCsrfToken() {
+                return document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            }
+
+            function getCsrfHeaderName() {
+                return document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+            }
+
+            // Configuración común para fetch
+            function fetchWithCsrf(url, options = {}) {
+                const csrfToken = getCsrfToken();
+                const csrfHeaderName = getCsrfHeaderName();
+                
+                const defaultOptions = {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        [csrfHeaderName]: csrfToken
+                    }
+                };
+                
+                return fetch(url, { ...defaultOptions, ...options });
+            }
+
             function actualizarCantidad(itemId, nuevaCantidad) {
                 if (nuevaCantidad < 1) {
                     nuevaCantidad = 1;
                 }
                 
-                fetch('/carrito/actualizar/' + itemId + '?cantidad=' + nuevaCantidad, {
-                    method: 'POST'
+                const formData = new URLSearchParams();
+                formData.append('cantidad', nuevaCantidad);
+                
+                fetchWithCsrf('/carrito/actualizar/' + itemId, {
+                    method: 'POST',
+                    body: formData
                 }).then(response => {
                     if (response.ok) {
                         location.reload();
                     } else {
                         alert('Error al actualizar la cantidad');
                     }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión al actualizar la cantidad');
                 });
             }
 
             function incrementarCantidad(itemId) {
-                const input = document.querySelector('input[onchange*="' + itemId + '"]');
+                const input = document.getElementById('cantidad-' + itemId);
                 if (input) {
                     let nuevaCantidad = parseInt(input.value) + 1;
                     actualizarCantidad(itemId, nuevaCantidad);
@@ -186,7 +236,7 @@
             }
 
             function decrementarCantidad(itemId) {
-                const input = document.querySelector('input[onchange*="' + itemId + '"]');
+                const input = document.getElementById('cantidad-' + itemId);
                 if (input) {
                     let nuevaCantidad = parseInt(input.value) - 1;
                     if (nuevaCantidad < 1) nuevaCantidad = 1;
@@ -196,7 +246,7 @@
 
             function eliminarItem(itemId) {
                 if (confirm('¿Estás seguro de que quieres eliminar este item del carrito?')) {
-                    fetch('/carrito/eliminar/' + itemId, {
+                    fetchWithCsrf('/carrito/eliminar/' + itemId, {
                         method: 'POST'
                     }).then(response => {
                         if (response.ok) {
@@ -204,13 +254,16 @@
                         } else {
                             alert('Error al eliminar el item');
                         }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        alert('Error de conexión al eliminar el item');
                     });
                 }
             }
 
             function vaciarCarrito() {
                 if (confirm('¿Estás seguro de que quieres vaciar todo el carrito?')) {
-                    fetch('/carrito/vaciar', {
+                    fetchWithCsrf('/carrito/vaciar', {
                         method: 'POST'
                     }).then(response => {
                         if (response.ok) {
@@ -218,9 +271,26 @@
                         } else {
                             alert('Error al vaciar el carrito');
                         }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        alert('Error de conexión al vaciar el carrito');
                     });
                 }
             }
+
+            // Auto-actualizar al cambiar cantidad manualmente
+            document.addEventListener('DOMContentLoaded', function() {
+                const quantityInputs = document.querySelectorAll('input[type="number"]');
+                quantityInputs.forEach(input => {
+                    input.addEventListener('blur', function() {
+                        const itemId = this.getAttribute('onchange').match(/\d+/)[0];
+                        const nuevaCantidad = this.value;
+                        if (nuevaCantidad !== this.defaultValue) {
+                            actualizarCantidad(itemId, nuevaCantidad);
+                        }
+                    });
+                });
+            });
         </script>
     </div>
 </body>

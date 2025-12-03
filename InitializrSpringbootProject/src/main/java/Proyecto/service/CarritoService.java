@@ -14,6 +14,7 @@ import Proyecto.model.Cita;
 import Proyecto.model.TipoItem;
 import Proyecto.repository.CarritoComprasRepository;
 import Proyecto.repository.ItemCarritoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -82,16 +83,73 @@ public class CarritoService {
         return itemCarritoRepository.findByCarrito(carrito);
     }
     
+    // NUEVO: Actualizar cantidad por itemId
+    @Transactional
+    public void actualizarCantidadItem(Long itemId, int nuevaCantidad) {
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findById(itemId);
+        if (itemOpt.isPresent()) {
+            ItemCarrito item = itemOpt.get();
+            if (nuevaCantidad > 0) {
+                item.setCantidad(nuevaCantidad);
+                itemCarritoRepository.save(item);
+            } else {
+                // Si la cantidad es 0 o menor, eliminar el item
+                itemCarritoRepository.delete(item);
+            }
+        } else {
+            throw new RuntimeException("Item no encontrado en el carrito con ID: " + itemId);
+        }
+    }
+    
+    // NUEVO: Eliminar item por itemId
+    @Transactional
+    public void eliminarItem(Long itemId) {
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findById(itemId);
+        if (itemOpt.isPresent()) {
+            itemCarritoRepository.delete(itemOpt.get());
+        } else {
+            throw new RuntimeException("Item no encontrado en el carrito con ID: " + itemId);
+        }
+    }
+    
+    // MÉTODO EXISTENTE: Actualizar cantidad por producto y usuario
+    @Transactional
+    public void actualizarCantidadProducto(Usuario usuario, Producto producto, int nuevaCantidad) {
+        CarritoCompras carrito = obtenerCarritoActivo(usuario);
+        
+        Optional<ItemCarrito> itemExistente = itemCarritoRepository.findByCarritoAndProducto(carrito, producto);
+        
+        if (itemExistente.isPresent()) {
+            ItemCarrito item = itemExistente.get();
+            if (nuevaCantidad > 0) {
+                item.setCantidad(nuevaCantidad);
+                itemCarritoRepository.save(item);
+            } else {
+                // Si la cantidad es 0 o menor, eliminar el producto
+                itemCarritoRepository.delete(item);
+            }
+        }
+    }
+    
+    @Transactional
     public void eliminarProductoDelCarrito(Usuario usuario, Producto producto) {
         CarritoCompras carrito = obtenerCarritoActivo(usuario);
-        itemCarritoRepository.deleteByCarritoAndProducto(carrito, producto);
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findByCarritoAndProducto(carrito, producto);
+        if (itemOpt.isPresent()) {
+            itemCarritoRepository.delete(itemOpt.get());
+        }
     }
     
+    @Transactional
     public void eliminarCitaDelCarrito(Usuario usuario, Cita cita) {
         CarritoCompras carrito = obtenerCarritoActivo(usuario);
-        itemCarritoRepository.deleteByCarritoAndCita(carrito, cita);
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findByCarritoAndCita(carrito, cita);
+        if (itemOpt.isPresent()) {
+            itemCarritoRepository.delete(itemOpt.get());
+        }
     }
     
+    @Transactional
     public void vaciarCarrito(Usuario usuario) {
         CarritoCompras carrito = obtenerCarritoActivo(usuario);
         List<ItemCarrito> items = itemCarritoRepository.findByCarrito(carrito);
