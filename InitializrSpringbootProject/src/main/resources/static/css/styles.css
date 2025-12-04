@@ -686,3 +686,73 @@ a:hover {
         transform: rotate(360deg);
     }
 }
+
+/* ================================
+   ESTILOS ESPECÍFICOS PARA INPUT DE CANTIDAD
+================================= */
+
+/* Input de cantidad */
+.input-group {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 2px solid #e0e0e0;
+}
+
+.input-group .btn-outline-secondary {
+    background-color: var(--color-white);
+    color: var(--color-principal);
+    border: none;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.input-group .btn-outline-secondary:hover {
+    background-color: var(--color-principal);
+    color: var(--color-white);
+}
+
+.input-group .form-control {
+    border: none;
+    border-left: 2px solid #e0e0e0;
+    border-right: 2px solid #e0e0e0;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--color-logo);
+    padding: 0.75rem;
+    background-color: var(--color-white);
+}
+
+/* Quitar flechas en input type="number" */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Estilo cuando el input tiene foco */
+.input-group .form-control:focus {
+    box-shadow: none;
+    border-color: #e0e0e0;
+    background-color: var(--color-white);
+}
+
+/* Asegurar que el texto sea visible */
+#quantity {
+    color: var(--color-logo) !important;
+    -webkit-text-fill-color: var(--color-logo) !important;
+}
+
+/* Si el problema persiste, forzar visibilidad */
+.input-group input {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+}

@@ -77,6 +77,47 @@ public class CarritoService {
         }
     }
     
+    // En CarritoService.java
+    public void eliminarItemDelCarrito(Usuario usuario, Long itemId) {
+        CarritoCompras carrito = obtenerCarritoActivo(usuario);
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findById(itemId);
+
+        if (itemOpt.isPresent() && itemOpt.get().getCarrito().getId().equals(carrito.getId())) {
+            itemCarritoRepository.delete(itemOpt.get());
+        } else {
+            throw new RuntimeException("Ítem no encontrado en el carrito del usuario");
+        }
+    }
+    
+    public void actualizarCantidadItem(Usuario usuario, Long itemId, int cantidad) {
+        CarritoCompras carrito = obtenerCarritoActivo(usuario);
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findById(itemId);
+
+        if (itemOpt.isPresent() && itemOpt.get().getCarrito().getId().equals(carrito.getId())) {
+            ItemCarrito item = itemOpt.get();
+
+            // Validar que sea un producto (las citas no tienen cantidad ajustable)
+            if (item.getTipo() == TipoItem.PRODUCTO && item.getProducto() != null) {
+                // Validar que la cantidad no sea menor a 1
+                if (cantidad < 1) {
+                    throw new RuntimeException("La cantidad no puede ser menor a 1");
+                }
+
+                // Validar stock disponible
+                if (cantidad > item.getProducto().getStock()) {
+                    throw new RuntimeException("Stock insuficiente. Disponible: " + item.getProducto().getStock());
+                }
+
+                item.setCantidad(cantidad);
+                itemCarritoRepository.save(item);
+            } else {
+                throw new RuntimeException("Solo se puede ajustar la cantidad de productos");
+            }
+        } else {
+            throw new RuntimeException("Ítem no encontrado en el carrito del usuario");
+        }
+    }
+    
     public List<ItemCarrito> obtenerItemsDelCarrito(Usuario usuario) {
         CarritoCompras carrito = obtenerCarritoActivo(usuario);
         return itemCarritoRepository.findByCarrito(carrito);

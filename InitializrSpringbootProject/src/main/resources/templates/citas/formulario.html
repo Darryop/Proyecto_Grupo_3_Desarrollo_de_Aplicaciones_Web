@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <th:block th:insert="~{fragments/header :: head}">
-        <title>Agendar Cita | KWestética</title>
-    </th:block>
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+<head th:replace="~{fragments/header :: head('Agendar Cita | KWestética')}">
 </head>
+
 <body>
-    <th:block th:insert="~{fragments/header :: body}">
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <main class="flex-grow-1">
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-lg-8">
@@ -17,10 +16,10 @@
                         </div>
                         <div class="card-body">
                             <form th:action="@{/citas/nueva}" method="post">
-                                <!-- Tratamiento -->
+                                <!-- Tratamiento - CORREGIDO: name="tratamientoId" -->
                                 <div class="mb-3">
                                     <label for="tratamientoid" class="form-label">Seleccionar Tratamiento *</label>
-                                    <select class="form-select" id="tratamientoid" name="tratamientoid" required>
+                                    <select class="form-select" id="tratamientoid" name="tratamientoId" required>
                                         <option value="">Selecciona un tratamiento...</option>
                                         <option th:each="tratamiento : ${tratamientos}"
                                                 th:value="${tratamiento.id}"
@@ -44,6 +43,28 @@
                                               placeholder="¿Alguna preferencia especial o comentario?"></textarea>
                                 </div>
                                 
+                                <!-- Lista de tratamientos para selección rápida -->
+                                <div class="mt-4">
+                                    <h4 class="mb-3" style="color: var(--color-logo);">Nuestros Tratamientos</h4>
+                                    <div class="row">
+                                        <div th:each="tratamiento : ${tratamientos}" class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 th:text="${tratamiento.nombre}"></h5>
+                                                    <p class="card-text" th:text="${#strings.abbreviate(tratamiento.descripcion, 100)}"></p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="price" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></span>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                                th:onclick="'seleccionarTratamiento(' + ${tratamiento.id} + ')'">
+                                                            Seleccionar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <!-- Información del tratamiento seleccionado -->
                                 <div id="tratamientoInfo" class="mb-4 p-3 border rounded" style="display: none;">
                                     <h5>Información del Tratamiento</h5>
@@ -61,37 +82,21 @@
                             </form>
                         </div>
                     </div>
-                    
-                    <!-- Lista de tratamientos para selección rápida -->
-                    <div class="mt-4">
-                        <h4 class="mb-3" style="color: var(--color-logo);">Nuestros Tratamientos</h4>
-                        <div class="row">
-                            <div th:each="tratamiento : ${tratamientos}" class="col-md-6 mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 th:text="${tratamiento.nombre}"></h5>
-                                        <p class="card-text" th:text="${#strings.abbreviate(tratamiento.descripcion, 100)}"></p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="price" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></span>
-                                            <button type="button" class="btn btn-sm btn-outline-primary"
-                                                    th:onclick="`seleccionarTratamiento(${tratamiento.id})`">
-                                                Seleccionar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
+    </main>
 
-        <!-- Flatpickr para selección de fecha/hora -->
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-        <script>
-            // Configurar Flatpickr
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
             flatpickr("#fechaCita", {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
@@ -99,30 +104,27 @@
                 locale: "es",
                 disable: [
                     function(date) {
-                        // Deshabilitar domingos
                         return (date.getDay() === 0);
                     }
                 ]
             });
             
-            // Datos de los tratamientos (podrían cargarse desde el servidor)
             const tratamientos = [
-                <th:block th:each="tratamiento : ${tratamientos}">
+                <th:block th:each="tratamiento, stat : ${tratamientos}">
                 {
                     id: [[${tratamiento.id}]],
                     nombre: "[[${tratamiento.nombre}]]",
                     descripcion: "[[${tratamiento.descripcion}]]",
                     duracion: [[${tratamiento.duracionMinutos}]],
                     precio: [[${tratamiento.precio}]]
-                },
+                }[[${!stat.last} ? ',' : '']]
                 </th:block>
             ];
             
-            function seleccionarTratamiento(tratamientoId) {
+            window.seleccionarTratamiento = function(tratamientoId) {
                 const select = document.getElementById('tratamientoid');
                 select.value = tratamientoId;
                 
-                // Mostrar información del tratamiento
                 const tratamiento = tratamientos.find(t => t.id == tratamientoId);
                 if (tratamiento) {
                     document.getElementById('tratamientoInfo').style.display = 'block';
@@ -130,15 +132,13 @@
                     document.getElementById('tratamientoDuracion').textContent = tratamiento.duracion;
                     document.getElementById('tratamientoPrecio').textContent = tratamiento.precio;
                 }
-            }
+            };
             
-            // Si hay un tratamiento seleccionado por parámetro, seleccionarlo automáticamente
             const tratamientoSeleccionado = [[${tratamientoSeleccionado}]];
             if (tratamientoSeleccionado) {
                 seleccionarTratamiento(tratamientoSeleccionado);
             }
             
-            // Actualizar información cuando cambia la selección
             document.getElementById('tratamientoid').addEventListener('change', function() {
                 if (this.value) {
                     seleccionarTratamiento(this.value);
@@ -146,7 +146,8 @@
                     document.getElementById('tratamientoInfo').style.display = 'none';
                 }
             });
-        </script>
-    </th:block>
+        });
+        /*]]>*/
+    </script>
 </body>
 </html>

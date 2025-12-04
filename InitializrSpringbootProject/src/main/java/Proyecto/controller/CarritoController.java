@@ -9,11 +9,11 @@ import Proyecto.model.Usuario;
 import Proyecto.model.Producto;
 import Proyecto.model.Cita;
 import Proyecto.model.ItemCarrito;
-import Proyecto.model.CarritoCompras;
 import Proyecto.service.CarritoService;
 import Proyecto.service.ProductoService;
 import Proyecto.service.CitaService;
 import Proyecto.service.UsuarioService;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -64,6 +65,56 @@ public class CarritoController {
         model.addAttribute("carritoCount", carritoCount);
 
         return "carrito/ver";
+    }
+    
+    @PostMapping("/actualizar-cantidad/{itemId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> actualizarCantidad(@PathVariable Long itemId,
+                                                                 @RequestParam int cantidad,
+                                                                 RedirectAttributes redirectAttributes) {
+        Usuario usuario = obtenerUsuarioAutenticado();
+        Map<String, Object> response = new HashMap<>();
+
+        if (usuario == null) {
+            response.put("success", false);
+            response.put("message", "Usuario no autenticado");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            carritoService.actualizarCantidadItem(usuario, itemId, cantidad);
+
+            // Calcular nuevo total
+            double nuevoTotal = carritoService.calcularTotalCarrito(usuario);
+
+            response.put("success", true);
+            response.put("message", "Cantidad actualizada");
+            response.put("nuevoTotal", nuevoTotal);
+            response.put("nuevaCantidad", cantidad);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    @PostMapping("/eliminar/{itemId}")
+    public String eliminarItemDelCarrito(@PathVariable Long itemId,
+                                        RedirectAttributes redirectAttributes) {
+        Usuario usuario = obtenerUsuarioAutenticado();
+        if (usuario == null) {
+            return "redirect:/auth/login";
+        }
+        try {
+            // Usar el nuevo método del servicio
+            carritoService.eliminarItemDelCarrito(usuario, itemId);
+            redirectAttributes.addFlashAttribute("mensaje", "Ítem eliminado del carrito");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar el ítem: " + e.getMessage());
+        }
+        return "redirect:/carrito";
     }
 
     @GetMapping("/count")

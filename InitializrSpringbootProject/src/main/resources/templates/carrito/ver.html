@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <th:block th:insert="~{fragments/header :: head}">
-        <title>Carrito de Compras | KWestética</title>
-    </th:block>
+<head th:replace="~{fragments/header :: head('Carrito de Compras')}">
 </head>
+
 <body>
-    <th:block th:insert="~{fragments/header :: body}">
+    <!-- Navbar -->
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <!-- Contenido principal -->
+    <main class="flex-grow-1">
         <div class="container py-5">
-            <h1 class="mb-4" style="color: var(--color-logo);">Carrito de Compras</h1>
+            <h1 class="mb-4" style="color: #52314C;">Carrito de Compras</h1>
             
             <div th:if="${items != null and !items.isEmpty()}">
                 <div class="table-responsive">
@@ -75,22 +77,209 @@
                         <button class="btn btn-danger me-2" onclick="vaciarCarrito()">
                             <i class="bi bi-trash"></i> Vaciar Carrito
                         </button>
-                        <a th:href="@{/ventas/procesar}" class="btn btn-primary">
-                            <i class="bi bi-credit-card"></i> Proceder al Pago
+                        <a th:href="@{/ventas/confirmacion}" class="btn btn-success btn-lg">
+                            Proceder al pago
                         </a>
                     </div>
                 </div>
             </div>
             
             <div th:unless="${items != null and !items.isEmpty()}" class="text-center py-5">
-                <i class="bi bi-cart-x" style="font-size: 4rem; color: var(--color-details);"></i>
-                <h3 class="mt-3" style="color: var(--color-logo);">Tu carrito está vacío</h3>
+                <i class="bi bi-cart-x" style="font-size: 4rem; color: #C4696E;"></i>
+                <h3 class="mt-3" style="color: #52314C;">Tu carrito está vacío</h3>
                 <p class="text-muted">Agrega productos o servicios para comenzar a comprar.</p>
                 <a th:href="@{/}" class="btn btn-primary mt-3">Explorar Productos</a>
             </div>
         </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+    <!-- Scripts -->
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <!-- Scripts específicos del carrito -->
+    <script th:src="@{/js/carrito.js}"></script>
+
+    <script>
+        function verificarStock(itemId, nuevaCantidad) {
+            return fetch(`/api/producto/${itemId}/stock`)
+                .then(response => response.json())
+                .then(data => {
+                    if (nuevaCantidad > data.stock) {
+                        throw new Error(`Stock insuficiente. Disponible: ${data.stock}`);
+                    }
+                    return true;
+                });
+        }
         
-        <script th:src="@{/js/carrito.js}"></script>
-    </th:block>
+        function updateQuantity(itemId, change) {
+            console.log('=== INICIO updateQuantity ===');
+            console.log('itemId:', itemId, 'change:', change);
+
+            // Obtener la fila completa usando un selector más específico
+            const button = document.querySelector(`button[onclick*="updateQuantity(${itemId}, ${change})"]`);
+            if (!button) {
+                console.error('No se encontró el botón para el item:', itemId, 'con change:', change);
+                return;
+            }
+
+            const row = button.closest('tr');
+            console.log('Fila encontrada:', row);
+
+            // Encontrar el span de cantidad de forma más segura
+            const cantidadSpan = row.querySelector('.mx-2');
+            if (!cantidadSpan) {
+                console.error('No se encontró el span de cantidad');
+                return;
+            }
+
+            const cantidadActual = parseInt(cantidadSpan.textContent) || 1;
+            const nuevaCantidad = cantidadActual + change;
+
+            console.log('Cantidad actual:', cantidadActual, 'Nueva cantidad:', nuevaCantidad);
+
+            // Validar que la nueva cantidad sea al menos 1
+            if (nuevaCantidad < 1) {
+                alert('La cantidad no puede ser menor a 1');
+                return;
+            }
+
+            // Deshabilitar botones temporalmente
+            const buttons = row.querySelectorAll('button');
+            buttons.forEach(btn => {
+                console.log('Deshabilitando botón:', btn);
+                btn.disabled = true;
+            });
+
+            // Mostrar indicador de carga
+            cantidadSpan.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span>`;
+            console.log('Mostrando spinner...');
+
+            // Llamada al servidor para actualizar la cantidad
+            fetch(`/carrito/actualizar-cantidad/${itemId}?cantidad=${nuevaCantidad}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => {
+                console.log('Respuesta recibida, status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos recibidos del servidor:', data);
+
+                if (data.success) {
+                    // 1. Actualizar la cantidad en la interfaz
+                    cantidadSpan.textContent = nuevaCantidad;
+                    console.log('Cantidad actualizada en interfaz:', nuevaCantidad);
+
+                    // 2. Actualizar el precio unitario (si es necesario)
+                    const precioUnitarioCell = row.querySelector('td:nth-child(2)');
+                    if (precioUnitarioCell) {
+                        console.log('Precio unitario actual:', precioUnitarioCell.textContent);
+                        // El precio unitario no debería cambiar, solo lo mostramos para debug
+                    }
+
+                    // 3. Actualizar el subtotal de la fila
+                    const subtotalCell = row.querySelector('td:nth-child(4)');
+                    if (subtotalCell) {
+                        // Calcular nuevo subtotal
+                        const precioUnitario = parseFloat(precioUnitarioCell.textContent.replace('$', '').replace(',', '')) || 0;
+                        const nuevoSubtotal = precioUnitario * nuevaCantidad;
+                        subtotalCell.textContent = '$' + nuevoSubtotal.toFixed(2);
+                        console.log('Subtotal actualizado:', subtotalCell.textContent);
+                    }
+
+                    // 4. Actualizar el total general
+                    const totalElement = document.querySelector('tfoot strong');
+                    if (totalElement && data.nuevoTotal !== undefined) {
+                        totalElement.textContent = '$' + parseFloat(data.nuevoTotal).toFixed(2);
+                        console.log('Total general actualizado:', totalElement.textContent);
+                    }
+
+                    // 5. Aplicar efecto visual
+                    row.classList.add('highlight-update');
+                    setTimeout(() => row.classList.remove('highlight-update'), 1000);
+
+                    // 6. Mostrar notificación
+                    showNotification(data.message || 'Cantidad actualizada exitosamente', 'success');
+
+                } else {
+                    showNotification(data.message || 'Error al actualizar la cantidad', 'error');
+                    // Revertir a la cantidad anterior
+                    cantidadSpan.textContent = cantidadActual;
+                    console.log('Error del servidor, revertiendo cantidad a:', cantidadActual);
+                }
+            })
+            .catch(error => {
+                console.error('Error en la petición:', error);
+                showNotification('Error de conexión con el servidor', 'error');
+                cantidadSpan.textContent = cantidadActual;
+            })
+            .finally(() => {
+                // Rehabilitar botones
+                buttons.forEach(btn => {
+                    console.log('Habilitando botón:', btn);
+                    btn.disabled = false;
+                });
+                console.log('=== FIN updateQuantity ===');
+            });
+        }
+        function removeItem(itemId) {
+            if (confirm('¿Eliminar este artículo del carrito?')) {
+                // Llamada al servidor para eliminar el item
+                fetch('/carrito/eliminar/' + itemId, {
+                    method: 'POST'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar el artículo');
+                    }
+                });
+            }
+        }
+
+        function vaciarCarrito() {
+            if (confirm('¿Vaciar todo el carrito?')) {
+                fetch('/carrito/vaciar', {
+                    method: 'POST'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al vaciar el carrito');
+                    }
+                });
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            notification.style.zIndex = '1060';
+            notification.style.minWidth = '300px';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto-eliminar después de 3 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
