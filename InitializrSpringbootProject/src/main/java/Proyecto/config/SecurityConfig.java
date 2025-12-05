@@ -1,10 +1,5 @@
 package Proyecto.config;
 
-/**
- *
- * @author darry
- */
-
 import Proyecto.model.Ruta;
 import Proyecto.service.RutaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +21,22 @@ public class SecurityConfig {
         var rutas = rutaService.getRutas();
         
         http.authorizeHttpRequests(requests -> {
-            // Rutas públicas
-            requests.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/auth/**", 
-                                   "/productos/**", "/tratamientos/**", "/servicios", 
-                                   "/nosotros", "/contacto", "/error").permitAll();
+            // Rutas públicas - CORREGIDAS
+            requests.requestMatchers(
+                "/", 
+                "/css/**", 
+                "/js/**", 
+                "/images/**", 
+                "/webjars/**",  // ← AÑADIR ESTO
+                "/auth/**", 
+                "/productos/**",  // ← CAMBIAR de /products/** a /productos/**
+                "/tratamientos/**", 
+                "/servicios", 
+                "/servicios/**",  // ← AÑADIR para cualquier subruta
+                "/nosotros", 
+                "/contacto", 
+                "/error"
+            ).permitAll();
             
             // Configurar rutas dinámicas desde la base de datos
             for (Ruta ruta : rutas) {
