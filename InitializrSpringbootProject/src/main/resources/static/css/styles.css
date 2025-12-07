@@ -756,3 +756,31 @@ input[type="number"] {
     visibility: visible !important;
     display: block !important;
 }
+
+/* ================================================================
+    CORRECCIÓN ESPECÍFICA PARA PÁGINAS CON POCA ALTURA
+=============================================================== */
+.min-vh-100 {
+    min-height: 100vh !important;
+}
+
+.container-detalle {
+    min-height: 65vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Asegurar que el footer siempre quede abajo */
+body.d-flex.flex-column {
+    min-height: 100vh;
+}
+
+main.flex-grow-1 {
+    min-height: 70vh;
+}
+
+/* Ajuste específico para el contenedor principal */
+.container.py-4 {
+    min-height: 60vh;
+    padding-bottom: 2rem !important;
+}

@@ -15,6 +15,22 @@ CREATE TABLE usuarios (
     activo BOOLEAN DEFAULT TRUE
 );
 
+-- Tabla: roles (NUEVA - requerida por Spring Security)
+CREATE TABLE roles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    descripcion TEXT
+);
+
+-- Tabla: usuario_roles (NUEVA - relación many-to-many)
+CREATE TABLE usuario_roles (
+    usuario_id INT NOT NULL,
+    rol_id INT NOT NULL,
+    PRIMARY KEY (usuario_id, rol_id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE CASCADE
+);
+
 -- Tabla: categorias_productos
 CREATE TABLE categorias_productos (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -144,9 +160,21 @@ CREATE TABLE configuracion_citas (
     dias_disponibles JSON
 );
 
+-- Insertar roles PRIMERO (antes de los usuarios)
+INSERT INTO roles (nombre, descripcion) VALUES
+('ROLE_CLIENTE', 'Usuario cliente que puede comprar productos y agendar citas'),
+('ROLE_ADMIN', 'Administrador con acceso completo al sistema'),
+('ROLE_EMPLEADO', 'Empleado de la estética con permisos limitados');
+
 -- Insertar usuario administrador por defecto
 INSERT INTO usuarios (email, password, nombre, apellido, telefono, tipo, fecha_registro, activo) 
-VALUES ('admin@kvestetica.com', '1234', 'Administrador', 'Principal', '0000000000', 'ADMIN', NOW(), TRUE);
+VALUES ('admin@kvestetica.com', '$2y$10$9tcftrNn7bCwQZVnPk61guBg0WHMKGNR18zAnF30HxV9vzBjRfOXu', 'Administrador', 'Principal', '0000000000', 'ADMIN', NOW(), TRUE);
+
+-- Asignar rol de admin al usuario admin
+INSERT INTO usuario_roles (usuario_id, rol_id)
+SELECT u.id, r.id 
+FROM usuarios u, roles r 
+WHERE u.email = 'admin@kvestetica.com' AND r.nombre = 'ROLE_ADMIN';
 
 -- Insertar configuración por defecto para citas
 INSERT INTO configuracion_citas (max_citas_dia, horario_apertura, horario_cierre, duracion_minima_cita, dias_anticipacion, dias_disponibles) 
