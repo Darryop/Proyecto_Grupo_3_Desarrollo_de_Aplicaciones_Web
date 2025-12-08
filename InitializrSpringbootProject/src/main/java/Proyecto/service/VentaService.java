@@ -5,19 +5,22 @@ package Proyecto.service;
  * @author darry
  */
 
-import Proyecto.model.Venta;
-import Proyecto.model.Usuario;
-import Proyecto.model.CarritoCompras;
-import Proyecto.model.ItemCarrito;
-import Proyecto.model.EstadoVenta;
-import Proyecto.model.MetodoPago;
-import Proyecto.model.EstadoCarrito;
-import Proyecto.repository.VentaRepository;
-import Proyecto.repository.CarritoComprasRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
-import java.util.*;
+
+import Proyecto.model.CarritoCompras;
+import Proyecto.model.EstadoCarrito;
+import Proyecto.model.EstadoVenta;
+import Proyecto.model.ItemCarrito;
+import Proyecto.model.MetodoPago;
+import Proyecto.model.Usuario;
+import Proyecto.model.Venta;
+import Proyecto.repository.CarritoComprasRepository;
+import Proyecto.repository.VentaRepository;
 
 @Service
 public class VentaService {

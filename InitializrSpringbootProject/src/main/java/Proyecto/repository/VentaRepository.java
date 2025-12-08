@@ -4,14 +4,16 @@ package Proyecto.repository;
  *
  * @author darry
  */
-import Proyecto.model.Venta;
-import Proyecto.model.Usuario;
-import Proyecto.model.EstadoVenta;
-import Proyecto.model.MetodoPago;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import Proyecto.model.EstadoVenta;
+import Proyecto.model.MetodoPago;
+import Proyecto.model.Usuario;
+import Proyecto.model.Venta;
 
 @Repository
 public interface VentaRepository extends JpaRepository<Venta, Long> {

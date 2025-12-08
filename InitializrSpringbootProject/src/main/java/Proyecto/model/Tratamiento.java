@@ -1,12 +1,16 @@
 package Proyecto.model;
 
-/**
- *
- * @author darry
- */
-
-import jakarta.persistence.*;
 import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "tratamientos")
@@ -33,13 +37,20 @@ public class Tratamiento {
     @JoinColumn(name = "categoria_id")
     private CategoriaTratamiento categoria;
     
+    @Column(name = "imagen_url")
+    private String imagenUrl;
+    
     private Boolean activo;
+    
+    @Column(name = "requiere_consulta")
+    private Boolean requiereConsulta;
     
     @OneToMany(mappedBy = "tratamiento")
     private List<Cita> citas;
     
     public Tratamiento() {
         this.activo = true;
+        this.requiereConsulta = false;
     }
     
     // Getters y Setters
@@ -64,8 +75,14 @@ public class Tratamiento {
     public CategoriaTratamiento getCategoria() { return categoria; }
     public void setCategoria(CategoriaTratamiento categoria) { this.categoria = categoria; }
     
+    public String getImagenUrl() { return imagenUrl; }
+    public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
+    
     public Boolean getActivo() { return activo; }
     public void setActivo(Boolean activo) { this.activo = activo; }
+    
+    public Boolean getRequiereConsulta() { return requiereConsulta; }
+    public void setRequiereConsulta(Boolean requiereConsulta) { this.requiereConsulta = requiereConsulta; }
     
     public List<Cita> getCitas() { return citas; }
     public void setCitas(List<Cita> citas) { this.citas = citas; }

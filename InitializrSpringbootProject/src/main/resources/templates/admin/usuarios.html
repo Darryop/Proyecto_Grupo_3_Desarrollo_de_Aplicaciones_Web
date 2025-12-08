@@ -1,332 +1,355 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-    <!-- Incluye el head con título personalizado -->
-    <head th:replace="~{fragments/header :: head('Gestión de Usuarios - KWestética')}">
-        <!-- Este contenido será reemplazado por el fragmento head -->
-    </head>
+    <head th:replace="~{fragments/header :: head('Gestión de Usuarios - KWestética')}"></head>
     
     <body class="admin-body">
         <div class="admin-container d-flex">
-            <!-- Sidebar incluido desde otro template -->
-            <div th:replace="~{admin/dashboard :: sidebar}"></div>
+            <!-- Sidebar incluido desde fragmento separado -->
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
             
             <!-- Contenido Principal -->
-            <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa; min-height: 100vh;">
-                <!-- Header -->
-                <div class="admin-header mb-4">
-                    <h1 class="display-6 fw-bold mb-2" style="color: var(--color-logo);">
-                        <i class="bi bi-people me-2"></i>Gestión de Usuarios
-                    </h1>
-                    <p class="text-muted">Administra los usuarios registrados en el sistema</p>
-                </div>
-                
-                <!-- Estadísticas rápidas -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="fw-bold mb-1" th:text="${usuarios.size()}">0</h3>
-                                        <p class="text-muted mb-0 small">Total Usuarios</p>
-                                    </div>
-                                    <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
-                                        <i class="bi bi-people-fill fs-4" style="color: var(--color-principal);"></i>
-                                    </div>
-                                </div>
+            <div class="main-content flex-grow-1 lista-compacta-container" style="background-color: #f8f9fa; min-height: 100vh;">
+                <div class="container-fluid py-3">
+                    <!-- Header -->
+                    <div class="lista-header-compacto mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="fw-bold mb-1" style="color: var(--color-logo);">
+                                    <i class="bi bi-people me-2"></i>Lista de Usuarios
+                                </h1>
+                                <p class="text-muted">Administra y visualiza todos los usuarios del sistema</p>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="fw-bold mb-1" th:text="${usuarios.?[roles.?[nombre == 'ROLE_CLIENTE'].size() > 0].size()}">0</h3>
-                                        <p class="text-muted mb-0 small">Clientes</p>
-                                    </div>
-                                    <div class="bg-info bg-opacity-10 p-2 rounded-circle">
-                                        <i class="bi bi-person fs-4" style="color: #17a2b8;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="fw-bold mb-1" th:text="${usuarios.?[roles.?[nombre == 'ROLE_EMPLEADO'].size() > 0].size()}">0</h3>
-                                        <p class="text-muted mb-0 small">Empleados</p>
-                                    </div>
-                                    <div class="bg-warning bg-opacity-10 p-2 rounded-circle">
-                                        <i class="bi bi-person-badge fs-4" style="color: #ffc107;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h3 class="fw-bold mb-1" th:text="${usuarios.?[roles.?[nombre == 'ROLE_ADMIN'].size() > 0].size()}">0</h3>
-                                        <p class="text-muted mb-0 small">Administradores</p>
-                                    </div>
-                                    <div class="bg-danger bg-opacity-10 p-2 rounded-circle">
-                                        <i class="bi bi-shield-check fs-4" style="color: #dc3545;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Filtros y búsqueda -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="bi bi-search"></i>
-                                    </span>
-                                    <input type="text" class="form-control" id="searchInput" 
-                                           placeholder="Buscar por nombre, email o teléfono..." 
-                                           onkeyup="filterUsers()">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select" id="roleFilter" onchange="filterUsers()">
-                                    <option value="">Todos los roles</option>
-                                    <option value="CLIENTE">Clientes</option>
-                                    <option value="EMPLEADO">Empleados</option>
-                                    <option value="ADMIN">Administradores</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select" id="statusFilter" onchange="filterUsers()">
-                                    <option value="">Todos los estados</option>
-                                    <option value="active">Activos</option>
-                                    <option value="inactive">Inactivos</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-outline-primary w-100" onclick="exportUsers()">
-                                    <i class="bi bi-download me-1"></i>Exportar
+                            <div>
+                                <button class="btn btn-primary btn-sm" onclick="createNewUser()">
+                                    <i class="bi bi-person-plus me-2"></i>Nuevo Usuario
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Lista de usuarios -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0" style="color: var(--color-logo);">
-                            <i class="bi bi-list-ul me-2"></i>Usuarios Registrados
-                            <span class="badge bg-primary ms-2" th:text="${usuarios.size()}"></span>
-                        </h5>
-                        <div>
-                            <button class="btn btn-sm btn-outline-success" onclick="createNewUser()">
-                                <i class="bi bi-person-plus me-1"></i>Nuevo Usuario
-                            </button>
-                        </div>
+
+                    <!-- Mensajes Flash -->
+                    <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show py-2" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span th:text="${mensaje}"></span>
+                        <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle" id="usersTable">
-                                <thead style="background-color: var(--color-logo); color: white;">
-                                    <tr>
-                                        <th width="70">ID</th>
-                                        <th>Nombre</th>
-                                        <th>Email</th>
-                                        <th width="120">Teléfono</th>
-                                        <th width="150">Rol</th>
-                                        <th width="120">Registro</th>
-                                        <th width="100">Estado</th>
-                                        <th width="200" class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="usuario : ${usuarios}" class="user-row" 
-                                        th:attr="data-role=${usuario.roles[0]?.nombre?.replace('ROLE_', '')}, 
-                                                data-status=${usuario.activo} ? 'active' : 'inactive'">
-                                        <td>
-                                            <span class="badge bg-secondary" th:text="${usuario.id}"></span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-3">
-                                                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--color-principal), var(--color-logo)); 
-                                                                border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                                                        <span th:text="${usuario.nombre?.charAt(0)} + ${usuario.apellido?.charAt(0)}"></span>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <strong th:text="${usuario.nombre} + ' ' + ${usuario.apellido}"></strong>
-                                                    <div class="small text-muted">
-                                                        <i class="bi bi-calendar3 me-1"></i>
-                                                        <span th:text="${#dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy')}" 
-                                                              th:if="${usuario.fechaNacimiento}"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <a th:href="'mailto:' + ${usuario.email}" class="text-decoration-none">
-                                                    <i class="bi bi-envelope me-1"></i>
-                                                    <span th:text="${usuario.email}"></span>
-                                                </a>
-                                            </div>
-                                            <div class="small text-muted" th:text="${usuario.direccion}" 
-                                                 th:if="${usuario.direccion}"></div>
-                                        </td>
-                                        <td>
-                                            <div th:if="${usuario.telefono}">
-                                                <a th:href="'tel:' + ${usuario.telefono}" class="text-decoration-none">
-                                                    <i class="bi bi-telephone me-1"></i>
-                                                    <span th:text="${usuario.telefono}"></span>
-                                                </a>
-                                            </div>
-                                            <div th:unless="${usuario.telefono}" class="text-muted small">
-                                                <i class="bi bi-telephone-x"></i> No registrado
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span th:each="rol : ${usuario.roles}" class="d-block mb-1">
-                                                <span class="badge d-flex align-items-center gap-1"
-                                                      th:classappend="${rol.nombre == 'ROLE_ADMIN'} ? 'bg-danger' : 
-                                                                     ${rol.nombre == 'ROLE_EMPLEADO'} ? 'bg-warning text-dark' : 'bg-primary'">
-                                                    <i th:classappend="${rol.nombre == 'ROLE_ADMIN'} ? 'bi bi-shield-check' : 
-                                                                      ${rol.nombre == 'ROLE_EMPLEADO'} ? 'bi bi-person-badge' : 'bi bi-person'"
-                                                       class="me-1"></i>
-                                                    <span th:text="${rol.nombre.replace('ROLE_', '')}"></span>
-                                                </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="small">
-                                                <i class="bi bi-calendar-check me-1"></i>
-                                                <span th:text="${#dates.format(usuario.fechaRegistro, 'dd/MM/yyyy')}"></span>
-                                            </div>
-                                            <div class="small text-muted">
-                                                <i class="bi bi-clock me-1"></i>
-                                                <span th:text="${#dates.format(usuario.fechaRegistro, 'HH:mm')}"></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span th:if="${usuario.activo}" 
-                                                  class="badge bg-success d-flex align-items-center gap-1">
-                                                <i class="bi bi-check-circle"></i> Activo
-                                            </span>
-                                            <span th:unless="${usuario.activo}" 
-                                                  class="badge bg-danger d-flex align-items-center gap-1">
-                                                <i class="bi bi-x-circle"></i> Inactivo
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex justify-content-center gap-1">
-                                                <button class="btn btn-sm btn-outline-info" 
-                                                        th:onclick="'viewUserDetails(' + ${usuario.id} + ')'"
-                                                        title="Ver detalles">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-warning" 
-                                                        th:onclick="'editUser(' + ${usuario.id} + ')'"
-                                                        title="Editar usuario">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button th:if="${usuario.activo}"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        th:onclick="'toggleUserStatus(' + ${usuario.id} + ', false)'"
-                                                        title="Desactivar usuario">
-                                                    <i class="bi bi-person-x"></i>
-                                                </button>
-                                                <button th:unless="${usuario.activo}"
-                                                        class="btn btn-sm btn-outline-success"
-                                                        th:onclick="'toggleUserStatus(' + ${usuario.id} + ', true)'"
-                                                        title="Activar usuario">
-                                                    <i class="bi bi-person-check"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-secondary"
-                                                        th:onclick="'changeUserRole(' + ${usuario.id} + ')'"
-                                                        title="Cambiar rol">
-                                                    <i class="bi bi-person-gear"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    
-                                    <!-- Mensaje si no hay usuarios -->
-                                    <tr th:if="${usuarios.isEmpty()}">
-                                        <td colspan="8" class="text-center py-5">
-                                            <i class="bi bi-people" style="font-size: 3rem; color: #6c757d;"></i>
-                                            <h5 class="mt-3" style="color: var(--color-logo);">No hay usuarios registrados</h5>
-                                            <p class="text-muted">Los usuarios aparecerán aquí una vez que se registren.</p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Paginación (si aplica) -->
-                        <div th:if="${!usuarios.isEmpty()}" class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="text-muted small">
-                                Mostrando <span th:text="${usuarios.size()}"></span> usuarios
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span th:text="${error}"></span>
+                        <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Panel de estadísticas -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                                            <i class="bi bi-people-fill" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="fw-bold mb-0" th:text="${totalUsuarios}">0</h3>
+                                            <p class="text-muted mb-0 small">Total Usuarios</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <nav>
-                                <ul class="pagination pagination-sm mb-0">
-                                    <li class="page-item disabled">
-                                        <a class="page-link" href="#">Anterior</a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a class="page-link" href="#">1</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="#">Siguiente</a>
-                                    </li>
-                                </ul>
-                            </nav>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                                            <i class="bi bi-person" style="color: #17a2b8; font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="fw-bold mb-0" th:text="${totalClientes}">0</h3>
+                                            <p class="text-muted mb-0 small">Clientes</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                                            <i class="bi bi-person-badge" style="color: #ffc107; font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="fw-bold mb-0" th:text="${totalEmpleados}">0</h3>
+                                            <p class="text-muted mb-0 small">Empleados</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3">
+                                            <i class="bi bi-shield-check" style="color: #dc3545; font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="fw-bold mb-0" th:text="${totalAdmins}">0</h3>
+                                            <p class="text-muted mb-0 small">Administradores</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal para cambiar rol -->
-        <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Cambiar Rol de Usuario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" id="selectedUserId">
-                        <div class="mb-3">
-                            <label for="newRole" class="form-label">Seleccionar Nuevo Rol</label>
-                            <select class="form-select" id="newRole">
-                                <option value="CLIENTE">Cliente</option>
-                                <option value="EMPLEADO">Empleado</option>
-                                <option value="ADMIN">Administrador</option>
-                            </select>
+
+                    <!-- Filtros y herramientas -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body py-3">
+                            <form th:action="@{/admin/usuarios}" method="get" class="filtros-compactos">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-md-4">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" class="form-control border-start-0" name="search" 
+                                                   th:value="${param.search}"
+                                                   placeholder="Buscar por nombre, email o teléfono..." 
+                                                   id="searchInput"
+                                                   style="border-left: none;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select" name="rol" id="rolFilter">
+                                            <option value="">Todos los roles</option>
+                                            <option value="CLIENTE" th:selected="${param.rol == 'CLIENTE'}">Clientes</option>
+                                            <option value="EMPLEADO" th:selected="${param.rol == 'EMPLEADO'}">Empleados</option>
+                                            <option value="ADMIN" th:selected="${param.rol == 'ADMIN'}">Administradores</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select" name="estado" id="estadoFilter">
+                                            <option value="">Todos los estados</option>
+                                            <option value="activo" th:selected="${param.estado == 'activo'}">Solo activos</option>
+                                            <option value="inactivo" th:selected="${param.estado == 'inactivo'}">Solo inactivos</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-search me-1"></i>Buscar
+                                            </button>
+                                            <a th:href="@{/admin/usuarios}" class="btn btn-outline-secondary">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div class="alert alert-info" role="alert">
-                            <i class="bi bi-info-circle me-2"></i>
-                            Los cambios de rol afectarán los permisos del usuario inmediatamente.
-                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" onclick="confirmRoleChange()">Cambiar Rol</button>
+
+                    <!-- Tabla de usuarios -->
+                    <div class="tabla-compacta-container">
+                        <div class="tabla-compacta-header mb-3">
+                            <h5>
+                                <i class="bi bi-table me-2"></i>Usuarios Registrados
+                                <span class="badge bg-primary ms-2" th:text="${usuarios.size()}"></span>
+                            </h5>
+                        </div>
+
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="tablaUsuarios">
+                                        <thead style="background-color: var(--color-logo); color: white;">
+                                            <tr>
+                                                <th width="60">ID</th>
+                                                <th width="200">Usuario</th>
+                                                <th width="220">Contacto</th>
+                                                <th width="100">Rol</th>
+                                                <th width="120">Registro</th>
+                                                <th width="90">Estado</th>
+                                                <th width="160" class="text-center">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="usuario : ${usuarios}" 
+                                                class="fila-usuario"
+                                                th:data-id="${usuario.id}"
+                                                th:data-nombre="${usuario.nombre + ' ' + usuario.apellido}"
+                                                th:data-email="${usuario.email}"
+                                                th:data-telefono="${usuario.telefono}"
+                                                th:data-estado="${usuario.activo ? 'activo' : 'inactivo'}">
+                                                <td>
+                                                    <span class="badge bg-secondary" th:text="${usuario.id}"></span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3 flex-shrink-0">
+                                                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--color-principal), var(--color-logo)); 
+                                                                        border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+                                                                <!-- Iniciales del nombre y apellido -->
+                                                                <span th:if="${usuario.nombre != null and usuario.apellido != null}"
+                                                                      th:text="${#strings.substring(usuario.nombre, 0, 1) + #strings.substring(usuario.apellido, 0, 1)}"></span>
+                                                                <span th:if="${usuario.nombre == null or usuario.apellido == null}">?</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <strong class="d-block" 
+                                                                    th:text="${usuario.nombre + ' ' + usuario.apellido}">
+                                                            </strong>
+                                                            <small class="text-muted d-block">
+                                                                <i class="bi bi-person me-1"></i>
+                                                                <!-- Mostrar primer rol -->
+                                                                <span th:if="${usuario.roles != null and not usuario.roles.isEmpty()}">
+                                                                    <span th:each="rol, iterStat : ${usuario.roles}" th:if="${iterStat.first}">
+                                                                        <span th:text="${rol.nombre != null ? #strings.replace(rol.nombre, 'ROLE_', '') : 'Sin rol'}"></span>
+                                                                    </span>
+                                                                </span>
+                                                                <span th:if="${usuario.roles == null or usuario.roles.isEmpty()}">
+                                                                    Sin rol
+                                                                </span>
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-block">
+                                                        <a th:href="'mailto:' + ${usuario.email}" class="text-decoration-none d-block">
+                                                            <i class="bi bi-envelope me-1"></i>
+                                                            <span th:text="${usuario.email != null ? usuario.email : 'Sin email'}"></span>
+                                                        </a>
+                                                        <div th:if="${usuario.telefono != null and not #strings.isEmpty(usuario.telefono)}" class="small">
+                                                            <a th:href="'tel:' + ${usuario.telefono}" class="text-decoration-none">
+                                                                <i class="bi bi-telephone me-1"></i>
+                                                                <span th:text="${usuario.telefono}"></span>
+                                                            </a>
+                                                        </div>
+                                                        <div th:if="${usuario.telefono == null or #strings.isEmpty(usuario.telefono)}" class="small text-muted">
+                                                            <i class="bi bi-telephone-x me-1"></i>No registrado
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <span th:if="${usuario.roles != null and not usuario.roles.isEmpty()}">
+                                                            <span th:each="rol : ${usuario.roles}" class="d-block mb-1">
+                                                                <!-- CORREGIDO: Usar sintaxis correcta de Thymeleaf -->
+                                                                <span class="badge d-flex align-items-center gap-1"
+                                                                      th:classappend="${rol.nombre == 'ROLE_ADMIN'} ? 'bg-danger' : 
+                                                                                      (${rol.nombre == 'ROLE_EMPLEADO'} ? 'bg-warning text-dark' : 'bg-primary')">
+                                                                    <!-- CORREGIDO: Usar sintaxis correcta de Thymeleaf -->
+                                                                    <i th:classappend="${rol.nombre == 'ROLE_ADMIN'} ? 'bi-shield-check' : 
+                                                                                      (${rol.nombre == 'ROLE_EMPLEADO'} ? 'bi-person-badge' : 'bi-person')"
+                                                                       class="bi me-1"></i>
+                                                                    <span th:text="${rol.nombre != null ? #strings.replace(rol.nombre, 'ROLE_', '') : 'Sin rol'}"></span>
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                        <span th:if="${usuario.roles == null or usuario.roles.isEmpty()}" class="badge bg-secondary">
+                                                            Sin rol
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="small">
+                                                        <i class="bi bi-calendar-check me-1"></i>
+                                                        <span th:if="${usuario.fechaRegistro != null}" 
+                                                              th:text="${#temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy')}"></span>
+                                                        <span th:if="${usuario.fechaRegistro == null}">N/A</span>
+                                                    </div>
+                                                    <div class="small text-muted">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        <span th:if="${usuario.fechaRegistro != null}"
+                                                              th:text="${#temporals.format(usuario.fechaRegistro, 'HH:mm')}"></span>
+                                                        <span th:if="${usuario.fechaRegistro == null}">N/A</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span th:if="${usuario.activo != null and usuario.activo}" 
+                                                          class="badge bg-success">
+                                                        Activo
+                                                    </span>
+                                                    <span th:if="${usuario.activo != null and not usuario.activo}" 
+                                                          class="badge bg-danger">
+                                                        Inactivo
+                                                    </span>
+                                                    <span th:if="${usuario.activo == null}" 
+                                                          class="badge bg-secondary">
+                                                        Desconocido
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                                        <!-- Botón Editar (deshabilitado temporalmente si no tienes la vista) -->
+                                                        <a th:href="@{/admin/usuarios/editar/{id}(id=${usuario.id})}" 
+                                                           class="btn btn-sm btn-outline-warning"
+                                                           title="Editar usuario">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                        <button th:if="${usuario.activo != null and usuario.activo}"
+                                                                class="btn btn-sm btn-outline-danger"
+                                                                th:onclick="'cambiarEstado(' + ${usuario.id} + ', false)'"
+                                                                title="Desactivar">
+                                                            <i class="bi bi-toggle-off"></i>
+                                                        </button>
+                                                        <button th:if="${usuario.activo != null and not usuario.activo}"
+                                                                class="btn btn-sm btn-outline-success"
+                                                                th:onclick="'cambiarEstado(' + ${usuario.id} + ', true)'"
+                                                                title="Activar">
+                                                            <i class="bi bi-toggle-on"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Mensaje si no hay usuarios o no hay resultados de búsqueda -->
+                                            <tr th:if="${usuarios.isEmpty()}">
+                                                <td colspan="7" class="text-center py-5">
+                                                    <i class="bi bi-people" style="font-size: 3rem; color: #6c757d;"></i>
+                                                    <h5 class="mt-3" style="color: var(--color-logo);">
+                                                        <span th:if="${param.search != null or param.rol != null or param.estado != null}">
+                                                            No se encontraron usuarios
+                                                        </span>
+                                                        <span th:unless="${param.search != null or param.rol != null or param.estado != null}">
+                                                            No hay usuarios registrados
+                                                        </span>
+                                                    </h5>
+                                                    <p class="text-muted">
+                                                        <span th:if="${param.search != null or param.rol != null or param.estado != null}">
+                                                            No hay usuarios que coincidan con los criterios de búsqueda
+                                                        </span>
+                                                        <span th:unless="${param.search != null or param.rol != null or param.estado != null}">
+                                                            Los usuarios aparecerán aquí una vez que se registren
+                                                        </span>
+                                                    </p>
+                                                    <a th:href="@{/admin/usuarios}" class="btn btn-outline-primary mt-2" th:if="${param.search != null or param.rol != null or param.estado != null}">
+                                                        <i class="bi bi-eye me-2"></i>Ver Todos los Usuarios
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Información de resultados -->
+                                <div th:if="${!usuarios.isEmpty()}" class="d-flex justify-content-between align-items-center p-3 border-top">
+                                    <div class="text-muted small">
+                                        Mostrando <span th:text="${usuarios.size()}"></span> 
+                                        <span th:text="${usuarios.size() == 1 ? 'usuario' : 'usuarios'}"></span>
+                                        <span th:if="${param.search != null or param.rol != null or param.estado != null}">
+                                            (filtrados)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -335,134 +358,82 @@
         <!-- Incluye los scripts generales -->
         <div th:replace="~{fragments/header :: scripts}"></div>
         
-        <!-- Script específico para gestión de usuarios -->
+        <!-- Script específico para lista de usuarios -->
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
-                // Inicializar tooltips
-                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-                tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
+                inicializarFiltros();
+                inicializarTooltips();
             });
             
-            function filterUsers() {
-                const searchInput = document.getElementById('searchInput').value.toLowerCase();
-                const roleFilter = document.getElementById('roleFilter').value;
-                const statusFilter = document.getElementById('statusFilter').value;
-                const rows = document.querySelectorAll('.user-row');
+            function inicializarFiltros() {
+                // Permitir búsqueda con Enter
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.closest('form').submit();
+                        }
+                    });
+                }
                 
-                rows.forEach(row => {
-                    const name = row.cells[1].textContent.toLowerCase();
-                    const email = row.cells[2].textContent.toLowerCase();
-                    const phone = row.cells[3].textContent.toLowerCase();
-                    const role = row.getAttribute('data-role');
-                    const status = row.getAttribute('data-status');
-                    
-                    const matchesSearch = name.includes(searchInput) || email.includes(searchInput) || phone.includes(searchInput);
-                    const matchesRole = !roleFilter || role === roleFilter;
-                    const matchesStatus = !statusFilter || status === statusFilter;
-                    
-                    row.style.display = (matchesSearch && matchesRole && matchesStatus) ? '' : 'none';
+                // Auto-submit al cambiar filtros (opcional)
+                const rolFilter = document.getElementById('rolFilter');
+                const estadoFilter = document.getElementById('estadoFilter');
+                
+                if (rolFilter) {
+                    rolFilter.addEventListener('change', function() {
+                        this.closest('form').submit();
+                    });
+                }
+                
+                if (estadoFilter) {
+                    estadoFilter.addEventListener('change', function() {
+                        this.closest('form').submit();
+                    });
+                }
+            }
+            
+            function inicializarTooltips() {
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function(tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
             }
             
-            function viewUserDetails(userId) {
-                // Implementar vista de detalles
-                showToast('Vista de detalles pendiente de implementar', 'info');
-            }
-            
-            function editUser(userId) {
-                // Redirigir a edición de usuario
-                window.location.href = `/admin/usuarios/editar/${userId}`;
+            function cambiarEstado(usuarioId, activar) {
+                const confirmacion = confirm(`¿Está seguro de que desea ${activar ? 'activar' : 'desactivar'} este usuario?`);
+                
+                if (confirmacion) {
+                    fetch(`/admin/usuarios/${usuarioId}/estado?activo=${activar}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Error al cambiar el estado del usuario');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error de conexión');
+                    });
+                }
             }
             
             function createNewUser() {
-                // Redirigir a creación de usuario
-                window.location.href = `/admin/usuarios/nuevo`;
-            }
-            
-            let currentUserId = null;
-            
-            function changeUserRole(userId) {
-                currentUserId = userId;
-                const modal = new bootstrap.Modal(document.getElementById('roleModal'));
-                modal.show();
-            }
-            
-            function confirmRoleChange() {
-                const newRole = document.getElementById('newRole').value;
-                if (currentUserId && newRole) {
-                    fetch(`/admin/usuarios/${currentUserId}/rol`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': getCsrfToken()
-                        },
-                        body: JSON.stringify({ rol: newRole })
-                    }).then(response => {
-                        if (response.ok) {
-                            showToast('Rol actualizado correctamente', 'success');
-                            setTimeout(() => location.reload(), 1500);
-                        } else {
-                            showToast('Error al actualizar rol', 'danger');
-                        }
-                    }).catch(error => {
-                        console.error('Error:', error);
-                        showToast('Error de conexión', 'danger');
-                    });
-                    
-                    // Cerrar modal
-                    bootstrap.Modal.getInstance(document.getElementById('roleModal')).hide();
-                }
-            }
-            
-            function toggleUserStatus(userId, activate) {
-                const action = activate ? 'activar' : 'desactivar';
-                if (confirm(`¿Está seguro de que desea ${action} este usuario?`)) {
-                    fetch(`/admin/usuarios/${userId}/estado`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': getCsrfToken()
-                        },
-                        body: JSON.stringify({ activo: activate })
-                    }).then(response => {
-                        if (response.ok) {
-                            showToast(`Usuario ${activate ? 'activado' : 'desactivado'} correctamente`, 'success');
-                            setTimeout(() => location.reload(), 1500);
-                        } else {
-                            showToast('Error al actualizar estado', 'danger');
-                        }
-                    }).catch(error => {
-                        console.error('Error:', error);
-                        showToast('Error de conexión', 'danger');
-                    });
-                }
-            }
-            
-            function exportUsers() {
-                // Implementar exportación
-                alert('Funcionalidad de exportación pendiente de implementar');
-            }
-            
-            function showToast(message, type = 'info') {
-                const toast = document.createElement('div');
-                toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-                toast.innerHTML = `
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
+                // Redirigir al formulario de nuevo usuario
+                // window.location.href = '/admin/usuarios/nuevo';
+                alert('Función de crear nuevo usuario aún no implementada');
             }
             
             function getCsrfToken() {
-                const metaTag = document.querySelector('meta[name="_csrf"]');
-                return metaTag ? metaTag.getAttribute('content') : '';
+                return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
             }
         </script>
     </body>

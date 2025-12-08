@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragments/header :: head('Lista de Tratamientos - KWestética')}"></head>
+    
+    <body class="admin-body">
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde fragmento separado -->
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+            
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 lista-compacta-container" style="background-color: #f8f9fa; min-height: 100vh; padding: 15px;">
+                <!-- Header -->
+                <div class="lista-header-compacto">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="fw-bold mb-1" style="color: var(--color-logo);">
+                                <i class="bi bi-scissors me-2"></i>Lista de Tratamientos
+                            </h1>
+                            <p class="text-muted">Administra y visualiza todos los tratamientos del catálogo</p>
+                        </div>
+                        <div>
+                            <a th:href="@{/admin/tratamientos}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-circle me-2"></i>Agregar Tratamiento
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mensajes Flash -->
+                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show py-2" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- Panel de estadísticas -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-scissors" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="fw-bold mb-0" th:text="${totalTratamientos}">0</h3>
+                                        <p class="text-muted mb-0 small">Total Tratamientos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-check-circle" style="color: #28a745; font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="fw-bold mb-0" th:text="${tratamientosActivos}">0</h3>
+                                        <p class="text-muted mb-0 small">Tratamientos Activos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-clock" style="color: #ffc107; font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="fw-bold mb-0" th:text="${tratamientosConsulta}">0</h3>
+                                        <p class="text-muted mb-0 small">Requieren Consulta</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-tags" style="color: #17a2b8; font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="fw-bold mb-0" th:text="${totalCategorias}">0</h3>
+                                        <p class="text-muted mb-0 small">Categorías</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filtros y herramientas -->
+                <form th:action="@{/admin/lista-tratamientos}" method="get" class="filtros-compactos">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-4">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control form-control-sm" name="search" 
+                                       th:value="${param.search}"
+                                       placeholder="Buscar por nombre, código o categoría..." 
+                                       id="searchInput">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" name="estado" id="estadoFilter">
+                                <option value="">Todos los estados</option>
+                                <option value="activo" th:selected="${param.estado == 'activo'}">Solo activos</option>
+                                <option value="inactivo" th:selected="${param.estado == 'inactivo'}">Solo inactivos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" name="categoriaId" id="categoriaFilter">
+                                <option value="">Todas las categorías</option>
+                                <option th:each="categoria : ${categorias}"
+                                        th:value="${categoria.id}"
+                                        th:text="${categoria.nombre}"
+                                        th:selected="${param.categoriaId == categoria.id.toString()}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button type="submit" class="btn btn-primary btn-filtro-compacto">
+                                    <i class="bi bi-search me-1"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Tabla de tratamientos -->
+                <div class="tabla-compacta-container" style="margin-top: 25px;">
+                    <div class="tabla-compacta-header">
+                        <h5>
+                            <i class="bi bi-table me-2"></i>Tratamientos Registrados
+                            <span class="badge bg-primary ms-2" th:text="${tratamientos.size()}"></span>
+                        </h5>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0" id="tablaTratamientos">
+                                    <thead style="background-color: var(--color-logo); color: white; position: sticky; top: 0; z-index: 1;">
+                                        <tr>
+                                            <th width="60">ID</th>
+                                            <th width="100">Código</th>
+                                            <th>Tratamiento</th>
+                                            <th width="120">Categoría</th>
+                                            <th width="100">Precio</th>
+                                            <th width="100">Duración</th>
+                                            <th width="120">Consulta</th>
+                                            <th width="100">Estado</th>
+                                            <th width="150" class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="tratamiento : ${tratamientos}" 
+                                            class="fila-tratamiento"
+                                            th:data-id="${tratamiento.id}"
+                                            th:data-nombre="${tratamiento.nombre}"
+                                            th:data-codigo="${tratamiento.codigoTratamiento}"
+                                            th:data-categoria="${tratamiento.categoria.nombre}"
+                                            th:data-estado="${tratamiento.activo ? 'activo' : 'inactivo'}"
+                                            th:data-consulta="${tratamiento.requiereConsulta}">
+                                            <td th:text="${tratamiento.id}"></td>
+                                            <td>
+                                                <span class="badge bg-secondary" th:text="${tratamiento.codigoTratamiento}"></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div th:if="${tratamiento.imagenUrl}" class="me-3">
+                                                        <img th:src="${tratamiento.imagenUrl}" 
+                                                             alt="Imagen tratamiento" 
+                                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                                    </div>
+                                                    <div>
+                                                        <strong class="d-block" th:text="${tratamiento.nombre}"></strong>
+                                                        <small class="text-muted" 
+                                                               th:if="${tratamiento.descripcion}"
+                                                               th:text="${#strings.abbreviate(tratamiento.descripcion, 60)}"></small>
+                                                        <small th:unless="${tratamiento.descripcion}" class="text-muted">
+                                                            Sin descripción
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info" th:text="${tratamiento.categoria.nombre}"></span>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold" style="color: var(--color-principal);"
+                                                      th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}">
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span th:text="${tratamiento.duracionMinutos} + ' min'"></span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${tratamiento.requiereConsulta}" 
+                                                      class="badge bg-warning text-dark d-flex align-items-center gap-1">
+                                                    <i class="bi bi-clipboard-check"></i> Requerida
+                                                </span>
+                                                <span th:unless="${tratamiento.requiereConsulta}" 
+                                                      class="badge bg-info d-flex align-items-center gap-1">
+                                                    <i class="bi bi-clipboard"></i> Opcional
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${tratamiento.activo}" 
+                                                      class="badge bg-success">
+                                                    Activo
+                                                </span>
+                                                <span th:unless="${tratamiento.activo}" 
+                                                      class="badge bg-danger">
+                                                    Inactivo
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <a th:href="@{/tratamientos/{id}(id=${tratamiento.id})}" 
+                                                       class="btn btn-sm btn-outline-info" 
+                                                       target="_blank"
+                                                       title="Ver en sitio">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/tratamientos/editar/{id}(id=${tratamiento.id})}" 
+                                                       class="btn btn-sm btn-outline-warning"
+                                                       title="Editar tratamiento">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button th:if="${tratamiento.activo}"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            th:onclick="'cambiarEstado(' + ${tratamiento.id} + ', false)'"
+                                                            title="Desactivar">
+                                                        <i class="bi bi-toggle-off"></i>
+                                                    </button>
+                                                    <button th:unless="${tratamiento.activo}"
+                                                            class="btn btn-sm btn-outline-success"
+                                                            th:onclick="'cambiarEstado(' + ${tratamiento.id} + ', true)'"
+                                                            title="Activar">
+                                                        <i class="bi bi-toggle-on"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Mensaje si no hay tratamientos o no hay resultados de búsqueda -->
+                                        <tr th:if="${tratamientos.isEmpty()}">
+                                            <td colspan="9" class="text-center py-5">
+                                                <i class="bi bi-scissors" style="font-size: 3rem; color: #6c757d;"></i>
+                                                <h5 class="mt-3" style="color: var(--color-logo);">
+                                                    <span th:if="${param.search != null or param.estado != null or param.categoriaId != null}">
+                                                        No se encontraron tratamientos
+                                                    </span>
+                                                    <span th:unless="${param.search != null or param.estado != null or param.categoriaId != null}">
+                                                        No hay tratamientos registrados
+                                                    </span>
+                                                </h5>
+                                                <p class="text-muted">
+                                                    <span th:if="${param.search != null or param.estado != null or param.categoriaId != null}">
+                                                        No hay tratamientos que coincidan con los criterios de búsqueda
+                                                    </span>
+                                                    <span th:unless="${param.search != null or param.estado != null or param.categoriaId != null}">
+                                                        Comienza agregando tu primer tratamiento
+                                                    </span>
+                                                </p>
+                                                <a th:href="@{/admin/lista-tratamientos}" class="btn btn-outline-primary mt-2" th:if="${param.search != null or param.estado != null or param.categoriaId != null}">
+                                                    <i class="bi bi-eye me-2"></i>Ver Todos los Tratamientos
+                                                </a>
+                                                <a th:href="@{/admin/tratamientos}" class="btn btn-primary mt-2" th:unless="${param.search != null or param.estado != null or param.categoriaId != null}">
+                                                    <i class="bi bi-plus-circle me-2"></i>Agregar Tratamiento
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Información de resultados -->
+                            <div th:if="${!tratamientos.isEmpty()}" class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <div class="text-muted small">
+                                    Mostrando <span th:text="${tratamientos.size()}"></span> 
+                                    <span th:text="${tratamientos.size() == 1 ? 'tratamiento' : 'tratamientos'}"></span>
+                                    <span th:if="${param.search != null or param.estado != null or param.categoriaId != null}">
+                                        (filtrados)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Incluye los scripts generales -->
+        <div th:replace="~{fragments/header :: scripts}"></div>
+        
+        <!-- Script específico para lista de tratamientos -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                inicializarFiltros();
+                inicializarTooltips();
+            });
+            
+            function inicializarFiltros() {
+                // Permitir búsqueda con Enter
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.closest('form').submit();
+                        }
+                    });
+                }
+                
+                // Auto-submit al cambiar estado (opcional)
+                const estadoFilter = document.getElementById('estadoFilter');
+                const categoriaFilter = document.getElementById('categoriaFilter');
+                
+                if (estadoFilter) {
+                    estadoFilter.addEventListener('change', function() {
+                        this.closest('form').submit();
+                    });
+                }
+                
+                if (categoriaFilter) {
+                    categoriaFilter.addEventListener('change', function() {
+                        this.closest('form').submit();
+                    });
+                }
+            }
+            
+            function inicializarTooltips() {
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function(tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+            
+            function cambiarEstado(tratamientoId, activar) {
+                const confirmacion = confirm(`¿Está seguro de que desea ${activar ? 'activar' : 'desactivar'} este tratamiento?`);
+                
+                if (confirmacion) {
+                    fetch(`/admin/tratamientos/${tratamientoId}/estado?activo=${activar}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Error al cambiar el estado del tratamiento');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error de conexión');
+                    });
+                }
+            }
+            
+            function getCsrfToken() {
+                return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+            }
+        </script>
+    </body>
+</html>

@@ -6,15 +6,17 @@ package Proyecto.repository;
  */
 
 
-import Proyecto.model.ItemCarrito;
-import Proyecto.model.CarritoCompras;
-import Proyecto.model.Producto;
-import Proyecto.model.Cita;
-import Proyecto.model.TipoItem;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import Proyecto.model.CarritoCompras;
+import Proyecto.model.Cita;
+import Proyecto.model.ItemCarrito;
+import Proyecto.model.Producto;
+import Proyecto.model.TipoItem;
 
 @Repository
 public interface ItemCarritoRepository extends JpaRepository<ItemCarrito, Long> {

@@ -62,7 +62,7 @@ CREATE TABLE productos (
     FOREIGN KEY (categoria_id) REFERENCES categorias_productos(id)
 );
 
--- Tabla: tratamientos
+-- Tabla: tratamientos (ACTUALIZADA)
 CREATE TABLE tratamientos (
     id INT PRIMARY KEY AUTO_INCREMENT,
     codigo_tratamiento VARCHAR(50) UNIQUE NOT NULL,
@@ -71,6 +71,8 @@ CREATE TABLE tratamientos (
     precio DECIMAL(10,2) NOT NULL,
     duracion_minutos INT NOT NULL,
     categoria_id INT,
+    imagen_url VARCHAR(255),
+    requiere_consulta BOOLEAN DEFAULT FALSE,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (categoria_id) REFERENCES categorias_tratamientos(id)
 );
@@ -193,15 +195,15 @@ INSERT INTO categorias_tratamientos (nombre, descripcion) VALUES
 
 -- Insertar algunos productos de ejemplo
 INSERT INTO productos (codigo_producto, nombre, descripcion, precio, stock, categoria_id, imagen_url) VALUES
-('PROD-001', 'Crema Hidratante', 'Crema hidratante para piel seca', 25.99, 50, 1, '/images/crema-hidratante.jpg'),
-('PROD-002', 'Base de Maquillaje', 'Base de larga duración', 35.50, 30, 2, '/images/base-maquillaje.jpg'),
-('PROD-003', 'Aceite Corporal', 'Aceite nutritivo para el cuerpo', 18.75, 40, 3, '/images/aceite-corporal.jpg');
+('PROD-001', 'Crema Hidratante', 'Crema hidratante para piel seca', 25.99, 50, 1, 'https://i.pinimg.com/1200x/1f/57/6d/1f576d517e613f24239de6c798de81b0.jpg'),
+('PROD-002', 'Base de Maquillaje', 'Base de larga duración', 35.50, 30, 2, 'https://i.pinimg.com/1200x/f1/ef/6c/f1ef6c3bc5c9c5c05a591e701f986287.jpg'),
+('PROD-003', 'Aceite Corporal', 'Aceite nutritivo para el cuerpo', 18.75, 40, 3, 'https://i.pinimg.com/1200x/9f/e0/6f/9fe06f9e489e2080c4eb283fad0a1293.jpg');
 
--- Insertar algunos tratamientos de ejemplo
-INSERT INTO tratamientos (codigo_tratamiento, nombre, descripcion, precio, duracion_minutos, categoria_id) VALUES
-('TRAT-001', 'Limpieza Facial', 'Limpieza profunda del rostro', 50.00, 60, 1),
-('TRAT-002', 'Masaje Relajante', 'Masaje corporal relajante', 75.00, 90, 2),
-('TRAT-003', 'Depilación Láser', 'Sesión de depilación láser', 120.00, 45, 3);
+-- Insertar algunos tratamientos de ejemplo (ACTUALIZADO)
+INSERT INTO tratamientos (codigo_tratamiento, nombre, descripcion, precio, duracion_minutos, categoria_id, imagen_url, requiere_consulta) VALUES
+('TRAT-001', 'Limpieza Facial', 'Limpieza profunda del rostro', 50.00, 60, 1, 'https://i.pinimg.com/1200x/8c/9f/a7/8c9fa7dbc6e87d9a2d83c5bf0acf7874.jpg', FALSE),
+('TRAT-002', 'Masaje Relajante', 'Masaje corporal relajante', 75.00, 90, 2, 'https://i.pinimg.com/736x/97/04/cf/9704cfbb81bba3bd1f9570059245e093.jpg', FALSE),
+('TRAT-003', 'Depilación Láser', 'Sesión de depilación láser', 120.00, 45, 3, 'https://i.pinimg.com/736x/c8/21/09/c82109dbc84f0b4d8dd0b353fe3da949.jpg', TRUE);
 
 -- Crear usuario webAdmin
 CREATE USER IF NOT EXISTS 'webAdmin'@'localhost' IDENTIFIED BY '1234';

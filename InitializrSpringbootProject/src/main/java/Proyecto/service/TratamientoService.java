@@ -5,13 +5,15 @@ package Proyecto.service;
  * @author darry
  */
 
-import Proyecto.model.Tratamiento;
-import Proyecto.model.CategoriaTratamiento;
-import Proyecto.repository.TratamientoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import Proyecto.model.CategoriaTratamiento;
+import Proyecto.model.Tratamiento;
+import Proyecto.repository.TratamientoRepository;
 
 @Service
 public class TratamientoService {

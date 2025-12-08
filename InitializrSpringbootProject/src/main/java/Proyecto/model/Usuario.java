@@ -1,13 +1,9 @@
 package Proyecto.model;
 
-/**
- *
- * @author darry
- */
-
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -37,13 +33,18 @@ public class Usuario {
 
     private Boolean activo = true;
 
+    // Enum para el tipo de usuario (de la base de datos)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false)
+    private TipoUsuario tipo;  // Cambiado de Rol a TipoUsuario
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "usuario_roles",
         joinColumns = @JoinColumn(name = "usuario_id"),
         inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
-    private Set<Rol> roles;
+    private Set<Rol> roles = new HashSet<>();
 
     // Constructores
     public Usuario() {
@@ -64,4 +65,23 @@ public class Usuario {
         if (roles == null) return false;
         return roles.stream().anyMatch(rol -> rol.getNombre().equals(rolNombre));
     }
+
+    // Enumeración para el tipo de usuario
+    public enum TipoUsuario {
+        CLIENTE, ADMIN
+    }
+
+    // Getters y Setters (Lombok debería generarlos, pero por si acaso)
+
+    public TipoUsuario getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoUsuario tipo) {
+        this.tipo = tipo;
+    }
+
+    // El resto de getters y setters los genera Lombok con @Data
+    
+    
 }

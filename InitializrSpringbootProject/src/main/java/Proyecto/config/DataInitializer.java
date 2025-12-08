@@ -1,33 +1,12 @@
 package Proyecto.config;
 
-/**
- *
- * @author darry
- */
-
-
-
-import Proyecto.model.CategoriaProducto;
-import Proyecto.model.CategoriaTratamiento;
-import Proyecto.model.ConfiguracionCitas;
-import Proyecto.model.Producto;
-import Proyecto.model.Rol;
-import Proyecto.model.Ruta;
-import Proyecto.model.Tratamiento;
-import Proyecto.model.Usuario;
-import Proyecto.repository.CategoriaProductoRepository;
-import Proyecto.repository.CategoriaTratamientoRepository;
-import Proyecto.repository.ConfiguracionCitasRepository;
-import Proyecto.repository.ProductoRepository;
-import Proyecto.repository.RolRepository;
-import Proyecto.repository.TratamientoRepository;
-import Proyecto.repository.UsuarioRepository;
+import Proyecto.model.*;
+import Proyecto.repository.*;
 import Proyecto.service.RutaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import java.time.LocalDateTime;
 import java.util.Set;
 
 @Component
@@ -108,6 +87,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setNombre("Administrador");
             admin.setApellido("Principal");
             admin.setTelefono("0000000000");
+            admin.setTipo(Usuario.TipoUsuario.ADMIN);  // ← IMPORTANTE: Asignar tipo
             
             // Asignar rol de administrador
             Rol adminRole = rolRepository.findByNombre("ROLE_ADMIN").get();
@@ -125,6 +105,7 @@ public class DataInitializer implements CommandLineRunner {
             cliente.setNombre("Juan");
             cliente.setApellido("Pérez");
             cliente.setTelefono("3001234567");
+            cliente.setTipo(Usuario.TipoUsuario.CLIENTE);  // ← IMPORTANTE: Asignar tipo
             
             // Asignar rol de cliente
             Rol clienteRole = rolRepository.findByNombre("ROLE_CLIENTE").get();
@@ -169,7 +150,7 @@ public class DataInitializer implements CommandLineRunner {
             p1.setPrecio(25.99);
             p1.setStock(50);
             p1.setCategoria(categoriaFacial);
-            p1.setImagenUrl("/images/crema-hidratante.jpg");
+            p1.setImagenUrl("https://i.pinimg.com/1200x/1f/57/6d/1f576d517e613f24239de6c798de81b0.jpg");
             productoRepository.save(p1);
 
             Producto p2 = new Producto();
@@ -179,7 +160,7 @@ public class DataInitializer implements CommandLineRunner {
             p2.setPrecio(35.50);
             p2.setStock(30);
             p2.setCategoria(categoriaMaquillaje);
-            p2.setImagenUrl("/images/base-maquillaje.jpg");
+            p2.setImagenUrl("https://i.pinimg.com/1200x/f1/ef/6c/f1ef6c3bc5c9c5c05a591e701f986287.jpg");
             productoRepository.save(p2);
 
             Producto p3 = new Producto();
@@ -189,7 +170,7 @@ public class DataInitializer implements CommandLineRunner {
             p3.setPrecio(18.75);
             p3.setStock(40);
             p3.setCategoria(categoriaCorporal);
-            p3.setImagenUrl("/images/aceite-corporal.jpg");
+            p3.setImagenUrl("https://i.pinimg.com/1200x/9f/e0/6f/9fe06f9e489e2080c4eb283fad0a1293.jpg");
             productoRepository.save(p3);
 
             System.out.println("✅ Productos de ejemplo creados exitosamente");
@@ -228,6 +209,8 @@ public class DataInitializer implements CommandLineRunner {
             t1.setPrecio(50.00);
             t1.setDuracionMinutos(60);
             t1.setCategoria(catFacial);
+            t1.setImagenUrl("https://i.pinimg.com/1200x/8c/9f/a7/8c9fa7dbc6e87d9a2d83c5bf0acf7874.jpg");
+            t1.setRequiereConsulta(false);
             tratamientoRepository.save(t1);
 
             Tratamiento t2 = new Tratamiento();
@@ -237,6 +220,8 @@ public class DataInitializer implements CommandLineRunner {
             t2.setPrecio(75.00);
             t2.setDuracionMinutos(90);
             t2.setCategoria(catCorporal);
+            t2.setImagenUrl("https://i.pinimg.com/736x/97/04/cf/9704cfbb81bba3bd1f9570059245e093.jpg");
+            t2.setRequiereConsulta(false);
             tratamientoRepository.save(t2);
 
             Tratamiento t3 = new Tratamiento();
@@ -246,6 +231,8 @@ public class DataInitializer implements CommandLineRunner {
             t3.setPrecio(120.00);
             t3.setDuracionMinutos(45);
             t3.setCategoria(catDepilacion);
+            t3.setImagenUrl("https://i.pinimg.com/736x/c8/21/09/c82109dbc84f0b4d8dd0b353fe3da949.jpg");
+            t3.setRequiereConsulta(true);
             tratamientoRepository.save(t3);
 
             System.out.println("✅ Tratamientos de ejemplo creados exitosamente");
