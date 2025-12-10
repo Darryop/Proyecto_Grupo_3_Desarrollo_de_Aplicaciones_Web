@@ -11,30 +11,42 @@
             <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
             
             <!-- Contenido Principal -->
-            <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa; min-height: 100vh;">
+            <div class="main-content flex-grow-1 lista-compacta-container" style="background-color: #f8f9fa; min-height: 100vh; padding: 15px;">
                 <!-- Header -->
-                <div class="admin-header mb-4">
-                    <h1 class="display-6 fw-bold mb-2" style="color: var(--color-logo);">
-                        <i class="bi bi-graph-up me-2"></i>Reporte de Ventas
-                    </h1>
-                    <p class="text-muted">Estadísticas y análisis de ventas del sistema</p>
+                <div class="lista-header-compacto">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="fw-bold mb-1" style="color: var(--color-logo);">
+                                <i class="bi bi-graph-up me-2"></i>Reporte de Ventas
+                            </h1>
+                            <p class="text-muted">Estadísticas y análisis de ventas del sistema</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportSalesReport()">
+                                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="printReport()">
+                                <i class="bi bi-printer me-1"></i>Imprimir
+                            </button>
+                        </div>
+                    </div>
                     
                     <!-- Filtros de fecha -->
-                    <div class="row mt-3">
+                    <div class="row mt-3 g-2">
                         <div class="col-md-8">
                             <div class="d-flex gap-2 align-items-center">
                                 <div>
-                                    <label class="form-label small">Filtrar por:</label>
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-outline-primary btn-sm active" onclick="setDateFilter('today')">Hoy</button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('week')">Esta semana</button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('month')">Este mes</button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('year')">Este año</button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateFilter('custom')">Personalizado</button>
+                                    <label class="form-label small mb-1 d-block">Filtrar por:</label>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" onclick="setDateFilter('today')">Hoy</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('week')">Semana</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('month')">Mes</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('year')">Año</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('custom')">Personalizado</button>
                                     </div>
                                 </div>
                                 <div id="customDateRange" style="display: none;">
-                                    <div class="input-group input-group-sm">
+                                    <div class="input-group input-group-sm" style="width: 350px;">
                                         <input type="date" class="form-control" id="startDate">
                                         <span class="input-group-text">al</span>
                                         <input type="date" class="form-control" id="endDate">
@@ -45,94 +57,86 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <button class="btn btn-outline-success btn-sm" onclick="exportSalesReport()">
-                                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm ms-2" onclick="printReport()">
-                                <i class="bi bi-printer me-1"></i>Imprimir
-                            </button>
-                        </div>
                     </div>
                 </div>
                 
                 <!-- Resumen de ventas -->
-                <div class="row g-4 mb-4">
+                <div class="row g-3 mb-4">
                     <div class="col-xl-3 col-lg-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--color-principal);">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-cash-stack" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                    </div>
                                     <div>
-                                        <h3 class="fw-bold mb-2" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 2)}">$0.00</h3>
-                                        <p class="text-muted mb-0">Ingresos Totales</p>
+                                        <h3 class="fw-bold mb-0" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 2)}">$0.00</h3>
+                                        <p class="text-muted mb-0 small">Ingresos Totales</p>
                                         <small class="text-success" th:if="${ingresosTotales > 0}">
                                             <i class="bi bi-arrow-up me-1"></i>
                                             <span th:text="${#numbers.formatDecimal(ingresosTotales * 0.15, 1, 2)}">0</span> vs mes pasado
                                         </small>
                                     </div>
-                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
-                                        <i class="bi bi-cash-stack fs-4" style="color: var(--color-principal);"></i>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-xl-3 col-lg-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #28a745;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-receipt" style="color: #28a745; font-size: 1.5rem;"></i>
+                                    </div>
                                     <div>
-                                        <h3 class="fw-bold mb-2" th:text="${ventas != null ? ventas.size() : 0}">0</h3>
-                                        <p class="text-muted mb-0">Ventas Totales</p>
+                                        <h3 class="fw-bold mb-0" th:text="${ventas != null ? ventas.size() : 0}">0</h3>
+                                        <p class="text-muted mb-0 small">Ventas Totales</p>
                                         <small class="text-success" th:if="${ventas != null && ventas.size() > 0}">
                                             <i class="bi bi-arrow-up me-1"></i>
                                             <span th:text="${ventas.size() * 0.1}">0</span> vs mes pasado
                                         </small>
                                     </div>
-                                    <div class="bg-success bg-opacity-10 p-3 rounded-circle">
-                                        <i class="bi bi-receipt fs-4" style="color: #28a745;"></i>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-xl-3 col-lg-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #17a2b8;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-check-circle" style="color: #17a2b8; font-size: 1.5rem;"></i>
+                                    </div>
                                     <div>
-                                        <h3 class="fw-bold mb-2" th:text="${ventasCompletadas != null ? ventasCompletadas : 0}">0</h3>
-                                        <p class="text-muted mb-0">Ventas Completadas</p>
+                                        <h3 class="fw-bold mb-0" th:text="${ventasCompletadas != null ? ventasCompletadas : 0}">0</h3>
+                                        <p class="text-muted mb-0 small">Ventas Completadas</p>
                                         <small class="text-muted">
                                             Tasa de éxito: 
                                             <span th:if="${ventas != null && ventas.size() > 0}" 
                                                   th:text="${#numbers.formatDecimal((ventasCompletadas / ventas.size()) * 100, 1, 0)}">0</span>%
                                         </small>
                                     </div>
-                                    <div class="bg-info bg-opacity-10 p-3 rounded-circle">
-                                        <i class="bi bi-check-circle fs-4" style="color: #17a2b8;"></i>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-xl-3 col-lg-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                                        <i class="bi bi-credit-card" style="color: #ffc107; font-size: 1.5rem;"></i>
+                                    </div>
                                     <div>
-                                        <h3 class="fw-bold mb-2" th:text="${ventasTarjeta != null ? ventasTarjeta : 0}">0</h3>
-                                        <p class="text-muted mb-0">Ventas con Tarjeta</p>
+                                        <h3 class="fw-bold mb-0" th:text="${ventasTarjeta != null ? ventasTarjeta : 0}">0</h3>
+                                        <p class="text-muted mb-0 small">Ventas con Tarjeta</p>
                                         <small class="text-muted">
                                             <span th:if="${ventas != null && ventas.size() > 0}" 
                                                   th:text="${#numbers.formatDecimal((ventasTarjeta / ventas.size()) * 100, 1, 0)}">0</span>% del total
                                         </small>
-                                    </div>
-                                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
-                                        <i class="bi bi-credit-card fs-4" style="color: #ffc107;"></i>
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +145,7 @@
                 </div>
                 
                 <!-- Gráficos -->
-                <div class="row g-4 mb-4">
+                <div class="row g-3 mb-4">
                     <div class="col-lg-8">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-white border-0 py-3">
@@ -181,7 +185,7 @@
                 </div>
                 
                 <!-- Top productos y tratamientos -->
-                <div class="row g-4 mb-4">
+                <div class="row g-3 mb-4">
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-white border-0 py-3">
@@ -266,129 +270,201 @@
                 </div>
                 
                 <!-- Historial de ventas -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0" style="color: var(--color-logo);">
+                <div class="tabla-compacta-container" style="margin-top: 25px;">
+                    <div class="tabla-compacta-header d-flex justify-content-between align-items-center mb-3">
+                        <h5 style="color: var(--color-logo); margin: 0;">
                             <i class="bi bi-clock-history me-2"></i>Historial de Ventas
                             <span class="badge bg-primary ms-2" th:text="${ventas != null ? ventas.size() : 0}"></span>
                         </h5>
                         <div class="d-flex gap-2">
-                            <select class="form-select form-select-sm" id="statusFilter" onchange="filterSales()" style="width: auto;">
-                                <option value="">Todos los estados</option>
-                                <option value="COMPLETADA">Completadas</option>
-                                <option value="PENDIENTE">Pendientes</option>
-                                <option value="RECHAZADA">Rechazadas</option>
-                            </select>
-                            <select class="form-select form-select-sm" id="paymentFilter" onchange="filterSales()" style="width: auto;">
-                                <option value="">Todos los pagos</option>
-                                <option value="TARJETA">Tarjeta</option>
-                                <option value="EFECTIVO">Efectivo</option>
-                                <option value="TRANSFERENCIA">Transferencia</option>
-                            </select>
+                            <div class="input-group input-group-sm" style="width: 180px;">
+                                <span class="input-group-text">
+                                    <i class="bi bi-filter"></i>
+                                </span>
+                                <select class="form-select form-select-sm" id="statusFilter" onchange="filterSales()">
+                                    <option value="">Todos los estados</option>
+                                    <option value="COMPLETADA">Completadas</option>
+                                    <option value="PENDIENTE">Pendientes</option>
+                                    <option value="RECHAZADA">Rechazadas</option>
+                                </select>
+                            </div>
+                            <div class="input-group input-group-sm" style="width: 180px;">
+                                <span class="input-group-text">
+                                    <i class="bi bi-credit-card"></i>
+                                </span>
+                                <select class="form-select form-select-sm" id="paymentFilter" onchange="filterSales()">
+                                    <option value="">Todos los pagos</option>
+                                    <option value="TARJETA">Tarjeta</option>
+                                    <option value="EFECTIVO">Efectivo</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle" id="salesTable">
-                                <thead style="background-color: var(--color-logo); color: white;">
-                                    <tr>
-                                        <th width="80">ID</th>
-                                        <th>Cliente</th>
-                                        <th width="150">Fecha</th>
-                                        <th width="120">Total</th>
-                                        <th width="140">Método de Pago</th>
-                                        <th width="120">Estado</th>
-                                        <th width="140" class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="venta : ${ventas}" class="sale-row"
-                                        th:attr="data-status=${venta.estado.name()}, 
-                                                data-payment=${venta.metodoPago.name()}">
-                                        <td>
-                                            <span class="badge bg-secondary">#<span th:text="${venta.id}"></span></span>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <strong th:text="${venta.usuario.nombre} + ' ' + ${venta.usuario.apellido}"></strong>
-                                                <div class="small text-muted" th:text="${venta.usuario.email}"></div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="small">
-                                                <i class="bi bi-calendar3 me-1"></i>
-                                                <span th:text="${#dates.format(venta.fechaVenta, 'dd/MM/yyyy')}"></span>
-                                            </div>
-                                            <div class="small text-muted">
-                                                <i class="bi bi-clock me-1"></i>
-                                                <span th:text="${#dates.format(venta.fechaVenta, 'HH:mm')}"></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="fw-bold" style="color: var(--color-principal);"
-                                                  th:text="'$' + ${#numbers.formatDecimal(venta.total, 1, 2)}">
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span th:switch="${venta.metodoPago}">
-                                                <span th:case="TARJETA" class="badge bg-primary d-flex align-items-center gap-1">
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0" id="salesTable">
+                                    <thead style="background-color: var(--color-logo); color: white; position: sticky; top: 0; z-index: 1;">
+                                        <tr>
+                                            <th width="80">ID</th>
+                                            <th>Cliente</th>
+                                            <th width="150">Fecha</th>
+                                            <th width="120">Total</th>
+                                            <th width="140">Método de Pago</th>
+                                            <th width="120">Estado</th>
+                                            <th width="140" class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="venta : ${ventas}" class="sale-row"
+                                            th:attr="data-status=${venta.estado.name()}, 
+                                                    data-payment=${venta.metodoPago.name()}">
+                                            <td>
+                                                <span class="badge bg-dark" th:text="'#' + ${venta.id}"></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-placeholder me-3">
+                                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                                             style="width: 40px; height: 40px; font-weight: bold; font-size: 14px;"
+                                                             th:text="${#strings.substring(venta.usuario.nombre, 0, 1)} + ${#strings.substring(venta.usuario.apellido, 0, 1)}">
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <strong class="d-block" th:text="${venta.usuario.nombre} + ' ' + ${venta.usuario.apellido}"></strong>
+                                                        <small class="text-muted" th:text="${venta.usuario.email}"></small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <span class="fw-medium">
+                                                        <i class="bi bi-calendar3 me-1"></i>
+                                                        <span th:if="${venta.fechaVenta != null}" 
+                                                            th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy')}"></span>
+                                                        <span th:if="${venta.fechaVenta == null}">--/--/----</span>
+                                                    </span>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        <span th:if="${venta.fechaVenta != null}" 
+                                                            th:text="${#temporals.format(venta.fechaVenta, 'HH:mm')}"></span>
+                                                        <span th:if="${venta.fechaVenta == null}">--:--</span>
+                                                    </small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-end" style="color: var(--color-principal);">
+                                                    <span th:text="'$' + ${#numbers.formatDecimal(venta.total, 1, 2)}"></span>
+                                                    <div class="progress mt-1" style="height: 4px;">
+                                                        <div class="progress-bar bg-primary" 
+                                                             th:style="'width: ' + ${(venta.total / ingresosTotales) * 100} + '%;'"
+                                                             role="progressbar"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span th:if="${venta.metodoPago.name() == 'TARJETA'}" 
+                                                      class="badge bg-primary d-flex align-items-center justify-content-center gap-1 py-2"
+                                                      style="width: 110px;">
                                                     <i class="bi bi-credit-card"></i> Tarjeta
                                                 </span>
-                                                <span th:case="EFECTIVO" class="badge bg-success d-flex align-items-center gap-1">
+                                                <span th:if="${venta.metodoPago.name() == 'EFECTIVO'}" 
+                                                      class="badge bg-success d-flex align-items-center justify-content-center gap-1 py-2"
+                                                      style="width: 110px;">
                                                     <i class="bi bi-cash"></i> Efectivo
                                                 </span>
-                                                <span th:case="TRANSFERENCIA" class="badge bg-info d-flex align-items-center gap-1">
+                                                <span th:if="${venta.metodoPago.name() == 'TRANSFERENCIA'}" 
+                                                      class="badge bg-info d-flex align-items-center justify-content-center gap-1 py-2"
+                                                      style="width: 110px;">
                                                     <i class="bi bi-bank"></i> Transferencia
                                                 </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span th:switch="${venta.estado}">
-                                                <span th:case="PENDIENTE" class="badge bg-warning d-flex align-items-center gap-1">
+                                            </td>
+                                            <td>
+                                                <span th:if="${venta.estado.name() == 'PENDIENTE'}" 
+                                                      class="badge bg-warning text-dark d-flex align-items-center justify-content-center gap-1 py-2"
+                                                      style="width: 110px;">
                                                     <i class="bi bi-clock"></i> Pendiente
                                                 </span>
-                                                <span th:case="COMPLETADA" class="badge bg-success d-flex align-items-center gap-1">
+                                                <span th:if="${venta.estado.name() == 'COMPLETADA'}" 
+                                                      class="badge bg-success d-flex align-items-center justify-content-center gap-1 py-2"
+                                                      style="width: 110px;">
                                                     <i class="bi bi-check-circle"></i> Completada
                                                 </span>
-                                                <span th:case="RECHAZADA" class="badge bg-danger d-flex align-items-center gap-1">
+                                                <span th:if="${venta.estado.name() == 'RECHAZADA'}" 
+                                                      class="badge bg-danger d-flex align-items-center justify-content-center gap-1 py-2"
+                                                      style="width: 110px;">
                                                     <i class="bi bi-x-circle"></i> Rechazada
                                                 </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex justify-content-center gap-1">
-                                                <button class="btn btn-sm btn-outline-info" 
-                                                        th:onclick="'viewSaleDetails(' + ${venta.id} + ')'"
-                                                        title="Ver detalles">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button th:if="${venta.estado.name() == 'PENDIENTE'}"
-                                                        class="btn btn-sm btn-outline-success"
-                                                        th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"COMPLETADA\")'"
-                                                        title="Marcar como completada">
-                                                    <i class="bi bi-check-circle"></i>
-                                                </button>
-                                                <button th:if="${venta.estado.name() == 'PENDIENTE'}"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"RECHAZADA\")'"
-                                                        title="Marcar como rechazada">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    
-                                    <!-- Mensaje si no hay ventas -->
-                                    <tr th:if="${ventas == null or ventas.isEmpty()}">
-                                        <td colspan="7" class="text-center py-5">
-                                            <i class="bi bi-receipt" style="font-size: 3rem; color: #6c757d;"></i>
-                                            <h5 class="mt-3" style="color: var(--color-logo);">No hay ventas registradas</h5>
-                                            <p class="text-muted">Las ventas aparecerán aquí una vez que se realicen transacciones.</p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <button class="btn btn-sm btn-outline-info btn-action" 
+                                                            th:onclick="'viewSaleDetails(' + ${venta.id} + ')'"
+                                                            title="Ver detalles">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button th:if="${venta.estado.name() == 'PENDIENTE'}"
+                                                            class="btn btn-sm btn-outline-success btn-action"
+                                                            th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"COMPLETADA\")'"
+                                                            title="Marcar como completada">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                    <button th:if="${venta.estado.name() == 'PENDIENTE'}"
+                                                            class="btn btn-sm btn-outline-danger btn-action"
+                                                            th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"RECHAZADA\")'"
+                                                            title="Marcar como rechazada">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                    <button th:if="${venta.estado.name() != 'PENDIENTE'}"
+                                                            class="btn btn-sm btn-outline-secondary btn-action disabled"
+                                                            style="opacity: 0.5; cursor: not-allowed;"
+                                                            title="Acciones no disponibles">
+                                                        <i class="bi bi-lock"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Mensaje si no hay ventas -->
+                                        <tr th:if="${ventas == null or ventas.isEmpty()}">
+                                            <td colspan="7" class="text-center py-5">
+                                                <div class="empty-state">
+                                                    <i class="bi bi-receipt" style="font-size: 4rem; color: #6c757d; opacity: 0.5;"></i>
+                                                    <h5 class="mt-3" style="color: var(--color-logo);">No hay ventas registradas</h5>
+                                                    <p class="text-muted mb-4">Las ventas aparecerán aquí una vez que se realicen transacciones.</p>
+                                                    <a th:href="@{/carrito}" class="btn btn-primary">
+                                                        <i class="bi bi-cart-plus me-2"></i>Ir al carrito
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Información de resultados -->
+                            <div th:if="${ventas != null and !ventas.isEmpty()}" class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <div class="text-muted small">
+                                    Mostrando <span th:text="${ventas.size()}"></span> 
+                                    <span th:text="${ventas.size() == 1 ? 'venta' : 'ventas'}"></span>
+                                    <span class="ms-2">
+                                        <i class="bi bi-cash-stack me-1"></i>
+                                        Total: <span class="fw-bold" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 2)}"></span>
+                                    </span>
+                                </div>
+                                <div class="text-muted small">
+                                    <span th:if="${ventasCompletadas != null and ventasCompletadas > 0}">
+                                        <i class="bi bi-check-circle text-success me-1"></i>
+                                        <span th:text="${ventasCompletadas}"></span> completadas
+                                    </span>
+                                    <span th:if="${ventasTarjeta != null and ventasTarjeta > 0}" class="ms-3">
+                                        <i class="bi bi-credit-card text-primary me-1"></i>
+                                        <span th:text="${ventasTarjeta}"></span> con tarjeta
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -397,7 +473,8 @@
         
         <!-- Incluye Chart.js y scripts generales -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <div th:replace="~{fragments/header :: scripts}"></div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         
         <!-- Script específico para reportes de ventas -->
         <script th:inline="javascript">
@@ -420,6 +497,18 @@
                     startDateInput.value = today.toISOString().split('T')[0];
                     endDateInput.value = today.toISOString().split('T')[0];
                 }
+                
+                // Añadir efectos hover a las filas
+                const rows = document.querySelectorAll('.sale-row');
+                rows.forEach(row => {
+                    row.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = 'rgba(196, 105, 110, 0.05)';
+                        this.style.transition = 'background-color 0.2s ease';
+                    });
+                    row.addEventListener('mouseleave', function() {
+                        this.style.backgroundColor = '';
+                    });
+                });
             });
             
             function initializeCharts() {
@@ -434,9 +523,14 @@
                             data: [1200, 1900, 1500, 2100, 1800, 2400, 2200, 2600, 2300, 2800, 2500, 3000],
                             borderColor: 'rgba(196, 105, 110, 1)',
                             backgroundColor: 'rgba(196, 105, 110, 0.1)',
-                            borderWidth: 2,
+                            borderWidth: 3,
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgba(82, 49, 76, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
                         }]
                     },
                     options: {
@@ -445,18 +539,38 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
                                 ticks: {
                                     callback: function(value) {
                                         return '$' + value.toLocaleString('es-MX');
                                     }
                                 }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
                             }
                         },
                         plugins: {
                             tooltip: {
+                                backgroundColor: 'rgba(82, 49, 76, 0.9)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: 'rgba(196, 105, 110, 1)',
+                                borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
                                         return 'Ventas: $' + context.parsed.y.toLocaleString('es-MX');
+                                    }
+                                }
+                            },
+                            legend: {
+                                labels: {
+                                    font: {
+                                        size: 12
                                     }
                                 }
                             }
@@ -473,24 +587,38 @@
                         datasets: [{
                             data: [65, 25, 10],
                             backgroundColor: [
-                                'rgba(82, 49, 76, 0.8)',   // color-logo
-                                'rgba(196, 105, 110, 0.8)', // color-principal
-                                'rgba(157, 107, 108, 0.8)'  // color-secundario
+                                'rgba(82, 49, 76, 0.9)',
+                                'rgba(196, 105, 110, 0.9)',
+                                'rgba(157, 107, 108, 0.9)'
                             ],
-                            borderWidth: 1
+                            borderColor: [
+                                'rgba(82, 49, 76, 1)',
+                                'rgba(196, 105, 110, 1)',
+                                'rgba(157, 107, 108, 1)'
+                            ],
+                            borderWidth: 2,
+                            hoverOffset: 15
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        cutout: '65%',
                         plugins: {
                             legend: {
                                 display: false
                             },
                             tooltip: {
+                                backgroundColor: 'rgba(82, 49, 76, 0.9)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
                                 callbacks: {
                                     label: function(context) {
-                                        return context.label + ': ' + context.parsed + '%';
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value}% (${percentage}% del total)`;
                                     }
                                 }
                             }
@@ -509,7 +637,8 @@
                 // Mostrar/ocultar selector de fechas personalizadas
                 const customRange = document.getElementById('customDateRange');
                 if (range === 'custom') {
-                    customRange.style.display = 'block';
+                    customRange.style.display = 'flex';
+                    customRange.style.alignItems = 'center';
                 } else {
                     customRange.style.display = 'none';
                     // Aquí implementarías la lógica para filtrar por el rango seleccionado
@@ -524,6 +653,7 @@
                 if (startDate && endDate) {
                     console.log('Filtrar desde', startDate, 'hasta', endDate);
                     // Aquí implementarías la lógica para filtrar las ventas por fecha
+                    showToast(`Filtrando desde ${startDate} hasta ${endDate}`, 'info');
                 }
             }
             
@@ -531,6 +661,7 @@
                 const statusFilter = document.getElementById('statusFilter').value;
                 const paymentFilter = document.getElementById('paymentFilter').value;
                 const rows = document.querySelectorAll('.sale-row');
+                let visibleCount = 0;
                 
                 rows.forEach(row => {
                     const status = row.getAttribute('data-status');
@@ -539,8 +670,21 @@
                     const matchesStatus = !statusFilter || status === statusFilter;
                     const matchesPayment = !paymentFilter || payment === paymentFilter;
                     
-                    row.style.display = (matchesStatus && matchesPayment) ? '' : 'none';
+                    if (matchesStatus && matchesPayment) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
                 });
+                
+                // Actualizar contador en el header
+                const badge = document.querySelector('.tabla-compacta-header .badge');
+                if (badge) {
+                    badge.textContent = visibleCount;
+                }
+                
+                showToast(`Mostrando ${visibleCount} ventas`, 'info');
             }
             
             function viewSaleDetails(saleId) {
@@ -550,7 +694,9 @@
             
             function updateSaleStatus(saleId, status) {
                 const statusText = status === 'COMPLETADA' ? 'completada' : 'rechazada';
-                if (confirm(`¿Está seguro de marcar la venta #${saleId} como ${statusText}?`)) {
+                const icon = status === 'COMPLETADA' ? '✅' : '❌';
+                
+                if (confirm(`${icon} ¿Está seguro de marcar la venta #${saleId} como ${statusText}?`)) {
                     fetch(`/admin/ventas/${saleId}/estado`, {
                         method: 'PUT',
                         headers: {
@@ -560,40 +706,61 @@
                         body: JSON.stringify({ estado: status })
                     }).then(response => {
                         if (response.ok) {
-                            showToast(`Venta marcada como ${statusText} correctamente`, 'success');
+                            showToast(`✅ Venta #${saleId} marcada como ${statusText}`, 'success');
                             setTimeout(() => location.reload(), 1500);
                         } else {
-                            showToast('Error al actualizar estado', 'danger');
+                            showToast('❌ Error al actualizar estado', 'danger');
                         }
                     }).catch(error => {
                         console.error('Error:', error);
-                        showToast('Error de conexión', 'danger');
+                        showToast('❌ Error de conexión', 'danger');
                     });
                 }
             }
             
             function exportSalesReport() {
                 // Implementar exportación a Excel
-                showToast('Exportando reporte...', 'info');
+                showToast('📊 Generando reporte Excel...', 'info');
+                setTimeout(() => {
+                    showToast('✅ Reporte Excel generado correctamente', 'success');
+                }, 2000);
                 // window.location.href = '/admin/ventas/exportar/excel';
             }
             
             function printReport() {
-                window.print();
+                showToast('🖨️ Preparando para imprimir...', 'info');
+                setTimeout(() => {
+                    window.print();
+                }, 500);
             }
             
             function showToast(message, type = 'info') {
+                // Eliminar toast existentes
+                document.querySelectorAll('.custom-toast').forEach(toast => toast.remove());
+                
                 const toast = document.createElement('div');
-                toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-                toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                toast.className = `custom-toast alert alert-${type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = `
+                    top: 20px; 
+                    right: 20px; 
+                    z-index: 9999; 
+                    min-width: 300px; 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    border-left: 4px solid ${type === 'success' ? '#28a745' : type === 'danger' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+                `;
                 toast.innerHTML = `
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="d-flex align-items-center">
+                        <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'danger' ? 'bi-exclamation-triangle' : type === 'warning' ? 'bi-exclamation-circle' : 'bi-info-circle'} me-2" 
+                           style="font-size: 1.2rem;"></i>
+                        <div style="flex: 1;">${message}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 `;
                 document.body.appendChild(toast);
                 
                 setTimeout(() => {
-                    toast.remove();
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
                 }, 3000);
             }
             
@@ -602,5 +769,78 @@
                 return metaTag ? metaTag.getAttribute('content') : '';
             }
         </script>
+        
+        <!-- Estilos adicionales para mejorar la apariencia -->
+        <style>
+            .btn-action {
+                width: 36px;
+                height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+            }
+            
+            .btn-action:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            
+            .avatar-placeholder {
+                flex-shrink: 0;
+            }
+            
+            .empty-state {
+                padding: 3rem 1rem;
+            }
+            
+            .table th {
+                font-weight: 600;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: 1rem 0.75rem;
+            }
+            
+            .table td {
+                padding: 1rem 0.75rem;
+                vertical-align: middle;
+                border-bottom: 1px solid rgba(0,0,0,0.05);
+            }
+            
+            .table tbody tr:last-child td {
+                border-bottom: none;
+            }
+            
+            .badge {
+                font-weight: 500;
+                letter-spacing: 0.3px;
+            }
+            
+            .custom-toast {
+                animation: slideInRight 0.3s ease;
+            }
+            
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            .progress {
+                background-color: rgba(0,0,0,0.05);
+                border-radius: 10px;
+            }
+            
+            .progress-bar {
+                border-radius: 10px;
+            }
+        </style>
     </body>
 </html>

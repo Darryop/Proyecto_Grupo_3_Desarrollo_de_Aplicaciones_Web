@@ -1,10 +1,10 @@
 package Proyecto.controller;
 
-/**
- *
- * @author darry
- */
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,15 +32,28 @@ public class VentaController {
     @Autowired
     private CarritoService carritoService;
     
-    // TEMPORAL: Para pruebas
-    private Usuario obtenerUsuarioTemporal() {
-        return usuarioService.obtenerPorId(1L).orElse(null);
+    // Método para obtener el usuario actual autenticado
+    private Usuario obtenerUsuarioActual() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated() || 
+            authentication.getPrincipal().equals("anonymousUser")) {
+            return null;
+        }
+        
+        try {
+            String username = authentication.getName();
+            Optional<Usuario> usuarioOpt = usuarioService.obtenerPorEmail(username);
+            return usuarioOpt.orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
     
     // Página de confirmación de pago (GET)
     @GetMapping("/confirmacion")
     public String mostrarConfirmacion(Model model) {
-        Usuario usuario = obtenerUsuarioTemporal();
+        Usuario usuario = obtenerUsuarioActual();
         if (usuario == null) {
             return "redirect:/auth/login";
         }
@@ -51,16 +64,17 @@ public class VentaController {
         
         model.addAttribute("items", items);
         model.addAttribute("total", total);
-        model.addAttribute("metodosPago", MetodoPago.values()); // Para mostrar en un select
+        model.addAttribute("metodosPago", MetodoPago.values());
+        model.addAttribute("usuario", usuario); // Añadir usuario al modelo para debugging
         
-        return "ventas/confirmacion"; // Crear esta vista
+        return "ventas/confirmacion";
     }
     
     // Procesar la venta (POST)
     @PostMapping("/procesar")
     public String procesarVenta(@RequestParam MetodoPago metodoPago,
                                RedirectAttributes redirectAttributes) {
-        Usuario usuario = obtenerUsuarioTemporal();
+        Usuario usuario = obtenerUsuarioActual();
         if (usuario == null) {
             return "redirect:/auth/login";
         }

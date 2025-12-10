@@ -1,29 +1,34 @@
 package Proyecto.controller;
 
-/**
- *
- * @author darry
- */
-
-import Proyecto.model.Usuario;
-import Proyecto.model.Producto;
-import Proyecto.model.Cita;
-import Proyecto.model.ItemCarrito;
-import Proyecto.service.CarritoService;
-import Proyecto.service.ProductoService;
-import Proyecto.service.CitaService;
-import Proyecto.service.UsuarioService;
 import java.util.HashMap;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import Proyecto.model.Cita;
+import Proyecto.model.ItemCarrito;
+import Proyecto.model.Producto;
+import Proyecto.model.Usuario;
+import Proyecto.service.CarritoService;
+import Proyecto.service.CitaService;
+import Proyecto.service.ProductoService;
+import Proyecto.service.UsuarioService;
 
 @Controller
 @RequestMapping("/carrito")
@@ -41,12 +46,22 @@ public class CarritoController {
     @Autowired
     private UsuarioService usuarioService;
 
-    // Método temporal para obtener el usuario autenticado (en producción se obtiene de la sesión)
+    // Método para obtener el usuario actual autenticado
     private Usuario obtenerUsuarioAutenticado() {
-        // Aquí deberías obtener el usuario autenticado de la sesión
-        // Por ahora, usamos un usuario de prueba (id 1)
-        Optional<Usuario> usuarioOpt = usuarioService.obtenerPorId(1L);
-        return usuarioOpt.orElse(null);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated() || 
+            authentication.getPrincipal().equals("anonymousUser")) {
+            return null;
+        }
+        
+        try {
+            String username = authentication.getName();
+            Optional<Usuario> usuarioOpt = usuarioService.obtenerPorEmail(username);
+            return usuarioOpt.orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @GetMapping

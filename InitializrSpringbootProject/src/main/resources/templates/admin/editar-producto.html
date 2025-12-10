@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragments/header :: head('Editar Producto - KWestética')}"></head>
+    
+    <body class="admin-body">
+        <!-- Carga de recursos críticos ANTES del contenido -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        
+        <!-- Estilos críticos INLINE para garantizar que se vean los botones -->
+        <style>
+            /* Variables CSS para la paleta de colores */
+            :root {
+                --color-principal: #C4696E;
+                --color-secundario: #9D6B6C;
+                --color-logo: #52314C;
+                --color-details: #726658;
+                --color-bg: #D1BFB5;
+                --color-white: #FFFFFF;
+                --color-light: #F8F9FA;
+                --color-dark: #333333;
+                --color-gray: #6C757D;
+                --color-success: #198754;
+                --color-danger: #DC3545;
+                --color-warning: #FFC107;
+                --color-info: #0DCAF0;
+            }
+            
+            /* Estilos básicos para los botones - GARANTIZADOS */
+            .btn-primary {
+                background-color: #C4696E !important;
+                border-color: #C4696E !important;
+                color: white !important;
+            }
+            
+            .btn-primary:hover {
+                background-color: #a85559 !important;
+                border-color: #a85559 !important;
+            }
+            
+            .btn-outline-secondary {
+                color: #6c757d !important;
+                border-color: #6c757d !important;
+            }
+            
+            .btn-outline-secondary:hover {
+                background-color: #6c757d !important;
+                color: white !important;
+            }
+            
+            .btn-outline-danger {
+                color: #dc3545 !important;
+                border-color: #dc3545 !important;
+            }
+            
+            .btn-outline-danger:hover {
+                background-color: #dc3545 !important;
+                color: white !important;
+            }
+            
+            .btn-danger {
+                background-color: #dc3545 !important;
+                border-color: #dc3545 !important;
+                color: white !important;
+            }
+            
+            .btn-secondary {
+                background-color: #6c757d !important;
+                border-color: #6c757d !important;
+                color: white !important;
+            }
+            
+            /* Asegurar que los botones sean visibles */
+            button, .btn {
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                cursor: pointer !important;
+                padding: 0.375rem 0.75rem !important;
+                font-size: 1rem !important;
+                line-height: 1.5 !important;
+                border-radius: 0.25rem !important;
+                text-decoration: none !important;
+            }
+            
+            /* Fondo para la página */
+            body.admin-body {
+                background-color: #F8F9FA !important;
+            }
+            
+            /* Contenedor principal */
+            .admin-container {
+                min-height: 100vh;
+                display: flex;
+            }
+            
+            /* Contenido principal */
+            .main-content {
+                flex-grow: 1;
+                padding: 20px;
+                background-color: #F8F9FA;
+            }
+            
+            /* Estilos del formulario */
+            .form-control, .form-select {
+                display: block;
+                width: 100%;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                color: #212529;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid #ced4da;
+                border-radius: 0.25rem;
+            }
+            
+            .form-control:focus, .form-select:focus {
+                border-color: #C4696E !important;
+                box-shadow: 0 0 0 0.25rem rgba(196, 105, 110, 0.25) !important;
+            }
+            
+            /* Header de la tabla */
+            .tabla-compacta-header {
+                background-color: #52314C !important;
+                color: white !important;
+                padding: 12px 20px;
+            }
+            
+            /* Badges */
+            .badge.bg-primary {
+                background-color: #C4696E !important;
+            }
+            
+            .badge.bg-secondary {
+                background-color: #6c757d !important;
+            }
+            
+            .badge.bg-info {
+                background-color: #0DCAF0 !important;
+            }
+            
+            .badge.bg-success {
+                background-color: #198754 !important;
+            }
+            
+            .badge.bg-danger {
+                background-color: #DC3545 !important;
+            }
+            
+            /* Alertas */
+            .alert-success {
+                background-color: rgba(25, 135, 84, 0.1) !important;
+                border-color: rgba(25, 135, 84, 0.2) !important;
+                color: #198754 !important;
+            }
+            
+            .alert-danger {
+                background-color: rgba(220, 53, 69, 0.1) !important;
+                border-color: rgba(220, 53, 69, 0.2) !important;
+                color: #dc3545 !important;
+            }
+            
+            .alert-warning {
+                background-color: rgba(255, 193, 7, 0.1) !important;
+                border-color: rgba(255, 193, 7, 0.2) !important;
+                color: #ffc107 !important;
+            }
+            
+            /* Colores de texto */
+            .text-success {
+                color: #198754 !important;
+            }
+            
+            .text-danger {
+                color: #dc3545 !important;
+            }
+            
+            .text-muted {
+                color: #6c757d !important;
+            }
+            
+            /* Responsive */
+            @media (max-width: 768px) {
+                .main-content {
+                    padding: 15px;
+                }
+                
+                .d-flex.justify-content-between {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .d-flex.justify-content-between > div {
+                    width: 100%;
+                }
+                
+                .btn {
+                    width: 100%;
+                    margin-bottom: 5px;
+                }
+                
+                .ms-2 {
+                    margin-left: 0 !important;
+                }
+            }
+        </style>
+        
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde fragmento separado -->
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+            
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 lista-compacta-container" style="min-height: 100vh;">
+                <!-- Header -->
+                <div class="lista-header-compacto" style="padding: 10px 0; margin-bottom: 15px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="fw-bold mb-1" style="color: #52314C; font-size: 1.5rem;">
+                                <i class="bi bi-pencil-square me-2"></i>Editar Producto
+                            </h1>
+                            <p class="text-muted" style="font-size: 0.875rem;">Modifica la información del producto seleccionado</p>
+                        </div>
+                        <div>
+                            <a th:href="@{/admin/lista-productos}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mensajes Flash -->
+                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show py-2" role="alert" style="padding: 0.5rem 1rem;">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.5rem;"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2" role="alert" style="padding: 0.5rem 1rem;">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.5rem;"></button>
+                </div>
+                
+                <!-- Formulario de edición -->
+                <div class="tabla-compacta-container" style="margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div class="tabla-compacta-header">
+                        <h5 style="margin: 0; font-size: 1rem;">
+                            <i class="bi bi-pencil-square me-2"></i>Editar Producto
+                            <span class="badge bg-primary ms-2" th:text="${producto.nombre}"></span>
+                        </h5>
+                    </div>
+
+                    <div class="card border-0 shadow-sm" style="border: none; box-shadow: none;">
+                        <div class="card-body">
+                            <div class="form-header mb-4" style="border-bottom: 2px solid #D1BFB5; padding-bottom: 15px;">
+                                <h3 th:text="${producto.nombre}" style="color: #52314C; margin-bottom: 5px;"></h3>
+                                <p class="text-muted mb-0">
+                                    <span class="badge bg-secondary me-2">ID: <span th:text="${producto.id}"></span></span>
+                                    <span class="badge bg-info">Código: <span th:text="${producto.codigoProducto}"></span></span>
+                                </p>
+                            </div>
+                            
+                            <form th:action="@{/admin/productos/editar/{id}(id=${producto.id})}" th:object="${producto}" method="post">
+                                <div class="row">
+                                    <!-- Columna izquierda -->
+                                    <div class="col-md-8">
+                                        <!-- Nombre -->
+                                        <div class="mb-3">
+                                            <label for="nombre" class="form-label fw-bold">Nombre del Producto *</label>
+                                            <input type="text" class="form-control" id="nombre" th:field="*{nombre}" 
+                                                   placeholder="Ej: Crema Hidratante Facial" required>
+                                        </div>
+                                        
+                                        <!-- Descripción -->
+                                        <div class="mb-3">
+                                            <label for="descripcion" class="form-label fw-bold">Descripción</label>
+                                            <textarea class="form-control" id="descripcion" th:field="*{descripcion}" 
+                                                      rows="3" placeholder="Descripción detallada del producto..."></textarea>
+                                        </div>
+                                        
+                                        <!-- Precio y Stock -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="precio" class="form-label fw-bold">Precio *</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" class="form-control" id="precio" th:field="*{precio}" 
+                                                               step="0.01" min="0" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="stock" class="form-label fw-bold">Stock *</label>
+                                                    <input type="number" class="form-control" id="stock" th:field="*{stock}" 
+                                                           min="0" required>
+                                                    <div th:if="${producto.stock < 10}" class="small text-danger mt-1">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i> Stock bajo (menor a 10)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Código y Categoría -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="codigoProducto" class="form-label fw-bold">Código Producto *</label>
+                                                    <input type="text" class="form-control" id="codigoProducto" th:field="*{codigoProducto}" 
+                                                           placeholder="Ej: CREMA-001" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="categoriaId" class="form-label fw-bold">Categoría *</label>
+                                                    <select class="form-select" id="categoriaId" name="categoriaId" required>
+                                                        <option value="">Seleccione una categoría...</option>
+                                                        <option th:each="categoria : ${categorias}"
+                                                                th:value="${categoria.id}"
+                                                                th:text="${categoria.nombre}"
+                                                                th:selected="${producto.categoria != null and categoria.id == producto.categoria.id}">
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- URL de Imagen -->
+                                        <div class="mb-3">
+                                            <label for="imagenUrl" class="form-label fw-bold">URL de la Imagen</label>
+                                            <input type="url" class="form-control" id="imagenUrl" th:field="*{imagenUrl}" 
+                                                   placeholder="https://ejemplo.com/imagen.jpg">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Columna derecha -->
+                                    <div class="col-md-4">
+                                        <!-- Vista previa de imagen -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold">Vista Previa</label>
+                                            <div class="border rounded p-3 text-center" style="background-color: #D1BFB5; border-color: #726658 !important;">
+                                                <img th:src="${producto.imagenUrl != null and producto.imagenUrl != ''} ? ${producto.imagenUrl} : 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Sin+imagen'" 
+                                                     alt="Preview" class="img-fluid rounded" id="imagePreview" 
+                                                     style="max-height: 200px; object-fit: contain;">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Estado -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold">Estado</label>
+                                            <div class="border rounded p-3" style="border-color: #726658 !important;">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" 
+                                                           id="activo" th:field="*{activo}">
+                                                    <label class="form-check-label fw-bold d-flex align-items-center" for="activo">
+                                                        <span th:if="${producto.activo}" class="text-success">
+                                                            <i class="bi bi-toggle-on me-2"></i> Activo
+                                                        </span>
+                                                        <span th:unless="${producto.activo}" class="text-danger">
+                                                            <i class="bi bi-toggle-off me-2"></i> Inactivo
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Información -->
+                                        <div class="border rounded p-3" style="border-color: #726658 !important;">
+                                            <h6 class="fw-bold mb-3">
+                                                <i class="bi bi-info-circle me-1"></i> Información
+                                            </h6>
+                                            <ul class="list-unstyled small mb-0">
+                                                <li class="mb-2">
+                                                    <strong class="d-block">Creado:</strong> 
+                                                    <span th:if="${producto.fechaCreacion}" th:text="${#temporals.format(producto.fechaCreacion, 'dd/MM/yyyy')}"></span>
+                                                    <span th:unless="${producto.fechaCreacion}">No disponible</span>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <strong class="d-block">Actualizado:</strong> 
+                                                    <span th:if="${producto.fechaCreacion}" th:text="${#temporals.format(producto.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
+                                                    <span th:unless="${producto.fechaCreacion}">No disponible</span>
+                                                </li>
+                                                <li th:if="${producto.categoria}">
+                                                    <strong class="d-block">Categoría actual:</strong> 
+                                                    <span class="badge bg-info" th:text="${producto.categoria.nombre}"></span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botones -->
+                                <div class="row mt-4 pt-3 border-top">
+                                    <div class="col-md-12">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <button type="submit" class="btn btn-primary px-4">
+                                                    <i class="bi bi-save me-2"></i> Guardar Cambios
+                                                </button>
+                                                <a th:href="@{/admin/lista-productos}" class="btn btn-outline-secondary ms-2">
+                                                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                                                </a>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal">
+                                                    <i class="bi bi-trash me-2"></i> Eliminar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal de eliminación -->
+        <div class="modal fade" id="eliminarModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                            Confirmar Eliminación
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Está seguro de que desea eliminar el producto <strong th:text="${producto.nombre}"></strong>?</p>
+                        <div class="alert alert-warning small">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            Esta acción no se puede deshacer. Se perderán todos los datos del producto.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </button>
+                        <form th:action="@{/admin/productos/eliminar/{id}(id=${producto.id})}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scripts CRÍTICOS cargados directamente -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <script>
+            // Vista previa de imagen
+            document.addEventListener('DOMContentLoaded', function() {
+                const imagenUrlInput = document.getElementById('imagenUrl');
+                if (imagenUrlInput) {
+                    imagenUrlInput.addEventListener('input', function(e) {
+                        const preview = document.getElementById('imagePreview');
+                        if (e.target.value && e.target.value.trim() !== '') {
+                            preview.src = e.target.value;
+                            preview.onerror = function() {
+                                preview.src = 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Error+imagen';
+                            };
+                        } else {
+                            preview.src = 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Sin+imagen';
+                        }
+                    });
+                }
+
+                // Confirmación al cambiar estado
+                const activoCheckbox = document.getElementById('activo');
+                if (activoCheckbox) {
+                    activoCheckbox.addEventListener('change', function(e) {
+                        const estado = e.target.checked ? 'activar' : 'desactivar';
+                        if (!confirm(`¿Desea ${estado} este producto?\n\nLos productos desactivados no serán visibles en la tienda.`)) {
+                            e.target.checked = !e.target.checked;
+                        }
+                    });
+                }
+                
+                // Inicializar tooltips de Bootstrap
+                if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [title]'));
+                    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                        try {
+                            new bootstrap.Tooltip(tooltipTriggerEl);
+                        } catch (e) {
+                            console.warn('Error creando tooltip:', e);
+                        }
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>

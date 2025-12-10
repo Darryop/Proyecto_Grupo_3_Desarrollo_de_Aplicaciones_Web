@@ -46,9 +46,22 @@
             <!-- Lista de tratamientos -->
             <div class="row">
                 <div th:each="tratamiento : ${tratamientos}" class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Imagen del tratamiento -->
+                        <div th:if="${tratamiento.imagenUrl} and ${tratamiento.imagenUrl != ''}" 
+                             style="height: 200px; overflow: hidden;">
+                            <img th:src="${tratamiento.imagenUrl}" 
+                                 alt="Imagen del tratamiento" 
+                                 class="card-img-top img-fluid w-100 h-100 object-fit-cover">
+                        </div>
+                        <div th:unless="${tratamiento.imagenUrl} and ${tratamiento.imagenUrl != ''}" 
+                             class="card-img-top bg-primary-light d-flex align-items-center justify-content-center" 
+                             style="height: 200px;">
+                            <i class="bi bi-scissors display-4 text-primary"></i>
+                        </div>
+                        
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title" th:text="${tratamiento.nombre}"></h5>
+                            <h5 class="card-title" th:text="${tratamiento.nombre}" style="color: #52314C;"></h5>
                             <p class="card-text flex-grow-1" th:text="${#strings.abbreviate(tratamiento.descripcion, 150)}"></p>
                             <ul class="list-unstyled">
                                 <li><strong>Duración:</strong> <span th:text="${tratamiento.duracionMinutos} + ' minutos'"></span></li>
@@ -56,7 +69,7 @@
                             </ul>
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="price" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></span>
+                                    <span class="price fw-bold" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}" style="color: #C4696E;"></span>
                                     <div>
                                         <a th:href="@{/tratamientos/{id}(id=${tratamiento.id})}" 
                                            class="btn btn-sm btn-outline-primary me-1">
@@ -88,5 +101,64 @@
     
     <!-- Scripts -->
     <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <style>
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+        }
+        
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        
+        .bg-primary-light {
+            background-color: rgba(196, 105, 110, 0.1) !important;
+        }
+        
+        .text-primary {
+            color: var(--color-principal) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-secundario);
+            border-color: var(--color-secundario);
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+        
+        .object-fit-cover {
+            object-fit: cover;
+        }
+        
+        .btn-group .btn-outline-primary.active {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+    </style>
 </body>
 </html>

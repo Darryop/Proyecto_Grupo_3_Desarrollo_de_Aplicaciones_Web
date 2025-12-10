@@ -35,7 +35,35 @@ public class VentaService {
     private CarritoService carritoService;
     
     public List<Venta> obtenerTodas() {
-        return ventaRepository.findAll();
+        // Necesitamos cargar todas las relaciones necesarias
+        List<Venta> ventas = ventaRepository.findAllWithRelations();
+        
+        // Para cada venta, cargar las relaciones adicionales si es necesario
+        ventas.forEach(venta -> {
+            if (venta.getCarrito() != null) {
+                // Inicializar la colección items del carrito
+                CarritoCompras carrito = carritoRepository.findById(venta.getCarrito().getId())
+                    .orElse(null);
+                if (carrito != null) {
+                    // Cargar items con sus relaciones
+                    List<ItemCarrito> items = carrito.getItems();
+                    if (items != null) {
+                        items.forEach(item -> {
+                            // Inicializar relaciones perezosas si es necesario
+                            if (item.getProducto() != null) {
+                                item.getProducto().getNombre(); // Para inicializar
+                            }
+                            if (item.getCita() != null && item.getCita().getTratamiento() != null) {
+                                item.getCita().getTratamiento().getNombre(); // Para inicializar
+                            }
+                        });
+                    }
+                    venta.getCarrito().setItems(items);
+                }
+            }
+        });
+        
+        return ventas;
     }
     
     public Optional<Venta> obtenerPorId(Long id) {
@@ -95,4 +123,5 @@ public class VentaService {
                 .mapToDouble(Venta::getTotal)
                 .sum();
     }
+    
 }

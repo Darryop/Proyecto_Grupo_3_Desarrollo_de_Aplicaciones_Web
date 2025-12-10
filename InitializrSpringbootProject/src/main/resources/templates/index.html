@@ -9,29 +9,30 @@
     
     <!-- Contenido principal -->
     <main class="flex-grow-1">
-        <!-- Hero Section - Usando las clases de styles.css página 17-18 -->
+        <!-- Hero Section Mejorada -->
         <section class="hero-section">
             <div class="container">
                 <div class="row align-items-center py-6">
                     <div class="col-lg-6">
-                        <h1 class="fw-bold mb-4 text-logo">
-                            Belleza que Realza tu Esencia
+                        <h1 class="fw-bold mb-4 text-logo display-4">
+                            Belleza que <span class="text-primary">Realza</span> tu Esencia
                         </h1>
-                        <p class="lead mb-4 text-details">
-                            Descubre tratamientos estéticos de alta calidad y productos premium para resaltar tu belleza natural.
+                        <p class="lead mb-4 text-details fs-5">
+                            Descubre tratamientos estéticos de alta calidad y productos premium 
+                            cuidadosamente seleccionados para resaltar tu belleza natural.
                         </p>
                         <div class="d-flex flex-wrap gap-3">
-                            <a th:href="@{/servicios}" class="btn btn-primary btn-lg">
+                            <a th:href="@{/servicios}" class="btn btn-primary btn-lg px-4">
                                 <i class="bi bi-scissors me-2"></i> Nuestros Servicios
                             </a>
-                            <a th:href="@{/productos}" class="btn btn-outline-primary btn-lg">
+                            <a th:href="@{/productos}" class="btn btn-outline-primary btn-lg px-4">
                                 <i class="bi bi-bag me-2"></i> Ver Productos
                             </a>
                         </div>
                     </div>
                     <div class="col-lg-6 text-center">
-                        <div class="rounded-circle bg-white p-5 d-inline-block shadow-lg fade-in">
-                            <i class="bi bi-flower1 display-1 text-primary"></i>
+                        <div class="rounded-circle bg-gradient-primary p-4 d-inline-block shadow-lg">
+                            <i class="bi bi-flower1 display-1 text-white"></i>
                         </div>
                     </div>
                 </div>
@@ -45,8 +46,15 @@
                 <div class="row" th:if="${not #lists.isEmpty(productosDestacados)}">
                     <div th:each="producto : ${productosDestacados}" class="col-md-4 mb-4">
                         <div class="card h-100 shadow-sm">
-                            <div class="card-img-top bg-logo-light d-flex align-items-center justify-content-center" 
-                                 style="height: 200px;">
+                            <div th:if="${producto.imagenUrl} and ${producto.imagenUrl != ''}" 
+                                class="card-img-top" style="height: 200px; overflow: hidden;">
+                                <img th:src="${producto.imagenUrl}" 
+                                    alt="Imagen del producto" 
+                                    class="img-fluid w-100 h-100 object-fit-cover">
+                            </div>
+                            <div th:unless="${producto.imagenUrl} and ${producto.imagenUrl != ''}" 
+                                class="card-img-top bg-logo-light d-flex align-items-center justify-content-center" 
+                                style="height: 200px;">
                                 <i class="bi bi-bag display-3 text-primary"></i>
                             </div>
                             <div class="card-body">
@@ -89,7 +97,14 @@
                     <div th:each="tratamiento : ${tratamientosPopulares}" class="col-md-3 mb-4">
                         <div class="card h-100 shadow-sm">
                             <div class="card-body text-center">
-                                <div class="mb-3">
+                                <div th:if="${tratamiento.imagenUrl} and ${tratamiento.imagenUrl != ''}" 
+                                    class="mb-3" style="height: 150px; overflow: hidden;">
+                                    <img th:src="${tratamiento.imagenUrl}" 
+                                        alt="Imagen del tratamiento" 
+                                        class="img-fluid w-100 h-100 object-fit-cover rounded">
+                                </div>
+                                <div th:unless="${tratamiento.imagenUrl} and ${tratamiento.imagenUrl != ''}" 
+                                    class="mb-3">
                                     <i class="bi bi-scissors display-4 text-primary"></i>
                                 </div>
                                 <h5 class="card-title text-logo mb-3" th:text="${tratamiento.nombre}"></h5>
@@ -116,29 +131,43 @@
                     </div>
                 </div>
                 <div class="text-center mt-5">
-                    <a th:href="@{/servicios}" class="btn btn-outline-primary px-4">
+                    <a th:href="@{/tratamientos}" class="btn btn-outline-primary px-4">
                         <i class="bi bi-arrow-right me-2"></i>Ver Todos los Tratamientos
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- CTA Section -->
-        <section class="py-6 bg-logo">
+        <!-- CTA Section Mejorada (simple) -->
+        <section class="py-6 bg-secundario">
             <div class="container">
-                <div class="row justify-content-center text-center">
-                    <div class="col-lg-8">
-                        <h2 class="text-white mb-4">¿Lista para tu transformación?</h2>
+                <div class="row align-items-center">
+                    <div class="col-lg-8 mb-4 mb-lg-0">
+                        <h2 class="text-white mb-3">¿Lista para tu transformación?</h2>
                         <p class="text-white mb-4 opacity-75">
-                            Reserva tu cita ahora y recibe un 15% de descuento en tu primer tratamiento.
+                            Reserva tu primera cita ahora y recibe un <strong class="text-warning">15% de descuento</strong> 
+                            en cualquier tratamiento. 
+                            ¡Tu viaje hacia la mejor versión de ti misma comienza aquí!
                         </p>
-                        <a th:href="@{/citas/nueva}" class="btn btn-light btn-lg px-5">
-                            <i class="bi bi-calendar-check me-2"></i> Reservar Cita
-                        </a>
-                        <p class="text-white mt-4 small">
-                            <i class="bi bi-star-fill me-1 text-warning"></i>
-                            Oferta válida para nuevas clientas
-                        </p>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a th:href="@{/citas/nueva}" class="btn btn-light btn-lg">
+                                <i class="bi bi-calendar-check me-2"></i> Reservar Cita
+                            </a>
+                            <a th:href="@{/tratamientos}" class="btn btn-outline-light btn-lg">
+                                <i class="bi bi-eye me-2"></i> Ver Tratamientos
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 text-center">
+                        <div class="bg-white rounded-3 p-4 shadow">
+                            <div class="text-primary fw-bold display-4 mb-2">15%</div>
+                            <div class="text-muted mb-3">DESCUENTO</div>
+                            <p class="small text-details mb-0">
+                                <i class="bi bi-star-fill me-1 text-warning"></i>
+                                Oferta válida solo para nuevas clientas
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -147,5 +176,108 @@
     
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <style>
+        /* Variables CSS */
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+            --color-white: #FFFFFF;
+            --color-light: #F8F9FA;
+            --color-dark: #333333;
+            --color-gray: #6C757D;
+            --color-success: #198754;
+            --color-danger: #DC3545;
+            --color-warning: #FFC107;
+            --color-info: #0DCAF0;
+        }
+
+        /* Hero Section Mejorada */
+        .hero-section {
+            background: linear-gradient(135deg, var(--color-light) 0%, var(--color-bg) 100%);
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%);
+        }
+
+        .display-4 {
+            font-size: 3.5rem;
+        }
+
+        /* Estilos generales */
+        .bg-secundario {
+            background-color: var(--color-secundario) !important;
+        }
+        
+        .bg-logo {
+            background-color: var(--color-logo) !important;
+        }
+        
+        .text-warning {
+            color: var(--color-warning) !important;
+        }
+        
+        .btn-light {
+            background-color: var(--color-white);
+            color: var(--color-secundario);
+            font-weight: 600;
+        }
+        
+        .btn-light:hover {
+            background-color: var(--color-light);
+            color: var(--color-secundario);
+        }
+        
+        .btn-outline-light {
+            color: var(--color-white);
+            border-color: var(--color-white);
+        }
+        
+        .btn-outline-light:hover {
+            background-color: var(--color-white);
+            color: var(--color-secundario);
+        }
+        
+        .bg-primary-light {
+            background-color: rgba(196, 105, 110, 0.1) !important;
+        }
+        
+        .text-primary {
+            color: var(--color-principal) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-secundario);
+            border-color: var(--color-secundario);
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+        
+        .text-logo {
+            color: var(--color-logo) !important;
+        }
+        
+        .text-details {
+            color: var(--color-details) !important;
+        }
+    </style>
 </body>
 </html>

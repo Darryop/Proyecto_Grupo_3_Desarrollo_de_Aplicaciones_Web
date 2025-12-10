@@ -3,6 +3,10 @@
     <head th:replace="~{fragments/header :: head('Lista de Productos - KWestética')}"></head>
     
     <body class="admin-body">
+        <!-- Carga de recursos críticos ANTES del contenido -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        
         <div class="admin-container d-flex">
             <!-- Sidebar incluido desde fragmento separado -->
             <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
@@ -17,11 +21,6 @@
                                 <i class="bi bi-list-ul me-2"></i>Lista de Productos
                             </h1>
                             <p class="text-muted">Administra y visualiza todos los productos del catálogo</p>
-                        </div>
-                        <div>
-                            <a th:href="@{/admin/productos}" class="btn btn-primary btn-sm">
-                                <i class="bi bi-plus-circle me-2"></i>Agregar Producto
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -141,203 +140,279 @@
                 </form>
                 
                 <!-- Tabla de productos -->
-                    <div class="tabla-compacta-container" style="margin-top: 25px;">
-                        <div class="tabla-compacta-header">
-                            <h5>
-                                <i class="bi bi-table me-2"></i>Productos Registrados
-                                <span class="badge bg-primary ms-2" th:text="${productos.size()}"></span>
-                            </h5>
-                        </div>
+                <div class="tabla-compacta-container" style="margin-top: 25px;">
+                    <div class="tabla-compacta-header">
+                        <h5>
+                            <i class="bi bi-table me-2"></i>Productos Registrados
+                            <span class="badge bg-primary ms-2" th:text="${productos.size()}"></span>
+                        </h5>
+                    </div>
 
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body p-0">
-                                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                                    <table class="table table-hover align-middle mb-0" id="tablaProductos">
-                                        <thead style="background-color: var(--color-logo); color: white; position: sticky; top: 0; z-index: 1;">
-                                            <tr>
-                                                <th width="50">ID</th>
-                                                <th width="100">Código</th>
-                                                <th>Producto</th>
-                                                <th width="120">Categoría</th>
-                                                <th width="100">Precio</th>
-                                                <th width="80">Stock</th>
-                                                <th width="100">Estado</th>
-                                                <th width="150" class="text-center">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Las filas de productos permanecen igual -->
-                                            <tr th:each="producto : ${productos}" 
-                                                class="fila-producto"
-                                                th:data-id="${producto.id}"
-                                                th:data-nombre="${producto.nombre}"
-                                                th:data-codigo="${producto.codigoProducto}"
-                                                th:data-categoria="${producto.categoria.nombre}"
-                                                th:data-estado="${producto.activo ? 'activo' : 'inactivo'}"
-                                                th:data-stock="${producto.stock}">
-                                                <td th:text="${producto.id}"></td>
-                                                <td>
-                                                    <span class="badge bg-secondary" th:text="${producto.codigoProducto}"></span>
-                                                </td>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div th:if="${producto.imagenUrl}" class="me-3">
-                                                            <img th:src="${producto.imagenUrl}" 
-                                                                 alt="Imagen producto" 
-                                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-                                                        </div>
-                                                        <div>
-                                                            <strong class="d-block" th:text="${producto.nombre}"></strong>
-                                                            <small class="text-muted" 
-                                                                   th:if="${producto.descripcion}"
-                                                                   th:text="${#strings.abbreviate(producto.descripcion, 60)}"></small>
-                                                            <small th:unless="${producto.descripcion}" class="text-muted">
-                                                                Sin descripción
-                                                            </small>
-                                                        </div>
+                    <div class="card border-0 shadow-sm" style="margin-top: 25px;">
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0" id="tablaProductos">
+                                    <thead style="background-color: var(--color-logo); color: white; position: sticky; top: 0; z-index: 1;">
+                                        <tr>
+                                            <th width="50">ID</th>
+                                            <th width="100">Código</th>
+                                            <th>Producto</th>
+                                            <th width="120">Categoría</th>
+                                            <th width="100">Precio</th>
+                                            <th width="80">Stock</th>
+                                            <th width="100">Estado</th>
+                                            <th width="150" class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="producto : ${productos}" 
+                                            class="fila-producto"
+                                            th:data-id="${producto.id}"
+                                            th:data-nombre="${producto.nombre}"
+                                            th:data-codigo="${producto.codigoProducto}"
+                                            th:data-categoria="${producto.categoria.nombre}"
+                                            th:data-estado="${producto.activo ? 'activo' : 'inactivo'}"
+                                            th:data-stock="${producto.stock}">
+                                            <td th:text="${producto.id}"></td>
+                                            <td>
+                                                <span class="badge bg-secondary" th:text="${producto.codigoProducto}"></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div th:if="${producto.imagenUrl}" class="me-3">
+                                                        <img th:src="${producto.imagenUrl}" 
+                                                             alt="Imagen producto" 
+                                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-info" th:text="${producto.categoria.nombre}"></span>
-                                                </td>
-                                                <td>
-                                                    <span class="fw-bold" style="color: var(--color-principal);"
-                                                          th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span th:text="${producto.stock}" 
-                                                          th:class="${producto.stock < 10} ? 'text-danger fw-bold' : ''"></span>
-                                                    <div th:if="${producto.stock < 10}" class="small text-danger">
-                                                        <i class="bi bi-exclamation-triangle"></i>
+                                                    <div>
+                                                        <strong class="d-block" th:text="${producto.nombre}"></strong>
+                                                        <small class="text-muted" 
+                                                               th:if="${producto.descripcion}"
+                                                               th:text="${#strings.abbreviate(producto.descripcion, 60)}"></small>
+                                                        <small th:unless="${producto.descripcion}" class="text-muted">
+                                                            Sin descripción
+                                                        </small>
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <span th:if="${producto.activo}" 
-                                                          class="badge bg-success">
-                                                        Activo
-                                                    </span>
-                                                    <span th:unless="${producto.activo}" 
-                                                          class="badge bg-danger">
-                                                        Inactivo
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div class="d-flex justify-content-center gap-2">
-                                                        <a th:href="@{/productos/{id}(id=${producto.id})}" 
-                                                           class="btn btn-sm btn-outline-info" 
-                                                           target="_blank"
-                                                           title="Ver en tienda">
-                                                            <i class="bi bi-eye"></i>
-                                                        </a>
-                                                        <a th:href="@{/admin/productos/editar/{id}(id=${producto.id})}" 
-                                                           class="btn btn-sm btn-outline-warning"
-                                                           title="Editar producto">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                        <button th:if="${producto.activo}"
-                                                                class="btn btn-sm btn-outline-danger"
-                                                                th:onclick="'cambiarEstado(' + ${producto.id} + ', false)'"
-                                                                title="Desactivar">
-                                                            <i class="bi bi-toggle-off"></i>
-                                                        </button>
-                                                        <button th:unless="${producto.activo}"
-                                                                class="btn btn-sm btn-outline-success"
-                                                                th:onclick="'cambiarEstado(' + ${producto.id} + ', true)'"
-                                                                title="Activar">
-                                                            <i class="bi bi-toggle-on"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-
-                                            <!-- Mensaje si no hay productos o no hay resultados de búsqueda -->
-                                            <tr th:if="${productos.isEmpty()}">
-                                                <td colspan="8" class="text-center py-5">
-                                                    <i class="bi bi-search" style="font-size: 3rem; color: #6c757d;"></i>
-                                                    <h5 class="mt-3" style="color: var(--color-logo);">
-                                                        <span th:if="${param.search != null or param.estado != null}">
-                                                            No se encontraron productos
-                                                        </span>
-                                                        <span th:unless="${param.search != null or param.estado != null}">
-                                                            No hay productos registrados
-                                                        </span>
-                                                    </h5>
-                                                    <p class="text-muted">
-                                                        <span th:if="${param.search != null or param.estado != null}">
-                                                            No hay productos que coincidan con los criterios de búsqueda
-                                                        </span>
-                                                        <span th:unless="${param.search != null or param.estado != null}">
-                                                            Comienza agregando tu primer producto
-                                                        </span>
-                                                    </p>
-                                                    <a th:href="@{/admin/lista-productos}" class="btn btn-outline-primary mt-2" th:if="${param.search != null or param.estado != null}">
-                                                        <i class="bi bi-eye me-2"></i>Ver Todos los Productos
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info" th:text="${producto.categoria.nombre}"></span>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold" style="color: var(--color-principal);"
+                                                      th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span th:text="${producto.stock}" 
+                                                      th:class="${producto.stock < 10} ? 'text-danger fw-bold' : ''"></span>
+                                                <div th:if="${producto.stock < 10}" class="small text-danger">
+                                                    <i class="bi bi-exclamation-triangle"></i>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span th:if="${producto.activo}" 
+                                                      class="badge bg-success">
+                                                    Activo
+                                                </span>
+                                                <span th:unless="${producto.activo}" 
+                                                      class="badge bg-danger">
+                                                    Inactivo
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <a th:href="@{/productos/{id}(id=${producto.id})}" 
+                                                       class="btn btn-sm btn-outline-info" 
+                                                       target="_blank"
+                                                       title="Ver en tienda">
+                                                        <i class="bi bi-eye"></i>
                                                     </a>
-                                                    <a th:href="@{/admin/productos}" class="btn btn-primary mt-2" th:unless="${param.search != null or param.estado != null}">
-                                                        <i class="bi bi-plus-circle me-2"></i>Agregar Producto
+                                                    <a th:href="@{/admin/productos/editar/{id}(id=${producto.id})}" 
+                                                       class="btn btn-sm btn-outline-warning"
+                                                       title="Editar producto">
+                                                        <i class="bi bi-pencil"></i>
                                                     </a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                    <button th:if="${producto.activo}"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            th:onclick="'cambiarEstado(' + ${producto.id} + ', false)'"
+                                                            title="Desactivar">
+                                                        <i class="bi bi-toggle-off"></i>
+                                                    </button>
+                                                    <button th:unless="${producto.activo}"
+                                                            class="btn btn-sm btn-outline-success"
+                                                            th:onclick="'cambiarEstado(' + ${producto.id} + ', true)'"
+                                                            title="Activar">
+                                                        <i class="bi bi-toggle-on"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
 
-                                <!-- Información de resultados -->
-                                <div th:if="${!productos.isEmpty()}" class="d-flex justify-content-between align-items-center p-3 border-top">
-                                    <div class="text-muted small">
-                                        Mostrando <span th:text="${productos.size()}"></span> 
-                                        <span th:text="${productos.size() == 1 ? 'producto' : 'productos'}"></span>
-                                        <span th:if="${param.search != null or param.estado != null}">
-                                            (filtrados)
-                                        </span>
-                                    </div>
+                                        <!-- Mensaje si no hay productos o no hay resultados de búsqueda -->
+                                        <tr th:if="${productos.isEmpty()}">
+                                            <td colspan="8" class="text-center py-5">
+                                                <i class="bi bi-search" style="font-size: 3rem; color: #6c757d;"></i>
+                                                <h5 class="mt-3" style="color: var(--color-logo);">
+                                                    <span th:if="${param.search != null or param.estado != null}">
+                                                        No se encontraron productos
+                                                    </span>
+                                                    <span th:unless="${param.search != null or param.estado != null}">
+                                                        No hay productos registrados
+                                                    </span>
+                                                </h5>
+                                                <p class="text-muted">
+                                                    <span th:if="${param.search != null or param.estado != null}">
+                                                        No hay productos que coincidan con los criterios de búsqueda
+                                                    </span>
+                                                    <span th:unless="${param.search != null or param.estado != null}">
+                                                        Comienza agregando tu primer producto
+                                                    </span>
+                                                </p>
+                                                <a th:href="@{/admin/lista-productos}" class="btn btn-outline-primary mt-2" th:if="${param.search != null or param.estado != null}">
+                                                    <i class="bi bi-eye me-2"></i>Ver Todos los Productos
+                                                </a>
+                                                <a th:href="@{/admin/productos/nuevo}" class="btn btn-primary mt-2" th:unless="${param.search != null or param.estado != null}">
+                                                    <i class="bi bi-plus-circle me-2"></i>Agregar Producto
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Información de resultados -->
+                            <div th:if="${!productos.isEmpty()}" class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <div class="text-muted small">
+                                    Mostrando <span th:text="${productos.size()}"></span> 
+                                    <span th:text="${productos.size() == 1 ? 'producto' : 'productos'}"></span>
+                                    <span th:if="${param.search != null or param.estado != null}">
+                                        (filtrados)
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
             </div>
         </div>
         
-        <!-- Incluye los scripts generales -->
-        <div th:replace="~{fragments/header :: scripts}"></div>
+        <!-- Scripts CRÍTICOS cargados directamente (no dependen de fragments) -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         
-        <!-- Script específico para lista de productos -->
-        <script th:inline="javascript">
-            document.addEventListener('DOMContentLoaded', function() {
-                inicializarFiltros();
-                inicializarTooltips();
-            });
+        <!-- Script específico para lista de productos con manejo de errores -->
+        <script>
+            // Función para obtener el token CSRF de manera segura
+            function getCsrfToken() {
+                return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || 
+                       document.querySelector('input[name="_csrf"]')?.value || '';
+            }
             
-            function inicializarFiltros() {
-                // Permitir búsqueda con Enter
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            this.closest('form').submit();
-                        }
-                    });
+            // Función para verificar que la página se cargó correctamente
+            function verificarCargaCompleta() {
+                console.log('Verificando carga de página...');
+                
+                // Verificar elementos críticos
+                const elementosCriticos = [
+                    '#tablaProductos',
+                    '.admin-container',
+                    '.main-content'
+                ];
+                
+                let todosPresentes = true;
+                elementosCriticos.forEach(selector => {
+                    const elemento = document.querySelector(selector);
+                    if (!elemento) {
+                        console.error('Elemento crítico no encontrado:', selector);
+                        todosPresentes = false;
+                    } else {
+                        console.log('Elemento encontrado:', selector);
+                    }
+                });
+                
+                // Verificar que Bootstrap esté cargado
+                if (typeof bootstrap === 'undefined') {
+                    console.error('Bootstrap no está cargado');
+                    todosPresentes = false;
+                    
+                    // Intentar cargar Bootstrap de nuevo
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+                    script.onload = function() {
+                        console.log('Bootstrap recargado exitosamente');
+                        inicializarScripts();
+                    };
+                    document.head.appendChild(script);
                 }
                 
-                // Auto-submit al cambiar estado (opcional)
-                const estadoFilter = document.getElementById('estadoFilter');
-                if (estadoFilter) {
-                    estadoFilter.addEventListener('change', function() {
-                        this.closest('form').submit();
+                // Si faltan elementos críticos, recargar la página una sola vez
+                if (!todosPresentes && !sessionStorage.getItem('paginaRecargada')) {
+                    console.warn('Faltan elementos críticos, recargando página...');
+                    sessionStorage.setItem('paginaRecargada', 'true');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Función principal de inicialización
+            function inicializarScripts() {
+                console.log('Inicializando scripts...');
+                
+                try {
+                    // Inicializar filtros
+                    const searchInput = document.getElementById('searchInput');
+                    if (searchInput) {
+                        searchInput.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                this.closest('form').submit();
+                            }
+                        });
+                    }
+                    
+                    const estadoFilter = document.getElementById('estadoFilter');
+                    if (estadoFilter) {
+                        estadoFilter.addEventListener('change', function() {
+                            this.closest('form').submit();
+                        });
+                    }
+                    
+                    // Inicializar tooltips de Bootstrap
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [title]'));
+                        tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                            try {
+                                new bootstrap.Tooltip(tooltipTriggerEl);
+                            } catch (e) {
+                                console.warn('Error creando tooltip:', e);
+                            }
+                        });
+                    }
+                    
+                    // Inicializar alertas dismissibles
+                    const alertas = document.querySelectorAll('.alert-dismissible');
+                    alertas.forEach(function(alerta) {
+                        const botonCerrar = alerta.querySelector('.btn-close');
+                        if (botonCerrar) {
+                            botonCerrar.addEventListener('click', function() {
+                                alerta.remove();
+                            });
+                        }
                     });
+                    
+                    console.log('Scripts inicializados correctamente');
+                } catch (error) {
+                    console.error('Error en inicialización:', error);
                 }
             }
             
-            function inicializarTooltips() {
-                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-                tooltipTriggerList.map(function(tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
-            }
-            
-            function cambiarEstado(productoId, activar) {
+            // Función para cambiar estado de producto
+            window.cambiarEstado = function(productoId, activar) {
                 const confirmacion = confirm(`¿Está seguro de que desea ${activar ? 'activar' : 'desactivar'} este producto?`);
                 
                 if (confirmacion) {
@@ -350,7 +425,7 @@
                     })
                     .then(response => {
                         if (response.ok) {
-                            location.reload();
+                            window.location.reload();
                         } else {
                             alert('Error al cambiar el estado del producto');
                         }
@@ -360,105 +435,95 @@
                         alert('Error de conexión');
                     });
                 }
+            };
+            
+            // Control de eventos cuando el DOM está listo
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM completamente cargado');
+                
+                // Verificar que la página se cargó correctamente
+                if (verificarCargaCompleta()) {
+                    // Inicializar scripts después de un pequeño delay
+                    setTimeout(inicializarScripts, 100);
+                }
+            });
+            
+            // Backup: Si el DOMContentLoaded no se dispara, intentar con window.load
+            window.addEventListener('load', function() {
+                console.log('Todos los recursos cargados');
+                
+                // Verificar si ya se inicializó
+                if (!document.body.dataset.scriptsInicializados) {
+                    setTimeout(function() {
+                        if (verificarCargaCompleta()) {
+                            inicializarScripts();
+                            document.body.dataset.scriptsInicializados = 'true';
+                        }
+                    }, 300);
+                }
+            });
+            
+            // Último recurso: Si pasan 3 segundos y no se ha inicializado, forzar inicialización
+            setTimeout(function() {
+                if (!document.body.dataset.scriptsInicializados) {
+                    console.log('Forzando inicialización después de timeout');
+                    if (verificarCargaCompleta()) {
+                        inicializarScripts();
+                        document.body.dataset.scriptsInicializados = 'true';
+                    }
+                }
+            }, 3000);
+        </script>
+        
+        <!-- Estilos adicionales para mejorar la carga -->
+        <style>
+            /* Prevenir destellos de contenido sin estilo */
+            .admin-container {
+                opacity: 0;
+                transition: opacity 0.3s ease-in;
             }
             
-            function exportarExcel() {
-                // Implementación básica de exportación
-                const tabla = document.getElementById('tablaProductos');
-                const filas = tabla.querySelectorAll('tbody tr');
-                
-                if (filas.length === 0) {
-                    alert('No hay datos para exportar');
-                    return;
+            .admin-container.cargado {
+                opacity: 1;
+            }
+            
+            /* Mejorar la apariencia de la tabla durante la carga */
+            #tablaProductos {
+                min-height: 200px;
+            }
+            
+            .fila-producto {
+                transition: background-color 0.2s ease;
+            }
+            
+            .fila-producto:hover {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+            
+            /* Estilos para la tabla responsiva */
+            @media (max-width: 768px) {
+                .table-responsive {
+                    font-size: 0.9rem;
                 }
                 
-                let csv = 'ID,Código,Producto,Categoría,Precio,Stock,Estado\n';
-                
-                filas.forEach(fila => {
-                    const celdas = fila.querySelectorAll('td');
-                    if (celdas.length >= 7) {
-                        const id = celdas[0].textContent.trim();
-                        const codigo = celdas[1].textContent.trim();
-                        const producto = celdas[2].querySelector('strong')?.textContent.trim() || '';
-                        const categoria = celdas[3].textContent.trim();
-                        const precio = celdas[4].textContent.trim().replace('$', '');
-                        const stock = celdas[5].querySelector('span')?.textContent.trim() || '';
-                        const estado = celdas[6].textContent.trim();
-                        
-                        csv += `"${id}","${codigo}","${producto}","${categoria}","${precio}","${stock}","${estado}"\n`;
+                .btn-sm {
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.8rem;
+                }
+            }
+        </style>
+        
+        <!-- Script final para marcar como cargado -->
+        <script>
+            // Marcar el contenedor como cargado cuando todo esté listo
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    const container = document.querySelector('.admin-container');
+                    if (container) {
+                        container.classList.add('cargado');
                     }
-                });
-                
-                // Crear y descargar archivo
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', `productos_${new Date().toISOString().split('T')[0]}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-            
-            function imprimirTabla() {
-                const contenidoOriginal = document.body.innerHTML;
-                const tabla = document.getElementById('tablaProductos');
-                
-                // Clonar la tabla
-                const tablaClon = tabla.cloneNode(true);
-                
-                // Ocultar columna de acciones
-                const thAcciones = tablaClon.querySelector('th:last-child');
-                const tdAcciones = tablaClon.querySelectorAll('td:last-child');
-                
-                if (thAcciones) thAcciones.style.display = 'none';
-                tdAcciones.forEach(td => td.style.display = 'none');
-                
-                const contenidoImprimir = `
-                    <html>
-                        <head>
-                            <title>Lista de Productos - KWestética</title>
-                            <style>
-                                body { font-family: Arial, sans-serif; margin: 20px; }
-                                h1 { color: #2c3e50; }
-                                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
-                                th { background-color: #f8f9fa; color: #495057; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; }
-                                td { padding: 8px 10px; border-bottom: 1px solid #e9ecef; }
-                                .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-                                .text-danger { color: #dc3545; }
-                                .text-success { color: #28a745; }
-                                @media print {
-                                    @page { size: landscape; margin: 0.5cm; }
-                                    body { margin: 0; }
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <h1>Lista de Productos - KWestética</h1>
-                            <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-MX')}</p>
-                            <p><strong>Total de productos:</strong> ${document.querySelectorAll('.fila-producto').length}</p>
-                            ${tablaClon.outerHTML}
-                            <script>
-                                window.onload = function() {
-                                    window.print();
-                                    setTimeout(function() {
-                                        window.close();
-                                    }, 100);
-                                };
-                            <\/script>
-                        </body>
-                    </html>
-                `;
-                
-                const ventanaImprimir = window.open('', '_blank');
-                ventanaImprimir.document.write(contenidoImprimir);
-                ventanaImprimir.document.close();
-            }
-            
-            function getCsrfToken() {
-                return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
-            }
+                }, 100);
+            });
         </script>
     </body>
 </html>

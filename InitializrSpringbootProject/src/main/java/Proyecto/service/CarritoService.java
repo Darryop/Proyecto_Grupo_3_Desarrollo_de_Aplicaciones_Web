@@ -64,18 +64,23 @@ public class CarritoService {
     public ItemCarrito agregarCitaAlCarrito(Usuario usuario, Cita cita) {
         CarritoCompras carrito = obtenerCarritoActivo(usuario);
         
+        // Verificar si la cita ya está en el carrito
         Optional<ItemCarrito> itemExistente = itemCarritoRepository.findByCarritoAndCita(carrito, cita);
         
         if (itemExistente.isPresent()) {
-            return itemExistente.get(); // Ya existe en el carrito
+            // Si ya está, no hacemos nada (o podrías lanzar una excepción, según tu lógica de negocio)
+            // Como es una cita, normalmente no se agregaría dos veces, pero depende de tu sistema.
+            // En este caso, devolvemos el item existente.
+            return itemExistente.get();
         } else {
-            ItemCarrito nuevoItem = new ItemCarrito();
-            nuevoItem.setCarrito(carrito);
-            nuevoItem.setCita(cita);
-            nuevoItem.setCantidad(1);
-            nuevoItem.setTipo(TipoItem.CITA);
-            nuevoItem.setPrecioUnitario(cita.getTratamiento().getPrecio());
-            return itemCarritoRepository.save(nuevoItem);
+            ItemCarrito item = new ItemCarrito();
+            item.setCarrito(carrito);
+            item.setCita(cita);
+            item.setTipo(TipoItem.CITA);
+            item.setCantidad(1);
+            item.setPrecioUnitario(cita.getTratamiento().getPrecio());
+            
+            return itemCarritoRepository.save(item);
         }
     }
     
