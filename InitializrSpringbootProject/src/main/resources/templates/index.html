@@ -50,7 +50,7 @@
                                 class="card-img-top" style="height: 200px; overflow: hidden;">
                                 <img th:src="${producto.imagenUrl}" 
                                     alt="Imagen del producto" 
-                                    class="img-fluid w-100 h-100 object-fit-cover">
+                                    class="img-fluid w-100 h-100 object-fit-contain">
                             </div>
                             <div th:unless="${producto.imagenUrl} and ${producto.imagenUrl != ''}" 
                                 class="card-img-top bg-logo-light d-flex align-items-center justify-content-center" 

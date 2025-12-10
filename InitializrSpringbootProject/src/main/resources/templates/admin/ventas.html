@@ -22,6 +22,9 @@
                             <p class="text-muted">Estadísticas y análisis de ventas del sistema</p>
                         </div>
                         <div class="d-flex gap-2">
+                            <button class="btn btn-outline-danger btn-sm" onclick="clearAllFilters()">
+                                <i class="bi bi-x-circle me-1"></i>Limpiar Filtros
+                            </button>
                             <button class="btn btn-outline-success btn-sm" onclick="exportSalesReport()">
                                 <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
                             </button>
@@ -34,34 +37,88 @@
                     <!-- Filtros de fecha -->
                     <div class="row mt-3 g-2">
                         <div class="col-md-8">
-                            <div class="d-flex gap-2 align-items-center">
+                            <form method="get" action="/admin/ventas" class="d-flex gap-2 align-items-center" id="filterForm">
                                 <div>
                                     <label class="form-label small mb-1 d-block">Filtrar por:</label>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-outline-primary active" onclick="setDateFilter('today')">Hoy</button>
-                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('week')">Semana</button>
-                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('month')">Mes</button>
-                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('year')">Año</button>
-                                        <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('custom')">Personalizado</button>
-                                    </div>
-                                </div>
-                                <div id="customDateRange" style="display: none;">
-                                    <div class="input-group input-group-sm" style="width: 350px;">
-                                        <input type="date" class="form-control" id="startDate">
-                                        <span class="input-group-text">al</span>
-                                        <input type="date" class="form-control" id="endDate">
-                                        <button class="btn btn-primary" type="button" onclick="applyCustomDate()">
-                                            <i class="bi bi-check"></i>
+                                        <button type="submit" name="periodo" value="today" 
+                                                class="btn btn-outline-primary ${filtroPeriodo == 'today' ? 'active' : ''}">
+                                            Hoy
+                                        </button>
+                                        <button type="submit" name="periodo" value="week" 
+                                                class="btn btn-outline-primary ${filtroPeriodo == 'week' ? 'active' : ''}">
+                                            Semana
+                                        </button>
+                                        <button type="submit" name="periodo" value="month" 
+                                                class="btn btn-outline-primary ${filtroPeriodo == 'month' ? 'active' : ''}">
+                                            Mes
+                                        </button>
+                                        <button type="submit" name="periodo" value="year" 
+                                                class="btn btn-outline-primary ${filtroPeriodo == 'year' ? 'active' : ''}">
+                                            Año
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="toggleCustomDateRange()">
+                                            Personalizado
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                                <div id="customDateRange" style="display: ${filtroFechaInicio != null or filtroFechaFin != null ? 'flex' : 'none'};">
+                                    <div class="input-group input-group-sm" style="width: 400px;">
+                                        <input type="date" class="form-control" id="startDate" name="fechaInicio" 
+                                            th:value="${filtroFechaInicio}">
+                                        <span class="input-group-text">al</span>
+                                        <input type="date" class="form-control" id="endDate" name="fechaFin"
+                                            th:value="${filtroFechaFin}">
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="clearDateFilter()">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Campos ocultos para mantener otros filtros -->
+                                <input type="hidden" id="estadoHidden" name="estado" th:value="${filtroEstado}">
+                                <input type="hidden" id="metodoPagoHidden" name="metodoPago" th:value="${filtroMetodoPago}">
+                            </form>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Indicador de filtros aplicados -->
+                <div th:if="${filtroEstado != null or filtroMetodoPago != null or filtroFechaInicio != null or filtroFechaFin != null}" 
+                    class="alert alert-info py-2 mt-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small>
+                            <i class="bi bi-funnel me-1"></i>
+                            <strong>Filtros aplicados:</strong>
+                            <span th:if="${filtroEstado != null}" class="badge bg-primary ms-2">
+                                Estado: <span th:text="${filtroEstado}"></span>
+                            </span>
+                            <span th:if="${filtroMetodoPago != null}" class="badge bg-success ms-2">
+                                Pago: <span th:text="${filtroMetodoPago}"></span>
+                            </span>
+                            <span th:if="${filtroPeriodo != null}" class="badge bg-info ms-2">
+                                Período: <span th:text="${filtroPeriodo}"></span>
+                            </span>
+                            <span th:if="${filtroFechaInicio != null or filtroFechaFin != null}" class="badge bg-warning ms-2">
+                                Fechas: 
+                                <span th:if="${filtroFechaInicio != null}" 
+                                    th:text="${#temporals.format(filtroFechaInicio, 'dd/MM/yyyy')}"></span>
+                                <span th:if="${filtroFechaFin != null}"> 
+                                    - <span th:text="${#temporals.format(filtroFechaFin, 'dd/MM/yyyy')}"></span>
+                                </span>
+                            </span>
+                        </small>
+                        <button class="btn btn-sm btn-outline-info" onclick="clearAllFilters()">
+                            <i class="bi bi-x-lg me-1"></i>Limpiar
+                        </button>
                     </div>
                 </div>
                 
                 <!-- Resumen de ventas -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4" style="margin-top: 15px;">
                     <div class="col-xl-3 col-lg-6">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body py-3">
@@ -174,9 +231,24 @@
                                 </div>
                                 <div class="mt-3">
                                     <div class="d-flex justify-content-between small">
-                                        <span><span class="badge bg-primary me-1">■</span> Tarjeta</span>
-                                        <span><span class="badge bg-success me-1">■</span> Efectivo</span>
-                                        <span><span class="badge bg-info me-1">■</span> Transferencia</span>
+                                        <div class="text-center">
+                                            <span class="badge bg-primary me-1">■</span> 
+                                            <div class="fw-semibold">Tarjeta</div>
+                                            <div th:if="${ventasTarjeta > 0}" th:text="${metodosPagoPorcentajes.get('TARJETA')} + '%'">0%</div>
+                                            <div class="text-muted" th:text="${ventasTarjeta} + ' ventas'">0 ventas</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <span class="badge bg-success me-1">■</span> 
+                                            <div class="fw-semibold">Efectivo</div>
+                                            <div th:if="${ventasEfectivo > 0}" th:text="${metodosPagoPorcentajes.get('EFECTIVO')} + '%'">0%</div>
+                                            <div class="text-muted" th:text="${ventasEfectivo} + ' ventas'">0 ventas</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <span class="badge bg-info me-1">■</span> 
+                                            <div class="fw-semibold">Transferencia</div>
+                                            <div th:if="${ventasTransferencia > 0}" th:text="${metodosPagoPorcentajes.get('TRANSFERENCIA')} + '%'">0%</div>
+                                            <div class="text-muted" th:text="${ventasTransferencia} + ' ventas'">0 ventas</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -277,28 +349,35 @@
                             <span class="badge bg-primary ms-2" th:text="${ventas != null ? ventas.size() : 0}"></span>
                         </h5>
                         <div class="d-flex gap-2">
-                            <div class="input-group input-group-sm" style="width: 180px;">
-                                <span class="input-group-text">
-                                    <i class="bi bi-filter"></i>
-                                </span>
-                                <select class="form-select form-select-sm" id="statusFilter" onchange="filterSales()">
-                                    <option value="">Todos los estados</option>
-                                    <option value="COMPLETADA">Completadas</option>
-                                    <option value="PENDIENTE">Pendientes</option>
-                                    <option value="RECHAZADA">Rechazadas</option>
-                                </select>
-                            </div>
-                            <div class="input-group input-group-sm" style="width: 180px;">
-                                <span class="input-group-text">
-                                    <i class="bi bi-credit-card"></i>
-                                </span>
-                                <select class="form-select form-select-sm" id="paymentFilter" onchange="filterSales()">
-                                    <option value="">Todos los pagos</option>
-                                    <option value="TARJETA">Tarjeta</option>
-                                    <option value="EFECTIVO">Efectivo</option>
-                                    <option value="TRANSFERENCIA">Transferencia</option>
-                                </select>
-                            </div>
+                            <form method="get" action="/admin/ventas" class="d-flex gap-2" id="tableFilterForm">
+                                <div class="input-group input-group-sm" style="width: 180px;">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-filter"></i>
+                                    </span>
+                                    <select class="form-select form-select-sm" name="estado" onchange="this.form.submit()">
+                                        <option value="">Todos los estados</option>
+                                        <option value="COMPLETADA" th:selected="${filtroEstado == 'COMPLETADA'}">Completadas</option>
+                                        <option value="PENDIENTE" th:selected="${filtroEstado == 'PENDIENTE'}">Pendientes</option>
+                                        <option value="RECHAZADA" th:selected="${filtroEstado == 'RECHAZADA'}">Rechazadas</option>
+                                    </select>
+                                </div>
+                                <div class="input-group input-group-sm" style="width: 180px;">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-credit-card"></i>
+                                    </span>
+                                    <select class="form-select form-select-sm" name="metodoPago" onchange="this.form.submit()">
+                                        <option value="">Todos los pagos</option>
+                                        <option value="TARJETA" th:selected="${filtroMetodoPago == 'TARJETA'}">Tarjeta</option>
+                                        <option value="EFECTIVO" th:selected="${filtroMetodoPago == 'EFECTIVO'}">Efectivo</option>
+                                        <option value="TRANSFERENCIA" th:selected="${filtroMetodoPago == 'TRANSFERENCIA'}">Transferencia</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Campos ocultos para mantener otros filtros -->
+                                <input type="hidden" name="periodo" th:value="${filtroPeriodo}">
+                                <input type="hidden" name="fechaInicio" th:value="${filtroFechaInicio}">
+                                <input type="hidden" name="fechaFin" th:value="${filtroFechaFin}">
+                            </form>
                         </div>
                     </div>
 
@@ -510,9 +589,118 @@
                     });
                 });
             });
+
+            // Función para alternar el rango de fechas personalizado
+            function toggleCustomDateRange() {
+                const customRange = document.getElementById('customDateRange');
+                if (customRange.style.display === 'none' || customRange.style.display === '') {
+                    customRange.style.display = 'flex';
+                    
+                    // Si no hay fechas establecidas, establecer la fecha de hoy
+                    const startDate = document.getElementById('startDate');
+                    const endDate = document.getElementById('endDate');
+                    
+                    if (!startDate.value) {
+                        const today = new Date();
+                        startDate.value = today.toISOString().split('T')[0];
+                    }
+                    
+                    if (!endDate.value) {
+                        const today = new Date();
+                        endDate.value = today.toISOString().split('T')[0];
+                    }
+                } else {
+                    customRange.style.display = 'none';
+                }
+            }
+
+            // Función para limpiar filtro de fechas
+            function clearDateFilter() {
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                
+                // Enviar formulario sin fechas
+                document.getElementById('filterForm').submit();
+            }
+
+            // Función para aplicar filtros de tabla (ya no se usa, se envía el formulario directamente)
+            function filterSales() {
+                // Esta función ya no es necesaria porque los filtros se envían directamente
+                // Mantenemos la función para evitar errores, pero puede estar vacía
+            }
+
+            // Función para setear filtro de fecha (modificada para usar formulario)
+            function setDateFilter(range) {
+                // Establecer el valor del periodo en el formulario
+                const periodoInput = document.querySelector('input[name="periodo"]');
+                if (periodoInput) {
+                    periodoInput.value = range;
+                }
+                
+                // Limpiar fechas personalizadas si se selecciona un periodo predefinido
+                if (range !== 'custom') {
+                    document.getElementById('startDate').value = '';
+                    document.getElementById('endDate').value = '';
+                    document.getElementById('customDateRange').style.display = 'none';
+                }
+                
+                // Actualizar los botones activos
+                document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.value === range) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // Enviar formulario
+                document.getElementById('filterForm').submit();
+            }
+
+            // Función para aplicar fechas personalizadas (modificada)
+            function applyCustomDate() {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (startDate && endDate) {
+                    // Establecer el periodo como custom
+                    const periodoInput = document.querySelector('input[name="periodo"]');
+                    if (periodoInput) {
+                        periodoInput.value = 'custom';
+                    }
+                    
+                    // Enviar formulario
+                    document.getElementById('filterForm').submit();
+                } else {
+                    showToast('Debes seleccionar ambas fechas', 'warning');
+                }
+            }
+
+            // Inicializar botones activos al cargar la página
+            document.addEventListener('DOMContentLoaded', function() {
+                // Establecer botón activo según el periodo actual
+                const periodoActual = '[[${filtroPeriodo}]]' || '';
+                document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                    if (btn.value === periodoActual) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // Si hay fechas personalizadas, mostrar el selector
+                const fechaInicio = '[[${filtroFechaInicio}]]';
+                const fechaFin = '[[${filtroFechaFin}]]';
+                
+                if (fechaInicio || fechaFin) {
+                    const customRange = document.getElementById('customDateRange');
+                    if (customRange) {
+                        customRange.style.display = 'flex';
+                    }
+                }
+            });
             
             function initializeCharts() {
-                // Gráfico de ventas por mes
+                // Gráfico de ventas por mes con datos reales
                 const salesCtx = document.getElementById('salesChart').getContext('2d');
                 const salesChart = new Chart(salesCtx, {
                     type: 'line',
@@ -520,7 +708,20 @@
                         labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                         datasets: [{
                             label: 'Ventas ($)',
-                            data: [1200, 1900, 1500, 2100, 1800, 2400, 2200, 2600, 2300, 2800, 2500, 3000],
+                            data: [
+                                /*[[${ventasPorMes[0]}]]*/ 0,
+                                /*[[${ventasPorMes[1]}]]*/ 0,
+                                /*[[${ventasPorMes[2]}]]*/ 0,
+                                /*[[${ventasPorMes[3]}]]*/ 0,
+                                /*[[${ventasPorMes[4]}]]*/ 0,
+                                /*[[${ventasPorMes[5]}]]*/ 0,
+                                /*[[${ventasPorMes[6]}]]*/ 0,
+                                /*[[${ventasPorMes[7]}]]*/ 0,
+                                /*[[${ventasPorMes[8]}]]*/ 0,
+                                /*[[${ventasPorMes[9]}]]*/ 0,
+                                /*[[${ventasPorMes[10]}]]*/ 0,
+                                /*[[${ventasPorMes[11]}]]*/ 0
+                            ],
                             borderColor: 'rgba(196, 105, 110, 1)',
                             backgroundColor: 'rgba(196, 105, 110, 0.1)',
                             borderWidth: 3,
@@ -563,7 +764,14 @@
                                 borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
-                                        return 'Ventas: $' + context.parsed.y.toLocaleString('es-MX');
+                                        const value = context.parsed.y;
+                                        const month = context.label;
+                                        
+                                        // Obtener el porcentaje del total anual
+                                        const totalAnual = /*[[${totalVentasAnual}]]*/ 0;
+                                        const porcentaje = totalAnual > 0 ? ((value / totalAnual) * 100).toFixed(1) : 0;
+                                        
+                                        return `${month}: $${value.toLocaleString('es-MX')} (${porcentaje}% del total anual)`;
                                     }
                                 }
                             },
@@ -578,14 +786,18 @@
                     }
                 });
                 
-                // Gráfico de métodos de pago
+                // Gráfico de métodos de pago con datos reales
                 const paymentCtx = document.getElementById('paymentMethodChart').getContext('2d');
                 const paymentChart = new Chart(paymentCtx, {
                     type: 'doughnut',
                     data: {
                         labels: ['Tarjeta', 'Efectivo', 'Transferencia'],
                         datasets: [{
-                            data: [65, 25, 10],
+                            data: [
+                                /*[[${ventasTarjeta}]]*/ 0,
+                                /*[[${ventasEfectivo}]]*/ 0,
+                                /*[[${ventasTransferencia}]]*/ 0
+                            ],
                             backgroundColor: [
                                 'rgba(82, 49, 76, 0.9)',
                                 'rgba(196, 105, 110, 0.9)',
@@ -617,8 +829,20 @@
                                         const label = context.label || '';
                                         const value = context.parsed || 0;
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((value / total) * 100);
-                                        return `${label}: ${value}% (${percentage}% del total)`;
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        
+                                        // Obtener los datos reales del modelo
+                                        const ventasTarjeta = /*[[${ventasTarjeta}]]*/ 0;
+                                        const ventasEfectivo = /*[[${ventasEfectivo}]]*/ 0;
+                                        const ventasTransferencia = /*[[${ventasTransferencia}]]*/ 0;
+                                        
+                                        // Determinar cuál método estamos mostrando
+                                        let ventasMetodo = 0;
+                                        if (label === 'Tarjeta') ventasMetodo = ventasTarjeta;
+                                        else if (label === 'Efectivo') ventasMetodo = ventasEfectivo;
+                                        else if (label === 'Transferencia') ventasMetodo = ventasTransferencia;
+                                        
+                                        return `${label}: ${ventasMetodo} ventas (${percentage}% del total)`;
                                     }
                                 }
                             }
@@ -626,7 +850,10 @@
                     }
                 });
             }
-            
+            function clearAllFilters() {
+                // Redirigir sin parámetros de filtro
+                window.location.href = '/admin/ventas';
+            }
             function setDateFilter(range) {
                 // Activar botón correspondiente
                 document.querySelectorAll('.btn-group .btn').forEach(btn => {

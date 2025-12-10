@@ -57,6 +57,7 @@ public class AuthController {
                 "¡Registro exitoso! Ahora puedes iniciar sesión");
             return "redirect:/auth/login";
             
+            
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", 
                 "Error en el registro: " + e.getMessage());

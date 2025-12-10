@@ -1,5 +1,7 @@
 package Proyecto.controller;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -29,9 +32,11 @@ import Proyecto.model.EstadoVenta;
 import Proyecto.model.ItemCarrito;
 import Proyecto.model.MetodoPago;
 import Proyecto.model.Producto;
+import Proyecto.model.TipoItem;
 import Proyecto.model.Tratamiento;
 import Proyecto.model.Usuario;
 import Proyecto.model.Venta;
+import Proyecto.service.CarritoService;
 import Proyecto.service.CategoriaProductoService;
 import Proyecto.service.CategoriaTratamientoService;
 import Proyecto.service.ProductoService;
@@ -42,6 +47,9 @@ import Proyecto.service.VentaService;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    @Autowired
+    private CarritoService carritoService;
     
     @Autowired
     private ProductoService productoService;
@@ -383,39 +391,235 @@ public class AdminController {
         }
     }
 
-    // Modifica el método reporteVentas en AdminController:
     @GetMapping("/ventas")
-    public String reporteVentas(Model model) {
+    public String reporteVentas(
+        @RequestParam(required = false) String estado,
+        @RequestParam(required = false) String metodoPago,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaInicio,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaFin,
+        @RequestParam(required = false) String periodo,
+        Model model) {
+        
         // Obtener todas las ventas con relaciones
         List<Venta> ventas = ventaService.obtenerTodas();
         
-        // Calcular estadísticas básicas
-        double ingresosTotales = ventaService.calcularIngresosTotales();
+        // Aplicar filtros si están presentes
+        List<Venta> ventasFiltradas = aplicarFiltrosVentas(ventas, estado, metodoPago, fechaInicio, fechaFin, periodo);
+        
+        // Calcular estadísticas básicas usando ventas filtradas
+        double ingresosTotales = ventasFiltradas.stream()
+            .mapToDouble(v -> v.getTotal().doubleValue())
+            .sum();
         
         // Contar ventas completadas
-        long ventasCompletadas = ventas.stream()
+        long ventasCompletadas = ventasFiltradas.stream()
             .filter(v -> v.getEstado() != null && v.getEstado() == EstadoVenta.COMPLETADA)
             .count();
         
-        // Contar ventas con tarjeta
-        long ventasTarjeta = ventas.stream()
+        // Contar ventas por método de pago
+        long ventasTarjeta = ventasFiltradas.stream()
             .filter(v -> v.getMetodoPago() != null && v.getMetodoPago() == MetodoPago.TARJETA)
             .count();
         
-        // Calcular productos más vendidos usando los datos existentes
-        List<Map<String, Object>> productosMasVendidos = calcularProductosMasVendidos(ventas);
+        long ventasEfectivo = ventasFiltradas.stream()
+            .filter(v -> v.getMetodoPago() != null && v.getMetodoPago() == MetodoPago.EFECTIVO)
+            .count();
         
-        // Calcular tratamientos más solicitados usando los datos existentes
-        List<Map<String, Object>> tratamientosMasSolicitados = calcularTratamientosMasSolicitados(ventas);
+        long ventasTransferencia = ventasFiltradas.stream()
+            .filter(v -> v.getMetodoPago() != null && v.getMetodoPago() == MetodoPago.TRANSFERENCIA)
+            .count();
         
-        model.addAttribute("ventas", ventas);
+        // Calcular productos más vendidos usando las ventas filtradas
+        List<Map<String, Object>> productosMasVendidos = calcularProductosMasVendidos(ventasFiltradas);
+        
+        // Calcular tratamientos más solicitados usando las ventas filtradas
+        List<Map<String, Object>> tratamientosMasSolicitados = calcularTratamientosMasSolicitados(ventasFiltradas);
+        
+        // Preparar datos para el gráfico de métodos de pago
+        Map<String, Long> metodosPagoData = new HashMap<>();
+        metodosPagoData.put("TARJETA", ventasTarjeta);
+        metodosPagoData.put("EFECTIVO", ventasEfectivo);
+        metodosPagoData.put("TRANSFERENCIA", ventasTransferencia);
+        
+        // Calcular porcentajes para el gráfico
+        long totalVentasMetodos = ventasTarjeta + ventasEfectivo + ventasTransferencia;
+        Map<String, Integer> metodosPagoPorcentajes = new HashMap<>();
+        
+        if (totalVentasMetodos > 0) {
+            metodosPagoPorcentajes.put("TARJETA", (int) ((ventasTarjeta * 100) / totalVentasMetodos));
+            metodosPagoPorcentajes.put("EFECTIVO", (int) ((ventasEfectivo * 100) / totalVentasMetodos));
+            metodosPagoPorcentajes.put("TRANSFERENCIA", (int) ((ventasTransferencia * 100) / totalVentasMetodos));
+        } else {
+            metodosPagoPorcentajes.put("TARJETA", 0);
+            metodosPagoPorcentajes.put("EFECTIVO", 0);
+            metodosPagoPorcentajes.put("TRANSFERENCIA", 0);
+        }
+        
+        // CALCULAR VENTAS POR MES (considerando filtros de fecha)
+        double[] ventasPorMes = calcularVentasPorMesFiltradas(ventasFiltradas, fechaInicio, fechaFin);
+        model.addAttribute("ventasPorMes", ventasPorMes);
+        
+        // CALCULAR TOTAL POR MES PARA ETIQUETAS
+        double totalVentasAnual = 0;
+        for (double ventaMes : ventasPorMes) {
+            totalVentasAnual += ventaMes;
+        }
+        model.addAttribute("totalVentasAnual", totalVentasAnual);
+        
+        // Pasar los filtros actuales al modelo para mantenerlos en la vista
+        model.addAttribute("filtroEstado", estado);
+        model.addAttribute("filtroMetodoPago", metodoPago);
+        model.addAttribute("filtroFechaInicio", fechaInicio);
+        model.addAttribute("filtroFechaFin", fechaFin);
+        model.addAttribute("filtroPeriodo", periodo);
+        
+        model.addAttribute("ventas", ventasFiltradas);
         model.addAttribute("ingresosTotales", ingresosTotales);
         model.addAttribute("ventasCompletadas", ventasCompletadas);
         model.addAttribute("ventasTarjeta", ventasTarjeta);
+        model.addAttribute("ventasEfectivo", ventasEfectivo);
+        model.addAttribute("ventasTransferencia", ventasTransferencia);
         model.addAttribute("productosMasVendidos", productosMasVendidos);
         model.addAttribute("tratamientosMasSolicitados", tratamientosMasSolicitados);
+        model.addAttribute("metodosPagoData", metodosPagoData);
+        model.addAttribute("metodosPagoPorcentajes", metodosPagoPorcentajes);
+        model.addAttribute("totalVentasMetodos", totalVentasMetodos);
         
         return "admin/ventas";
+    }
+
+    private List<Venta> aplicarFiltrosVentas(List<Venta> ventas, String estado, String metodoPago, 
+                                            LocalDate fechaInicio, LocalDate fechaFin, String periodo) {
+        List<Venta> ventasFiltradas = new ArrayList<>(ventas);
+        
+        // Filtrar por estado
+        if (estado != null && !estado.trim().isEmpty()) {
+            ventasFiltradas = ventasFiltradas.stream()
+                .filter(v -> v.getEstado() != null && v.getEstado().name().equals(estado))
+                .collect(Collectors.toList());
+        }
+        
+        // Filtrar por método de pago
+        if (metodoPago != null && !metodoPago.trim().isEmpty()) {
+            ventasFiltradas = ventasFiltradas.stream()
+                .filter(v -> v.getMetodoPago() != null && v.getMetodoPago().name().equals(metodoPago))
+                .collect(Collectors.toList());
+        }
+        
+        // Filtrar por periodo (hoy, semana, mes, año)
+        if (periodo != null && !periodo.trim().isEmpty()) {
+            LocalDate hoy = LocalDate.now();
+            
+            switch (periodo) {
+                case "today":
+                    ventasFiltradas = ventasFiltradas.stream()
+                        .filter(v -> v.getFechaVenta() != null && 
+                                    v.getFechaVenta().toLocalDate().isEqual(hoy))
+                        .collect(Collectors.toList());
+                    break;
+                    
+                case "week":
+                    LocalDate inicioSemana = hoy.with(DayOfWeek.MONDAY);
+                    LocalDate finSemana = hoy.with(DayOfWeek.SUNDAY);
+                    ventasFiltradas = ventasFiltradas.stream()
+                        .filter(v -> v.getFechaVenta() != null && 
+                                    !v.getFechaVenta().toLocalDate().isBefore(inicioSemana) &&
+                                    !v.getFechaVenta().toLocalDate().isAfter(finSemana))
+                        .collect(Collectors.toList());
+                    break;
+                    
+                case "month":
+                    LocalDate inicioMes = hoy.withDayOfMonth(1);
+                    LocalDate finMes = hoy.withDayOfMonth(hoy.lengthOfMonth());
+                    ventasFiltradas = ventasFiltradas.stream()
+                        .filter(v -> v.getFechaVenta() != null && 
+                                    !v.getFechaVenta().toLocalDate().isBefore(inicioMes) &&
+                                    !v.getFechaVenta().toLocalDate().isAfter(finMes))
+                        .collect(Collectors.toList());
+                    break;
+                    
+                case "year":
+                    LocalDate inicioAnio = hoy.withDayOfYear(1);
+                    LocalDate finAnio = hoy.withDayOfYear(hoy.lengthOfYear());
+                    ventasFiltradas = ventasFiltradas.stream()
+                        .filter(v -> v.getFechaVenta() != null && 
+                                    !v.getFechaVenta().toLocalDate().isBefore(inicioAnio) &&
+                                    !v.getFechaVenta().toLocalDate().isAfter(finAnio))
+                        .collect(Collectors.toList());
+                    break;
+            }
+        }
+        
+        // Filtrar por rango de fechas personalizado
+        if (fechaInicio != null) {
+            ventasFiltradas = ventasFiltradas.stream()
+                .filter(v -> v.getFechaVenta() != null && 
+                            !v.getFechaVenta().toLocalDate().isBefore(fechaInicio))
+                .collect(Collectors.toList());
+        }
+        
+        if (fechaFin != null) {
+            ventasFiltradas = ventasFiltradas.stream()
+                .filter(v -> v.getFechaVenta() != null && 
+                            !v.getFechaVenta().toLocalDate().isAfter(fechaFin))
+                .collect(Collectors.toList());
+        }
+        
+        return ventasFiltradas;
+    }
+
+    private double[] calcularVentasPorMesFiltradas(List<Venta> ventas, LocalDate fechaInicio, LocalDate fechaFin) {
+        double[] ventasPorMes = new double[12];
+        
+        // Inicializar todos los meses en 0
+        for (int i = 0; i < 12; i++) {
+            ventasPorMes[i] = 0;
+        }
+        
+        // Determinar el rango de meses a considerar
+        int mesInicio = 0; // Enero
+        int mesFin = 11;   // Diciembre
+        
+        if (fechaInicio != null) {
+            mesInicio = fechaInicio.getMonthValue() - 1;
+        }
+        
+        if (fechaFin != null) {
+            mesFin = fechaFin.getMonthValue() - 1;
+        }
+        
+        // Calcular ventas por mes dentro del rango
+        for (Venta venta : ventas) {
+            if (venta.getEstado() == EstadoVenta.COMPLETADA && venta.getFechaVenta() != null) {
+                int mes = venta.getFechaVenta().getMonthValue() - 1;
+                if (mes >= mesInicio && mes <= mesFin) {
+                    ventasPorMes[mes] += venta.getTotal().doubleValue();
+                }
+            }
+        }
+        
+        return ventasPorMes;
+    }
+
+    // AÑADE ESTE MÉTODO NUEVO AL FINAL DE LA CLASE AdminController
+    private double[] calcularVentasPorMes(List<Venta> ventas) {
+        double[] ventasPorMes = new double[12];
+        
+        // Inicializar todos los meses en 0
+        for (int i = 0; i < 12; i++) {
+            ventasPorMes[i] = 0;
+        }
+        
+        for (Venta venta : ventas) {
+            if (venta.getEstado() == EstadoVenta.COMPLETADA && venta.getFechaVenta() != null) {
+                int mes = venta.getFechaVenta().getMonthValue() - 1; // Enero = 0, Diciembre = 11
+                if (mes >= 0 && mes < 12) {
+                    ventasPorMes[mes] += venta.getTotal().doubleValue();
+                }
+            }
+        }
+        
+        return ventasPorMes;
     }
 
     // Agrega estos métodos auxiliares en AdminController:
@@ -820,5 +1024,69 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", "Error al eliminar usuario: " + e.getMessage());
         }
         return "redirect:/admin/usuarios";
+    }
+
+    @PutMapping("/ventas/{id}/estado")
+    @ResponseBody
+    public ResponseEntity<?> actualizarEstadoVenta(@PathVariable Long id, 
+                                                @RequestParam String estado,
+                                                RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Venta> ventaOpt = ventaService.obtenerPorId(id);
+            if (ventaOpt.isPresent()) {
+                Venta venta = ventaOpt.get();
+                
+                EstadoVenta nuevoEstado = EstadoVenta.valueOf(estado);
+                venta.setEstado(nuevoEstado);
+                ventaService.guardar(venta);
+                
+                return ResponseEntity.ok().build();
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Ver detalle de venta individual
+    @GetMapping("/ventas/{id}")
+    public String verDetalleVenta(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Venta> ventaOpt = ventaService.obtenerPorId(id);
+            
+            if (ventaOpt.isPresent()) {
+                Venta venta = ventaOpt.get();
+                
+                // Asegurarnos de que las relaciones se carguen correctamente
+                List<ItemCarrito> items = carritoService.obtenerItemsDelCarrito(venta.getCarrito().getUsuario());
+                
+                // Calcular totales
+                double subtotalProductos = 0;
+                double subtotalTratamientos = 0;
+                
+                for (ItemCarrito item : items) {
+                    if (item.getTipo() == TipoItem.PRODUCTO) {
+                        subtotalProductos += item.getPrecioUnitario() * item.getCantidad();
+                    } else if (item.getTipo() == TipoItem.CITA) {
+                        subtotalTratamientos += item.getPrecioUnitario() * item.getCantidad();
+                    }
+                }
+                
+                // Agregar atributos al modelo
+                model.addAttribute("venta", venta);
+                model.addAttribute("items", items);
+                model.addAttribute("subtotalProductos", subtotalProductos);
+                model.addAttribute("subtotalTratamientos", subtotalTratamientos);
+                model.addAttribute("subtotal", subtotalProductos + subtotalTratamientos);
+                
+                return "admin/detalle-venta";
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Venta no encontrada");
+                return "redirect:/admin/ventas";
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al cargar la venta: " + e.getMessage());
+            return "redirect:/admin/ventas";
+        }
     }
 }

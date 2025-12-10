@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head('Mis Compras - KWestética')}"></head>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <!-- Contenido principal -->
+    <main class="flex-grow-1">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="row align-items-center py-5">
+                    <div class="col-lg-12 text-center">
+                        <h1 class="fw-bold mb-3 text-logo display-4">
+                            <i class="bi bi-receipt text-primary me-3"></i>
+                            Mis Compras
+                        </h1>
+                        <p class="lead mb-0 text-details fs-5">
+                            Revisa el historial de todas tus compras y tratamientos
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista de Compras -->
+        <section class="py-6">
+            <div class="container">
+                <div class="row mb-5">
+                    <div class="col-md-8">
+                        <h3 class="text-logo mb-0">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Historial de Compras
+                        </h3>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="badge rounded-pill px-3 py-2" 
+                             style="background-color: var(--color-primary); color: white;">
+                            [[${ventas.size()}]] compras realizadas
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje si no hay compras -->
+                <div class="text-center mt-4" th:if="${#lists.isEmpty(ventas)}">
+                    <div class="card border-0 shadow-sm py-5">
+                        <div class="card-body">
+                            <div class="rounded-circle bg-primary-light d-inline-flex align-items-center justify-content-center p-4 mb-3"
+                                 style="width: 80px; height: 80px;">
+                                <i class="bi bi-bag-x display-4" style="color: var(--color-principal);"></i>
+                            </div>
+                            <h4 class="text-logo mb-3">No hay compras registradas</h4>
+                            <p class="text-details mb-4">
+                                Aún no has realizado ninguna compra. 
+                                ¡Explora nuestros productos y tratamientos!
+                            </p>
+                            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                <a th:href="@{/productos}" class="btn btn-primary btn-lg px-4">
+                                    <i class="bi bi-bag me-2"></i> Ver Productos
+                                </a>
+                                <a th:href="@{/tratamientos}" class="btn btn-outline-primary btn-lg px-4">
+                                    <i class="bi bi-scissors me-2"></i> Ver Tratamientos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Compras -->
+                <div class="row" th:if="${not #lists.isEmpty(ventas)}">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    <div th:each="venta : ${ventas}" class="list-group-item border-0 py-4">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-8">
+                                                <div class="d-flex align-items-start">
+                                                    <div class="me-3">
+                                                        <div class="rounded-circle d-flex align-items-center justify-content-center p-3"
+                                                             style="background-color: rgba(196, 105, 110, 0.1); width: 60px; height: 60px;">
+                                                            <i class="bi bi-bag-check" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-1 fw-semibold" style="color: var(--color-logo);">
+                                                            <span th:text="'Venta #' + ${venta.numeroVenta}"></span>
+                                                        </h6>
+                                                        <p class="text-muted small mb-1">
+                                                            <i class="bi bi-calendar me-1"></i>
+                                                            [[${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}]]
+                                                        </p>
+                                                        <p class="text-muted small mb-0">
+                                                            <i class="bi bi-credit-card me-1"></i>
+                                                            [[${venta.metodoPago}]]
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                                <div class="fw-bold fs-4" style="color: var(--color-secundario);">
+                                                    $[[${#numbers.formatDecimal(venta.total, 1, 2)}]]
+                                                </div>
+                                                <span th:class="${venta.estado.name() == 'COMPLETADA'} ? 
+                                                    'badge bg-success' : 
+                                                    ${venta.estado.name() == 'PENDIENTE'} ? 
+                                                    'badge bg-warning' : 'badge bg-danger'">
+                                                    [[${venta.estado}]]
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Detalles de la venta (collapsible) -->
+                                        <div class="mt-3">
+                                            <a class="btn btn-sm btn-outline-primary" 
+                                               data-bs-toggle="collapse" 
+                                               th:href="'#detalles-' + ${venta.id}"
+                                               th:aria-controls="'detalles-' + ${venta.id}">
+                                                <i class="bi bi-list me-1"></i> Ver detalles
+                                            </a>
+                                            
+                                            <div class="collapse mt-3" th:id="'detalles-' + ${venta.id}">
+                                                <div class="card card-body border-0" style="background-color: rgba(209, 191, 181, 0.1);">
+                                                    <h6 class="mb-3" style="color: var(--color-logo);">
+                                                        <i class="bi bi-box-seam me-2"></i>
+                                                        Productos y Tratamientos
+                                                    </h6>
+                                                    <div th:each="detalle : ${venta.detalles}" class="mb-3">
+                                                        <div class="row align-items-center">
+                                                            <div class="col-1 text-center">
+                                                                <div class="rounded-circle bg-white p-2 d-inline-flex align-items-center justify-content-center"
+                                                                     style="width: 40px; height: 40px;">
+                                                                    <i th:if="${detalle.tipo.name() == 'PRODUCTO'}" 
+                                                                       class="bi bi-box" style="color: var(--color-principal);"></i>
+                                                                    <i th:if="${detalle.tipo.name() == 'TRATAMIENTO'}" 
+                                                                       class="bi bi-scissors" style="color: var(--color-secundario);"></i>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <span class="fw-semibold" style="color: var(--color-logo);">
+                                                                    <span th:if="${detalle.tipo.name() == 'PRODUCTO'}">
+                                                                        [[${detalle.producto.nombre}]]
+                                                                    </span>
+                                                                    <span th:if="${detalle.tipo.name() == 'TRATAMIENTO'}">
+                                                                        [[${detalle.tratamiento.nombre}]]
+                                                                    </span>
+                                                                </span>
+                                                                <br>
+                                                                <small class="text-muted">
+                                                                    Cantidad: [[${detalle.cantidad}]] × 
+                                                                    $[[${#numbers.formatDecimal(detalle.precioUnitario, 1, 2)}]]
+                                                                </small>
+                                                            </div>
+                                                            <div class="col-3 text-end">
+                                                                <span class="text-muted">Subtotal:</span><br>
+                                                                <span class="fw-bold" style="color: var(--color-secundario);">
+                                                                    $[[${#numbers.formatDecimal(detalle.subtotal, 1, 2)}]]
+                                                                </span>
+                                                            </div>
+                                                            <div class="col-2 text-end">
+                                                                <span th:class="${detalle.tipo.name() == 'PRODUCTO'} ? 
+                                                                    'badge bg-primary' : 'badge bg-secundario'">
+                                                                    [[${detalle.tipo}]]
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Resumen de la venta -->
+                                                    <div class="mt-3 pt-3 border-top">
+                                                        <div class="row">
+                                                            <div class="col-8 text-end">
+                                                                <span class="fw-semibold">Total de la venta:</span>
+                                                            </div>
+                                                            <div class="col-4 text-end">
+                                                                <span class="fw-bold fs-5" style="color: var(--color-principal);">
+                                                                    $[[${#numbers.formatDecimal(venta.total, 1, 2)}]]
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="row mt-5" th:if="${not #lists.isEmpty(ventas)}">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="mb-0 text-logo">
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    Resumen de Compras
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-3 rounded" style="background-color: rgba(196, 105, 110, 0.1);">
+                                            <div class="display-6 fw-bold" style="color: var(--color-principal);">
+                                                [[${#lists.size(ventas)}]]
+                                            </div>
+                                            <div class="small text-details">Total de Compras</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-3 rounded" style="background-color: rgba(157, 107, 108, 0.1);">
+                                            <div class="display-6 fw-bold" style="color: var(--color-secundario);">
+                                                $[[${#numbers.formatDecimal(totalGastado, 1, 2)}]]
+                                            </div>
+                                            <div class="small text-details">Total Gastado</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-3 rounded" style="background-color: rgba(209, 191, 181, 0.1);">
+                                            <div class="display-6 fw-bold" style="color: var(--color-details);">
+                                                [[${comprasCompletadas}]]
+                                            </div>
+                                            <div class="small text-details">Compras Completadas</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <style>
+        /* Variables CSS */
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+            --color-white: #FFFFFF;
+            --color-light: #F8F9FA;
+            --color-dark: #333333;
+            --color-gray: #6C757D;
+            --color-success: #198754;
+            --color-danger: #DC3545;
+            --color-warning: #FFC107;
+            --color-info: #0DCAF0;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--color-light) 0%, var(--color-bg) 100%);
+        }
+
+        .display-4 {
+            font-size: 3.5rem;
+        }
+
+        /* Estilos generales */
+        .bg-secundario {
+            background-color: var(--color-secundario) !important;
+            color: white !important;
+        }
+        
+        .text-logo {
+            color: var(--color-logo) !important;
+        }
+        
+        .text-details {
+            color: var(--color-details) !important;
+        }
+        
+        .text-primary {
+            color: var(--color-principal) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-secundario);
+            border-color: var(--color-secundario);
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+        
+        .bg-primary-light {
+            background-color: rgba(196, 105, 110, 0.1) !important;
+        }
+        
+        .border-primary-light {
+            border-color: rgba(196, 105, 110, 0.2) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--color-success) !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: var(--color-warning) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--color-danger) !important;
+        }
+        
+        /* Estilos para el collapse */
+        .collapse .card {
+            border: 1px solid rgba(209, 191, 181, 0.3);
+        }
+        
+        /* Transiciones suaves */
+        .list-group-item {
+            transition: all 0.3s ease;
+        }
+        
+        .list-group-item:hover {
+            background-color: rgba(209, 191, 181, 0.05);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .display-4 {
+                font-size: 2.5rem;
+            }
+            
+            .btn-lg {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</body>
+</html>
