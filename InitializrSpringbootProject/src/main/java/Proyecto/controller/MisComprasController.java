@@ -1,4 +1,4 @@
-package Proyecto.controller;
+/*package Proyecto.controller;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,4 +71,4 @@ public class MisComprasController {
         
         return "ventas/mis-compras";
     }
-}
+}*/

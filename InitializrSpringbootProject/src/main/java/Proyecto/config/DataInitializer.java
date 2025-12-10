@@ -1,4 +1,4 @@
-package Proyecto.config;
+/*package Proyecto.config;
 
 import Proyecto.model.*;
 import Proyecto.repository.*;
@@ -247,4 +247,4 @@ public class DataInitializer implements CommandLineRunner {
 
         System.out.println("🎉 Todos los datos de prueba inicializados correctamente");
     }
-}
+}*/
