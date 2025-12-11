@@ -1,0 +1,207 @@
+/* Estilos compactos para lista de productos */
+.lista-compacta-container {
+    padding: 0 15px;
+}
+
+.lista-header-compacto {
+    padding: 10px 0;
+    margin-bottom: 15px;
+}
+
+.lista-header-compacto h1 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.lista-header-compacto p {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+/* Estadísticas compactas */
+.stats-compact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.stat-compact-card {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.stat-compact-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-logo);
+    margin-bottom: 5px;
+}
+
+.stat-compact-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Estilos para los filtros */
+.filtros-compactos .input-group .form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+.filtros-compactos .input-group-text {
+    background-color: #fff;
+    border-right: none;
+}
+
+.filtros-compactos .dropdown-menu {
+    min-width: 150px;
+}
+
+/* Ajustes para responsividad */
+@media (max-width: 768px) {
+    .filtros-compactos .row > div {
+        margin-bottom: 10px;
+    }
+    
+    .filtros-compactos .d-flex {
+        justify-content: flex-start !important;
+    }
+}
+
+/* Tabla compacta */
+.tabla-compacta-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tabla-compacta-header {
+    background-color: var(--color-logo);
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tabla-compacta-header h5 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.tabla-compacta {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-compacta thead {
+    background-color: #f8f9fa;
+}
+
+.tabla-compacta th {
+    padding: 10px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+}
+
+.tabla-compacta td {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.tabla-compacta tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Columnas específicas */
+.col-id { width: 50px; }
+.col-codigo { width: 100px; }
+.col-categoria { width: 120px; }
+.col-precio { width: 90px; }
+.col-stock { width: 80px; }
+.col-estado { width: 90px; }
+.col-acciones { width: 140px; text-align: center; }
+
+/* Elementos dentro de la tabla */
+.badge-compact {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.producto-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.producto-imagen {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.producto-nombre {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 2px;
+}
+
+.producto-desc {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Acciones compactas */
+.acciones-compactas {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.btn-accion {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+}
+
+/* Botones de filtro compactos */
+.btn-filtro-compacto {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 768px) {
+    .stats-compact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .tabla-compacta-container {
+        overflow-x: auto;
+    }
+    
+    .tabla-compacta {
+        min-width: 800px;
+    }
+}

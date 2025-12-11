@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragments/header :: head('Detalle de Venta - KWestética')}">
+        <!-- Este contenido será reemplazado por el fragmento head -->
+    </head>
+    
+    <body class="admin-body">
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde otro template -->
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+            
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 lista-compacta-container" style="background-color: #f8f9fa; min-height: 100vh; padding: 15px;">
+                <!-- Header -->
+                <div class="lista-header-compacto">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="fw-bold mb-1" style="color: var(--color-logo);">
+                                <i class="bi bi-receipt me-2"></i>Detalle de Venta #<span th:text="${venta.id}"></span>
+                            </h1>
+                            <p class="text-muted">Información completa de la venta realizada</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/admin/ventas}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i>Volver a Ventas
+                            </a>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                                <i class="bi bi-printer me-1"></i>Imprimir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensajes Flash -->
+                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show py-2 mt-3" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2 mt-3" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- Panel de información de la venta -->
+                <div class="row g-3 mb-4">
+                    <!-- Información del cliente -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-person-circle me-2"></i>Información del Cliente
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 60px; height: 60px; font-weight: bold; font-size: 18px;"
+                                         th:text="${#strings.substring(venta.usuario.nombre, 0, 1)} + ${#strings.substring(venta.usuario.apellido, 0, 1)}">
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1" th:text="${venta.usuario.nombre} + ' ' + ${venta.usuario.apellido}"></h6>
+                                        <p class="text-muted mb-1 small" th:text="${venta.usuario.email}"></p>
+                                        <p class="text-muted mb-0 small" th:text="${venta.usuario.telefono} ?: 'Teléfono no registrado'"></p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Fecha de registro</small>
+                                        <span class="fw-medium" th:if="${venta.usuario.fechaRegistro}"
+                                              th:text="${#temporals.format(venta.usuario.fechaRegistro, 'dd/MM/yyyy')}"></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Tipo de usuario</small>
+                                        <span class="fw-medium" th:text="${venta.usuario.tipo}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalles de la venta -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-receipt me-2"></i>Detalles de la Venta
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Fecha de venta</small>
+                                        <span class="fw-medium" th:if="${venta.fechaVenta}"
+                                              th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Estado</small>
+                                        <span th:if="${venta.estado.name() == 'PENDIENTE'}" 
+                                              class="badge bg-warning text-dark">
+                                            <i class="bi bi-clock me-1"></i>Pendiente
+                                        </span>
+                                        <span th:if="${venta.estado.name() == 'COMPLETADA'}" 
+                                              class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Completada
+                                        </span>
+                                        <span th:if="${venta.estado.name() == 'RECHAZADA'}" 
+                                              class="badge bg-danger">
+                                            <i class="bi bi-x-circle me-1"></i>Rechazada
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Método de pago</small>
+                                        <span th:if="${venta.metodoPago.name() == 'TARJETA'}" 
+                                              class="badge bg-primary">
+                                            <i class="bi bi-credit-card me-1"></i>Tarjeta
+                                        </span>
+                                        <span th:if="${venta.metodoPago.name() == 'EFECTIVO'}" 
+                                              class="badge bg-success">
+                                            <i class="bi bi-cash me-1"></i>Efectivo
+                                        </span>
+                                        <span th:if="${venta.metodoPago.name() == 'TRANSFERENCIA'}" 
+                                              class="badge bg-info">
+                                            <i class="bi bi-bank me-1"></i>Transferencia
+                                        </span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Total de la venta</small>
+                                        <h4 class="fw-bold mb-0" style="color: var(--color-principal);"
+                                            th:text="'$' + ${#numbers.formatDecimal(venta.total, 1, 2)}"></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabla de productos y tratamientos -->
+                <div class="tabla-compacta-container" style="margin-top: 25px;">
+                    <div class="tabla-compacta-header">
+                        <h5>
+                            <i class="bi bi-cart-check me-2"></i>Productos y Tratamientos
+                            <span class="badge bg-primary ms-2" th:text="${items.size()}"></span>
+                        </h5>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0" id="tablaVenta">
+                                    <thead style="background-color: var(--color-logo); color: white; position: sticky; top: 0; z-index: 1;">
+                                        <tr>
+                                            <th width="60">#</th>
+                                            <th>Descripción</th>
+                                            <th width="120" class="text-center">Tipo</th>
+                                            <th width="100" class="text-center">Cantidad</th>
+                                            <th width="140" class="text-end">Precio Unitario</th>
+                                            <th width="140" class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item, stat : ${items}">
+                                            <td th:text="${stat.count}"></td>
+                                            <td>
+                                                <div th:if="${item.tipo.name() == 'PRODUCTO'}">
+                                                    <h6 class="fw-bold mb-1" th:text="${item.producto.nombre}"></h6>
+                                                    <p class="text-muted small mb-0" th:text="${item.producto.descripcion} ?: 'Sin descripción'"></p>
+                                                    <small class="text-muted">
+                                                        Código: <span th:text="${item.producto.codigoProducto}"></span>
+                                                    </small>
+                                                </div>
+                                                <div th:if="${item.tipo.name() == 'CITA'}">
+                                                    <h6 class="fw-bold mb-1" th:text="${item.cita.tratamiento.nombre}"></h6>
+                                                    <p class="text-muted small mb-0">
+                                                        <i class="bi bi-calendar3 me-1"></i>
+                                                        <span th:if="${item.cita.fechaCita}"
+                                                              th:text="${#temporals.format(item.cita.fechaCita, 'dd/MM/yyyy HH:mm')}"></span>
+                                                    </p>
+                                                    <small class="text-muted">
+                                                        Duración: <span th:text="${item.cita.tratamiento.duracionMinutos}"></span> min
+                                                    </small>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span th:if="${item.tipo.name() == 'PRODUCTO'}" 
+                                                      class="badge bg-primary">Producto</span>
+                                                <span th:if="${item.tipo.name() == 'CITA'}" 
+                                                      class="badge bg-success">Tratamiento</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span th:text="${item.cantidad}"></span>
+                                            </td>
+                                            <td class="text-end fw-medium"
+                                                th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario, 1, 2)}"></td>
+                                            <td class="text-end fw-bold"
+                                                th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario * item.cantidad, 1, 2)}"></td>
+                                        </tr>
+                                        
+                                        <!-- Mensaje si no hay items -->
+                                        <tr th:if="${items == null or items.isEmpty()}">
+                                            <td colspan="6" class="text-center py-5">
+                                                <div class="empty-state">
+                                                    <i class="bi bi-cart-x" style="font-size: 3rem; color: #6c757d; opacity: 0.5;"></i>
+                                                    <p class="text-muted mt-3 mb-0">No hay productos o tratamientos en esta venta</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Información de resultados -->
+                            <div th:if="${!items.isEmpty()}" class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <div class="text-muted small">
+                                    Mostrando <span th:text="${items.size()}"></span> 
+                                    <span th:text="${items.size() == 1 ? 'ítem' : 'ítems'}"></span>
+                                </div>
+                                <div class="text-end">
+                                    <h5 class="fw-bold mb-0" style="color: var(--color-principal);"
+                                        th:text="'Total: $' + ${#numbers.formatDecimal(venta.total, 1, 2)}"></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Acciones -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="mb-3" style="color: var(--color-logo);">
+                                    <i class="bi bi-gear me-2"></i>Acciones
+                                </h5>
+                                <div th:if="${venta.estado.name() == 'PENDIENTE'}" class="d-grid gap-2 d-md-flex">
+                                    <button class="btn btn-success btn-lg"
+                                            th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"COMPLETADA\")'">
+                                        <i class="bi bi-check-circle me-2"></i>Marcar como Completada
+                                    </button>
+                                    <button class="btn btn-danger btn-lg"
+                                            th:onclick="'updateSaleStatus(' + ${venta.id} + ', \"RECHAZADA\")'">
+                                        <i class="bi bi-x-circle me-2"></i>Marcar como Rechazada
+                                    </button>
+                                </div>
+                                <div th:if="${venta.estado.name() != 'PENDIENTE'}" class="text-center py-4">
+                                    <i class="bi bi-check2-circle" style="font-size: 3rem; color: #28a745;"></i>
+                                    <p class="mt-3 mb-0" th:text="'Esta venta ya fue ' + ${venta.estado.name().toLowerCase()}"></p>
+                                    <small class="text-muted">No se pueden realizar más acciones</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Script específico para detalle de venta -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Inicializar tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function(tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            });
+            
+            function updateSaleStatus(saleId, status) {
+                const statusText = status === 'COMPLETADA' ? 'completada' : 'rechazada';
+                const icon = status === 'COMPLETADA' ? '✅' : '❌';
+                
+                if (confirm(`${icon} ¿Está seguro de marcar la venta #${saleId} como ${statusText}?`)) {
+                    fetch(`/admin/ventas/${saleId}/estado`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({ estado: status })
+                    }).then(response => {
+                        if (response.ok) {
+                            showToast(`✅ Venta #${saleId} marcada como ${statusText}`, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast('❌ Error al actualizar estado', 'danger');
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        showToast('❌ Error de conexión', 'danger');
+                    });
+                }
+            }
+            
+            function showToast(message, type = 'info') {
+                // Eliminar toast existentes
+                document.querySelectorAll('.custom-toast').forEach(toast => toast.remove());
+                
+                const toast = document.createElement('div');
+                toast.className = `custom-toast alert alert-${type} alert-dismissible fade show position-fixed`;
+                toast.style.cssText = `
+                    top: 20px; 
+                    right: 20px; 
+                    z-index: 9999; 
+                    min-width: 300px; 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    border-left: 4px solid ${type === 'success' ? '#28a745' : type === 'danger' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+                `;
+                toast.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'danger' ? 'bi-exclamation-triangle' : type === 'warning' ? 'bi-exclamation-circle' : 'bi-info-circle'} me-2" 
+                           style="font-size: 1.2rem;"></i>
+                        <div style="flex: 1;">${message}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+            
+            function getCsrfToken() {
+                const metaTag = document.querySelector('meta[name="_csrf"]');
+                return metaTag ? metaTag.getAttribute('content') : '';
+            }
+        </script>
+        
+        <!-- Estilos adicionales -->
+        <style>
+            .empty-state {
+                padding: 2rem 1rem;
+            }
+            
+            .table th {
+                font-weight: 600;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: 1rem 0.75rem;
+            }
+            
+            .table td {
+                padding: 1rem 0.75rem;
+                vertical-align: middle;
+                border-bottom: 1px solid rgba(0,0,0,0.05);
+            }
+            
+            .table tbody tr:last-child td {
+                border-bottom: none;
+            }
+            
+            .badge {
+                font-weight: 500;
+                letter-spacing: 0.3px;
+            }
+            
+            .custom-toast {
+                animation: slideInRight 0.3s ease;
+            }
+            
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        </style>
+    </body>
+</html>

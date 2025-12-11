@@ -1,15 +1,534 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
-<head>
-    <title>Nosotros - KVestética</title>
-</head>
-<body>
-    <div layout:fragment="content">
-        <div class="container mt-4">
-            <h1>Nosotros</h1>
-            <p>Información sobre KVestética...</p>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <!-- Incluye el head con título personalizado -->
+    <head th:replace="~{fragments/header :: head('Nosotros - KVestética')}">
+        <!-- CSS crítico inline para evitar FOUC -->
+        <style>
+            /* Variables CSS críticas */
+            :root {
+                --color-principal: #C4696E;
+                --color-secundario: #9D6B6C;
+                --color-logo: #52314C;
+                --color-details: #726658;
+                --color-bg: #D1BFB5;
+            }
+            
+            /* Loading screen */
+            #loadingScreen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+                opacity: 1;
+                transition: opacity 0.3s ease;
+            }
+            
+            .spinner {
+                width: 60px;
+                height: 60px;
+                border: 4px solid rgba(196, 105, 110, 0.1);
+                border-radius: 50%;
+                border-top-color: var(--color-principal);
+                animation: spin 1s linear infinite;
+            }
+            
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            
+            /* Prevenir FOUC */
+            body {
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            body.loaded {
+                opacity: 1;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <!-- Loading Screen -->
+        <div id="loadingScreen">
+            <div class="spinner"></div>
         </div>
-    </div>
-</body>
+        
+        <!-- Navbar -->
+        <div th:replace="~{fragments/header :: navbar}"></div>
+        
+        <!-- Hero Section -->
+        <section class="hero" style="background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-logo) 100%); color: white; padding: 100px 0; text-align: center;">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-4">Sobre KVestética</h1>
+                <p class="lead mb-4">Descubre nuestra historia, misión y el equipo que hace posible tu transformación.</p>
+                <div class="mt-4">
+                    <a th:href="@{/citas/nueva}" class="btn btn-light btn-lg me-3">
+                        <i class="bi bi-calendar-check me-2"></i>Agendar Cita
+                    </a>
+                    <a th:href="@{/servicios}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-scissors me-2"></i>Ver Servicios
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nuestra Historia -->
+        <section class="py-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-4 mb-md-0">
+                        <h2 class="mb-4" style="color: var(--color-logo); border-bottom: 2px solid var(--color-principal); padding-bottom: 10px;">
+                            <i class="bi bi-book me-2"></i>Nuestra Historia
+                        </h2>
+                        <p class="lead mb-4">Más de 10 años realzando la belleza natural.</p>
+                        <p class="mb-3">KVestética nació en 2013 con la visión de crear un espacio donde la belleza y el bienestar se encuentren. Fundada por la esteticista <strong>Karina West</strong>, nuestro centro ha crecido hasta convertirse en un referente en tratamientos estéticos de calidad.</p>
+                        <p class="mb-3">Lo que comenzó como un pequeño local hoy es un centro integral de belleza que ha transformado la vida de miles de clientes, siempre manteniendo nuestro compromiso con la excelencia y la satisfacción del cliente.</p>
+                        <div class="row mt-4">
+                            <div class="col-4 text-center">
+                                <div class="stat-number display-6 fw-bold" style="color: var(--color-principal);">10+</div>
+                                <div class="stat-label">Años de Experiencia</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stat-number display-6 fw-bold" style="color: var(--color-principal);">5K+</div>
+                                <div class="stat-label">Clientes Satisfechos</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stat-number display-6 fw-bold" style="color: var(--color-principal);">50+</div>
+                                <div class="stat-label">Tratamientos</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="height: 400px; background: linear-gradient(45deg, var(--color-bg) 25%, #e9ecef 25%, #e9ecef 50%, var(--color-bg) 50%, var(--color-bg) 75%, #e9ecef 75%, #e9ecef 100%); background-size: 20px 20px; border-radius: 15px; border: 3px solid var(--color-principal);" class="d-flex flex-column align-items-center justify-content-center p-4 shadow-lg">
+                            <i class="bi bi-building" style="font-size: 4rem; color: var(--color-logo); margin-bottom: 1rem;"></i>
+                            <h4 style="color: var(--color-logo);">Nuestro Centro</h4>
+                            <p class="text-center text-muted mb-3">Calle Principal 123, Colonia Centro</p>
+                            <div class="d-flex gap-2">
+                                <a th:href="@{/contacto}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-geo-alt me-1"></i>Ver Ubicación
+                                </a>
+                                <a th:href="@{/citas/nueva}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-telephone me-1"></i>Llamar Ahora
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Misión, Visión y Valores -->
+        <section class="py-5" style="background-color: var(--color-bg);">
+            <div class="container">
+                <h2 class="text-center mb-5" style="color: var(--color-logo);">
+                    <i class="bi bi-star me-2"></i>Nuestra Filosofía
+                </h2>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-4">
+                                    <div style="width: 80px; height: 80px; background-color: var(--color-principal); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                        <i class="bi bi-bullseye text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                </div>
+                                <h4 class="card-title mb-3" style="color: var(--color-logo);">Misión</h4>
+                                <p class="card-text flex-grow-1">
+                                    Proporcionar tratamientos estéticos de la más alta calidad, utilizando tecnología avanzada y productos premium, para realzar la belleza natural de cada cliente en un ambiente de confianza y profesionalismo.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-4">
+                                    <div style="width: 80px; height: 80px; background-color: var(--color-secundario); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                        <i class="bi bi-eye text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                </div>
+                                <h4 class="card-title mb-3" style="color: var(--color-logo);">Visión</h4>
+                                <p class="card-text flex-grow-1">
+                                    Ser el centro de estética líder en la región, reconocido por nuestra excelencia en servicio, innovación en tratamientos y compromiso con la satisfacción total de nuestros clientes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-4">
+                                    <div style="width: 80px; height: 80px; background-color: var(--color-logo); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                        <i class="bi bi-heart text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                </div>
+                                <h4 class="card-title mb-3" style="color: var(--color-logo);">Valores</h4>
+                                <ul class="list-unstyled text-start flex-grow-1">
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-check-circle me-2 mt-1" style="color: var(--color-principal);"></i>
+                                        <div>
+                                            <strong>Profesionalismo</strong><br>
+                                            <small class="text-muted">Personal altamente capacitado y certificado</small>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-check-circle me-2 mt-1" style="color: var(--color-principal);"></i>
+                                        <div>
+                                            <strong>Confianza</strong><br>
+                                            <small class="text-muted">Ambiente seguro y resultados garantizados</small>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-check-circle me-2 mt-1" style="color: var(--color-principal);"></i>
+                                        <div>
+                                            <strong>Innovación</strong><br>
+                                            <small class="text-muted">Tecnología de vanguardia en cada tratamiento</small>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-check-circle me-2 mt-1" style="color: var(--color-principal);"></i>
+                                        <div>
+                                            <strong>Empatía</strong><br>
+                                            <small class="text-muted">Entendemos y atendemos tus necesidades únicas</small>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nuestro Equipo -->
+        <section class="py-5">
+            <div class="container">
+                <h2 class="text-center mb-5" style="color: var(--color-logo);">
+                    <i class="bi bi-people me-2"></i>Conoce a Nuestro Equipo
+                </h2>
+                <p class="lead text-center mb-5">Un equipo de profesionales apasionados por la belleza y el bienestar</p>
+                
+                <div class="row justify-content-center">
+                    <div class="col-md-4 mb-4">
+                        <div class="card text-center border-0 shadow-sm h-100">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-4">
+                                    <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 3rem; color: white; font-weight: bold;">KW</span>
+                                    </div>
+                                </div>
+                                <h5 style="color: var(--color-logo);">Karina West</h5>
+                                <p class="text-muted mb-3">
+                                    <i class="bi bi-award me-1"></i>Fundadora y Esteticista Principal
+                                </p>
+                                <p class="card-text flex-grow-1">
+                                    Con más de 15 años de experiencia en estética, Karina es especialista en tratamientos faciales y corporales. Certificada en las técnicas más avanzadas de Europa y América.
+                                </p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary me-2">Faciales</span>
+                                    <span class="badge bg-primary me-2">Corporales</span>
+                                    <span class="badge bg-primary">Láser</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card text-center border-0 shadow-sm h-100">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-4">
+                                    <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--color-secundario) 0%, var(--color-logo) 100%); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 3rem; color: white; font-weight: bold;">MG</span>
+                                    </div>
+                                </div>
+                                <h5 style="color: var(--color-logo);">María González</h5>
+                                <p class="text-muted mb-3">
+                                    <i class="bi bi-award me-1"></i>Especialista en Depilación
+                                </p>
+                                <p class="card-text flex-grow-1">
+                                    Certificada en las técnicas más avanzadas de depilación láser y tradicional. Más de 8 años de experiencia y formación continua en las últimas tecnologías.
+                                </p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary me-2">Láser</span>
+                                    <span class="badge bg-primary me-2">Cera</span>
+                                    <span class="badge bg-primary">Definitiva</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card text-center border-0 shadow-sm h-100">
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-4">
+                                    <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--color-logo) 0%, var(--color-principal) 100%); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 3rem; color: white; font-weight: bold;">AR</span>
+                                    </div>
+                                </div>
+                                <h5 style="color: var(--color-logo);">Ana Rodríguez</h5>
+                                <p class="text-muted mb-3">
+                                    <i class="bi bi-award me-1"></i>Terapeuta de Masajes
+                                </p>
+                                <p class="card-text flex-grow-1">
+                                    Especialista en masajes terapéuticos y relajantes. Formada en diversas técnicas internacionales como sueco, tailandés y shiatsu.
+                                </p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary me-2">Terapéutico</span>
+                                    <span class="badge bg-primary me-2">Relajante</span>
+                                    <span class="badge bg-primary">Deportivo</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botón para contactar al equipo -->
+                <div class="text-center mt-5">
+                    <a th:href="@{/contacto}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-chat-left-text me-2"></i>Contactar al Equipo
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Final -->
+        <section class="py-5 text-center" style="background-color: var(--color-bg); color: white;">
+            <div class="container">
+                <h2 class="mb-4">¿Lista para tu primera experiencia?</h2>
+                <p class="lead mb-4">Únete a miles de clientes satisfechos y descubre la diferencia KVestética.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a th:href="@{/citas/nueva}" class="btn btn-light btn-lg">
+                        <i class="bi bi-calendar-check me-2"></i>Agendar Cita
+                    </a>
+                    <a th:href="@{/servicios}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-scissors me-2"></i>Ver Tratamientos
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <div th:replace="~{fragments/footer :: footer}"></div>
+        
+
+        <!-- Script para manejar la carga -->
+        <script>
+            // Función para ocultar el loading screen
+            function hideLoadingScreen() {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        document.body.classList.add('loaded');
+                    }, 300);
+                } else {
+                    document.body.classList.add('loaded');
+                }
+            }
+            
+            // Función para mostrar el loading screen
+            function showLoadingScreen() {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'flex';
+                    loadingScreen.style.opacity = '1';
+                }
+            }
+            
+            // Asegurar que la página se muestre incluso si hay errores
+            window.addEventListener('load', function() {
+                setTimeout(hideLoadingScreen, 500);
+            });
+            
+            // Fallback en caso de que la página tarde demasiado
+            setTimeout(hideLoadingScreen, 3000);
+            
+            // Manejar errores de recursos
+            window.addEventListener('error', function(e) {
+                console.warn('Error en la carga de recursos:', e);
+                setTimeout(hideLoadingScreen, 1000);
+            });
+            
+            // Mejorar experiencia en móviles
+            document.addEventListener('DOMContentLoaded', function() {
+                // Evitar zoom en inputs en iOS
+                if ('ontouchstart' in window) {
+                    document.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.style.fontSize = '16px';
+                    });
+                }
+                
+                // Asegurar que los botones con iconos se rendericen correctamente
+                document.querySelectorAll('.btn i, .card i').forEach(icon => {
+                    icon.style.display = 'inline-block';
+                });
+                
+                // Inicializar tooltips si existen
+                if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                }
+            });
+            
+            // Asegurar que las animaciones CSS se ejecuten
+            document.body.style.visibility = 'visible';
+        </script>
+        
+        <!-- CSS para garantizar la consistencia visual -->
+        <style>
+            /* Variables CSS completas */
+            :root {
+                --color-principal: #C4696E;
+                --color-secundario: #9D6B6C;
+                --color-logo: #52314C;
+                --color-details: #726658;
+                --color-bg: #D1BFB5;
+                --color-white: #FFFFFF;
+                --color-light: #F8F9FA;
+                --color-dark: #333333;
+                --color-gray: #6C757D;
+                --color-success: #198754;
+                --color-danger: #DC3545;
+                --color-warning: #FFC107;
+                --color-info: #0DCAF0;
+            }
+            
+            /* Asegurar que los gradientes se rendericen correctamente */
+            .hero {
+                background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-logo) 100%) !important;
+                background-attachment: fixed;
+            }
+            
+            /* Mejorar rendimiento de animaciones */
+            .card, .btn, .badge {
+                will-change: transform;
+                backface-visibility: hidden;
+            }
+            
+            /* Garantizar que las cards se vean igual */
+            .card {
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+            
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            }
+            
+            /* Botones consistentes */
+            .btn-primary {
+                background-color: var(--color-principal);
+                border-color: var(--color-principal);
+                transition: all 0.3s ease;
+            }
+            
+            .btn-primary:hover {
+                background-color: var(--color-secundario);
+                border-color: var(--color-secundario);
+                transform: translateY(-2px);
+            }
+            
+            .btn-outline-primary {
+                color: var(--color-principal);
+                border-color: var(--color-principal);
+            }
+            
+            .btn-outline-primary:hover {
+                background-color: var(--color-principal);
+                border-color: var(--color-principal);
+                color: white;
+            }
+            
+            /* Badges consistentes */
+            .badge.bg-primary {
+                background-color: var(--color-principal) !important;
+            }
+            
+            /* Asegurar que los iconos se carguen */
+            .bi::before {
+                display: inline-block;
+                font-family: "bootstrap-icons" !important;
+                font-style: normal;
+                font-weight: normal !important;
+                font-variant: normal;
+                text-transform: none;
+                line-height: 1;
+                vertical-align: -0.125em;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            
+            /* Fallback para iconos si Bootstrap Icons no carga */
+            @font-face {
+                font-family: 'BootstrapIconsFallback';
+                src: local('Arial');
+                unicode-range: U+EA01-UA02;
+            }
+            
+            /* Optimización de imágenes de fondo */
+            div[style*="background:"] {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+            
+            /* Prevenir desbordamientos */
+            img, svg, video, canvas, audio, iframe, embed, object {
+                max-width: 100%;
+            }
+            
+            /* Mejorar tipografía en móviles */
+            @media (max-width: 768px) {
+                h1.display-4 {
+                    font-size: 2.5rem;
+                }
+                
+                .lead {
+                    font-size: 1.1rem;
+                }
+                
+                .btn-lg {
+                    padding: 0.75rem 1.5rem;
+                    font-size: 1rem;
+                }
+                
+                .card-body {
+                    padding: 1.25rem;
+                }
+            }
+            
+            /* Animaciones suaves para las secciones */
+            section {
+                animation: fadeIn 0.8s ease-out;
+            }
+            
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            /* Garantizar que el contenido no parpadee */
+            body {
+                visibility: visible !important;
+            }
+        </style>
+    </body>
 </html>

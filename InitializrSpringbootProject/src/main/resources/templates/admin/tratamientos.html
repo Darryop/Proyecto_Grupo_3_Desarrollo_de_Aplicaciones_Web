@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragments/header :: head('Gestión de Tratamientos - KWestética')}"></head>
+    
+    <body class="admin-body no-page-scroll">
+        <div class="admin-container d-flex">
+            <!-- Sidebar incluido desde fragmento separado -->
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+            
+            <!-- Contenido Principal Compacto -->
+            <div class="main-content flex-grow-1 p-3 compact" style="background-color: #f8f9fa;">
+                <!-- Header Compacto -->
+                <div class="admin-header mb-3 compact-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1" style="color: var(--color-logo);">
+                                <i class="bi bi-scissors me-2"></i>Gestión de Tratamientos
+                            </h1>
+                            <p class="text-muted small">Administra los tratamientos estéticos del centro</p>
+                        </div>
+                        <div>
+                            <a th:href="@{/admin/lista-tratamientos}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-list-ul me-1"></i>Ver Lista de Tratamientos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mensajes Flash Compactos -->
+                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show compact-alert" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show compact-alert" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- Formulario Compacto -->
+                <div class="compact-form-container">
+                    <div class="card border-0 shadow-sm compact-card">
+                        <div class="card-header bg-white border-0 py-2">
+                            <h5 class="mb-0" style="color: var(--color-logo); font-size: 1rem;">
+                                <i class="bi bi-plus-circle me-2"></i>Agregar Nuevo Tratamiento
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/tratamientos}" method="post" th:object="${nuevoTratamiento}" class="compact-form">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-6">
+                                        <label for="codigoTratamiento" class="form-label">Código *</label>
+                                        <input type="text" class="form-control" id="codigoTratamiento" 
+                                               th:field="*{codigoTratamiento}" required 
+                                               placeholder="TRAT-001">
+                                        <div class="form-text small">
+                                            Código único para identificar el tratamiento
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="nombre" class="form-label">Nombre *</label>
+                                        <input type="text" class="form-control" id="nombre" 
+                                               th:field="*{nombre}" required 
+                                               placeholder="Nombre del tratamiento">
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-6">
+                                        <label for="categoriaId" class="form-label">Categoría *</label>
+                                        <select class="form-select" id="categoriaId" name="categoriaId" required>
+                                            <option value="">Selecciona una categoría...</option>
+                                            <option th:each="categoria : ${categorias}"
+                                                    th:value="${categoria.id}"
+                                                    th:text="${categoria.nombre}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <label for="precio" class="form-label">Precio *</label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="precio" 
+                                                   th:field="*{precio}" step="0.01" min="0" required 
+                                                   placeholder="0.00">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <label for="duracionMinutos" class="form-label">Duración *</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" id="duracionMinutos" 
+                                                   th:field="*{duracionMinutos}" min="15" step="15" required 
+                                                   placeholder="60">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <div class="form-text small">
+                                            Múltiplos de 15 min
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12">
+                                        <label for="descripcion" class="form-label">Descripción *</label>
+                                        <textarea class="form-control" id="descripcion" 
+                                                  th:field="*{descripcion}" rows="2" required
+                                                  placeholder="Describe el tratamiento, beneficios, procedimiento..."></textarea>
+                                        <div class="form-text small">
+                                            Esta descripción se mostrará a los clientes
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-6">
+                                        <label for="imagenUrl" class="form-label">URL de la Imagen</label>
+                                        <input type="url" class="form-control" id="imagenUrl" 
+                                               th:field="*{imagenUrl}" 
+                                               placeholder="https://ejemplo.com/imagen-tratamiento.jpg">
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label class="form-label d-block">Opciones</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       id="requiereConsulta" th:field="*{requiereConsulta}">
+                                                <label class="form-check-label small" for="requiereConsulta">
+                                                    Requiere consulta
+                                                </label>
+                                            </div>
+                                            
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       id="activo" th:field="*{activo}" checked>
+                                                <label class="form-check-label small" for="activo">
+                                                    Activo
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botones del formulario -->
+                                <div class="mt-3 pt-2 border-top compact-buttons">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <button type="submit" class="btn btn-primary btn-sm px-3">
+                                                <i class="bi bi-save me-1"></i>Guardar Tratamiento
+                                            </button>
+                                            <button type="reset" class="btn btn-outline-secondary btn-sm ms-2">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted small">
+                                                <i class="bi bi-asterisk text-danger"></i> Campos obligatorios
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Información adicional compacta - MOVIDA DENTRO DEL FORMULARIO -->
+                                <div class="mt-3 pt-2 border-top text-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Los tratamientos activos estarán disponibles para agendar citas
+                                    </small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SCRIPTS CARGADOS DIRECTAMENTE (elimina la línea que usa el fragmento) -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Script para ajustes de tamaño -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Ajustar altura máxima del contenedor del formulario
+                function adjustFormHeight() {
+                    const formContainer = document.querySelector('.compact-form-container');
+                    const header = document.querySelector('.compact-header');
+                    const alerts = document.querySelectorAll('.compact-alert');
+                    
+                    if (formContainer) {
+                        const viewportHeight = window.innerHeight;
+                        const headerHeight = header ? header.offsetHeight : 0;
+                        
+                        // Calcular la altura total de las alertas
+                        let alertHeight = 0;
+                        alerts.forEach(alert => {
+                            alertHeight += alert.offsetHeight;
+                        });
+                        
+                        const margin = 30; // Margen reducido
+                        
+                        const maxHeight = viewportHeight - headerHeight - alertHeight - margin;
+                        formContainer.style.maxHeight = maxHeight + 'px';
+                        formContainer.style.overflowY = 'auto';
+                    }
+                }
+                
+                // Ajustar inicialmente y en redimensionamiento
+                adjustFormHeight();
+                window.addEventListener('resize', adjustFormHeight);
+                
+                // Asegurar que el formulario quepa en pantalla
+                setTimeout(adjustFormHeight, 100);
+                
+                // Inicializar tooltips de Bootstrap
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+                
+                // Sugerir duración basada en precio (opcional)
+                const precioInput = document.getElementById('precio');
+                const duracionInput = document.getElementById('duracionMinutos');
+                
+                if (precioInput && duracionInput) {
+                    precioInput.addEventListener('input', function() {
+                        const precio = parseFloat(this.value);
+                        if (precio && !duracionInput.value) {
+                            // Sugerir duración basada en precio
+                            if (precio < 50) duracionInput.value = 30;
+                            else if (precio < 100) duracionInput.value = 45;
+                            else if (precio < 200) duracionInput.value = 60;
+                            else duracionInput.value = 90;
+                        }
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>

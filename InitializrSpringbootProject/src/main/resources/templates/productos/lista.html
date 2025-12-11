@@ -1,155 +1,121 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
-<head>
-    <title>Productos - KVestética</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head('Productos')}">
+    <!-- Título 'Productos' se pasa como parámetro al fragmento head -->
 </head>
 <body>
-    <div layout:fragment="content">
-        <!-- Header -->
-        <div class="row mb-4 fade-in">
-            <div class="col">
-                <h1 class="display-5 fw-bold text-color2">
-                    <i class="fas fa-shopping-bag me-2"></i>Nuestros Productos
-                </h1>
-                <p class="lead text-color4">Descubre nuestra exclusiva colección de productos de belleza y cuidado personal</p>
-            </div>
-        </div>
+    <!-- Incluir navbar -->
+    <div th:replace="~{fragments/header :: navbar}"></div>
 
-        <!-- Filtros -->
-        <div class="card filter-section mb-4 fade-in">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text bg-color5"><i class="fas fa-search text-color2"></i></span>
-                            <input type="text" class="form-control" placeholder="Buscar productos..." 
-                                   th:value="${query}" id="searchInput">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-select" id="categoriaFilter">
-                            <option value="">Todas las categorías</option>
-                            <option th:each="categoria : ${categorias}" 
-                                    th:value="${categoria.id}" 
-                                    th:text="${categoria.nombre}">
-                            </option>
-                        </select>
+    <!-- Contenido principal -->
+    <main class="flex-grow-1">
+        <div class="container py-5">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h1 style="color: var(--color-logo);">Nuestros Productos</h1>
+                    <p class="text-muted">Descubre nuestra selección de productos de belleza y cuidado personal.</p>
+                </div>
+                <div class="col-md-4">
+                    <form th:action="@{/productos/buscar}" method="get" class="d-flex">
+                        <input type="text" name="query" class="form-control me-2" placeholder="Buscar productos...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Filtros por categoría -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="btn-group" role="group">
+                        <a th:href="@{/productos}" 
+                           class="btn btn-outline-primary"
+                           th:classappend="${activePage == 'productos'} ? 'active' : ''">
+                            Todos
+                        </a>
+                        <a th:each="categoria : ${categorias}" 
+                           th:href="@{/productos/categoria/{id}(id=${categoria.id})}" 
+                           class="btn btn-outline-primary" 
+                           th:text="${categoria.nombre}">
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Lista de Productos -->
-        <div class="row fade-in">
-            <div class="col-md-4 mb-4" th:each="producto : ${productos}">
-                <div class="card product-card h-100">
-                    <div class="position-relative">
-                        <img th:src="${producto.imagenUrl}" class="card-img-top product-image" 
-                             th:alt="${producto.nombre}" onerror="this.src='https://via.placeholder.com/300x200?text=Producto'">
-                        <div class="position-absolute top-0 end-0 m-2">
-                            <span th:if="${producto.stock > 0}" class="badge bg-success">Disponible</span>
-                            <span th:if="${producto.stock <= 0}" class="badge bg-danger">Agotado</span>
-                        </div>
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold text-color2" th:text="${producto.nombre}"></h5>
-                        <p class="card-text flex-grow-1 text-muted" th:text="${producto.descripcion}"></p>
-                        
-                        <div class="mt-auto">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="h4 fw-bold text-color1 mb-0" 
-                                      th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></span>
-                                <small class="text-muted" th:text="'Stock: ' + ${producto.stock}"></small>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-primary" 
-                                        th:onclick="|agregarAlCarrito(${producto.id})|"
-                                        th:disabled="${producto.stock <= 0}">
-                                    <i class="fas fa-cart-plus me-2"></i>
-                                    <span th:text="${producto.stock > 0} ? 'Agregar al Carrito' : 'Agotado'"></span>
-                                </button>
-                                <a th:href="@{/productos/{id}(id=${producto.id})}" 
-                                   class="btn btn-outline-secondary">
-                                    <i class="fas fa-info-circle me-2"></i>Ver Detalles
-                                </a>
+            <!-- Lista de productos -->
+            <div class="row">
+                <div th:each="producto : ${productos}" class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100">
+                        <img th:src="${producto.imagenUrl}" 
+                             th:alt="${producto.nombre}" 
+                             class="card-img-top" 
+                             style="height: 200px; object-fit: contain;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title" th:text="${producto.nombre}"></h5>
+                            <p class="card-text flex-grow-1" th:text="${#strings.abbreviate(producto.descripcion, 100)}"></p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></span>
+                                    <div>
+                                        <a th:href="@{/productos/{id}(id=${producto.id})}" 
+                                           class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button sec:authorize="hasRole('ROLE_CLIENTE')"
+                                                class="btn btn-sm btn-primary"
+                                                th:onclick="'addToCart(' + ${producto.id} + ')'">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Mensaje si no hay productos -->
+            <div th:if="${productos.isEmpty()}" class="text-center py-5">
+                <i class="bi bi-emoji-frown" style="font-size: 4rem; color: var(--color-details);"></i>
+                <h3 class="mt-3" style="color: var(--color-logo);">No se encontraron productos</h3>
+                <p class="text-muted">Intenta con otra búsqueda o categoría.</p>
+            </div>
         </div>
+    </main>
 
-        <!-- Mensaje cuando no hay productos -->
-        <div th:if="${productos.empty}" class="text-center py-5 fade-in">
-            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-            <h4 class="text-color2">No se encontraron productos</h4>
-            <p class="text-muted">Intenta con otros términos de búsqueda o categorías</p>
-        </div>
-    </div>
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
-    <div layout:fragment="scripts">
-        <script>
-            // Búsqueda en tiempo real
-            document.getElementById('searchInput').addEventListener('input', function() {
-                const query = this.value;
-                const categoria = document.getElementById('categoriaFilter').value;
-                
-                if (query.length >= 3 || query.length === 0) {
-                    let url = '/productos/buscar?query=' + encodeURIComponent(query);
-                    if (categoria) {
-                        url += '&categoria=' + categoria;
-                    }
-                    window.location.href = url;
+    <!-- Scripts del footer ya están incluidos en el fragmento -->
+
+    <!-- Scripts específicos de esta página -->
+    <script>
+        function addToCart(productId) {
+            fetch(`/carrito/agregar/producto/${productId}`, {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    alert('Producto agregado al carrito');
+                    updateCartCount();
+                } else {
+                    alert('Error al agregar al carrito');
                 }
+            }).catch(error => {
+                console.error('Error:', error);
             });
+        }
 
-            // Filtro por categoría
-            document.getElementById('categoriaFilter').addEventListener('change', function() {
-                const query = document.getElementById('searchInput').value;
-                const categoria = this.value;
-                
-                let url = '/productos';
-                if (categoria) {
-                    url = '/productos/categoria/' + categoria;
-                }
-                if (query) {
-                    url += (url.includes('?') ? '&' : '?') + 'query=' + encodeURIComponent(query);
-                }
-                window.location.href = url;
-            });
-
-            function agregarAlCarrito(productoId) {
-                fetch('/carrito/agregar/producto/' + productoId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                }).then(response => {
-                    if(response.ok) {
-                        // Mostrar mensaje de éxito
-                        const alert = document.createElement('div');
-                        alert.className = 'alert alert-success alert-dismissible fade show';
-                        alert.innerHTML = `
-                            <i class="fas fa-check-circle me-2"></i>
-                            <span>Producto agregado al carrito exitosamente</span>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        `;
-                        document.querySelector('main').prepend(alert);
-                    } else {
-                        alert('Error al agregar producto al carrito');
-                    }
-                }).catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al agregar producto al carrito');
-                });
+        function updateCartCount() {
+            // Actualizar contador del carrito en el navbar
+            const cartBadge = document.querySelector('.cart-count-badge');
+            if (cartBadge) {
+                const currentCount = parseInt(cartBadge.textContent) || 0;
+                cartBadge.textContent = currentCount + 1;
+                cartBadge.style.display = 'inline';
             }
-        </script>
-    </div>
+        }
+    </script>
 </body>
 </html>

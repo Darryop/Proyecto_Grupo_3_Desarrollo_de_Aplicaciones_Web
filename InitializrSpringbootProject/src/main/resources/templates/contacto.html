@@ -1,15 +1,727 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
-<head>
-    <title>Contacto - KVestética</title>
-</head>
-<body>
-    <div layout:fragment="content">
-        <div class="container mt-4">
-            <h1>Contacto</h1>
-            <p>Información de contacto...</p>
-        </div>
-    </div>
-</body>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <!-- Incluye el head con título personalizado -->
+    <head th:replace="~{fragments/header :: head('Contacto - KWestética')}"></head>
+    
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/header :: navbar}"></div>
+        
+        <!-- Hero Section Mejorada -->
+        <section class="contact-hero py-5" style="background: linear-gradient(135deg, rgba(196, 105, 110, 0.9) 0%, rgba(82, 49, 76, 0.9) 100%), url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center; color: white; text-align: center;">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="hero-content">
+                            <h1 class="display-5 fw-bold mb-4 animate__animated animate__fadeInDown">Contáctanos</h1>
+                            <p class="lead mb-4 animate__animated animate__fadeInUp">Estamos aquí para ayudarte. Tu belleza y bienestar son nuestra prioridad.</p>
+                            <div class="d-flex justify-content-center gap-3 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                                <a th:href="@{/citas/nueva}" class="btn btn-light btn-lg px-4">
+                                    <i class="bi bi-calendar-check me-2"></i>Agendar Cita
+                                </a>
+                                <a href="#contactForm" class="btn btn-outline-light btn-lg px-4">
+                                    <i class="bi bi-chat-dots me-2"></i>Escribir Mensaje
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Información de Contacto Mejorada -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold mb-3" style="color: var(--color-logo);">¿Cómo podemos ayudarte?</h2>
+                    <p class="lead text-muted">Elige la forma que más te convenga para contactarnos</p>
+                </div>
+                
+                <div class="row g-4 mb-5">
+                    <!-- Tarjeta de Dirección -->
+                    <div class="col-md-4">
+                        <div class="contact-card text-center h-100">
+                            <div class="contact-icon mb-4">
+                                <i class="bi bi-geo-alt"></i>
+                            </div>
+                            <h4 class="fw-semibold mb-3" style="color: var(--color-logo);">Visítanos</h4>
+                            <p class="text-muted mb-3">Calle Principal 123, Colonia Centro<br>Ciudad de México, CDMX 06000</p>
+                            <a href="https://maps.google.com/?q=Calle+Principal+123+Ciudad+de+México" target="_blank" class="btn btn-outline-primary">
+                                <i class="bi bi-map me-2"></i>Ver en Google Maps
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Tarjeta de Teléfono -->
+                    <div class="col-md-4">
+                        <div class="contact-card text-center h-100">
+                            <div class="contact-icon mb-4">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <h4 class="fw-semibold mb-3" style="color: var(--color-logo);">Llámanos</h4>
+                            <p class="text-muted mb-3">(55) 1234-5678<br>(55) 8765-4321</p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="tel:5512345678" class="btn btn-primary">
+                                    <i class="bi bi-telephone-outbound me-2"></i>Llamar ahora
+                                </a>
+                                <a href="https://wa.me/5215512345678" target="_blank" class="btn btn-success">
+                                    <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tarjeta de Email -->
+                    <div class="col-md-4">
+                        <div class="contact-card text-center h-100">
+                            <div class="contact-icon mb-4">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <h4 class="fw-semibold mb-3" style="color: var(--color-logo);">Escríbenos</h4>
+                            <p class="text-muted mb-3">info@kwestetica.com<br>citas@kwestetica.com</p>
+                            <a href="mailto:info@kwestetica.com" class="btn btn-outline-primary">
+                                <i class="bi bi-envelope-paper me-2"></i>Enviar Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-4">
+                    <!-- Información Detallada -->
+                    <div class="col-lg-5">
+                        <div class="card info-card shadow-sm border-0 h-100">
+                            <div class="card-body p-4">
+                                <h4 class="fw-bold mb-4" style="color: var(--color-logo); border-bottom: 2px solid var(--color-principal); padding-bottom: 10px;">
+                                    <i class="bi bi-info-circle me-2"></i>Información Adicional
+                                </h4>
+                                
+                                <!-- Horarios -->
+                                <div class="mb-4">
+                                    <h5 class="fw-semibold mb-3" style="color: var(--color-logo);">
+                                        <i class="bi bi-clock-history me-2"></i>Horarios de Atención
+                                    </h5>
+                                    <div class="schedule-item mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-medium">Lunes - Viernes</span>
+                                            <span class="text-primary fw-semibold">9:00 AM - 6:00 PM</span>
+                                        </div>
+                                    </div>
+                                    <div class="schedule-item mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-medium">Sábados</span>
+                                            <span class="text-primary fw-semibold">9:00 AM - 2:00 PM</span>
+                                        </div>
+                                    </div>
+                                    <div class="schedule-item">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-medium">Domingos</span>
+                                            <span class="text-muted">Cerrado</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Redes Sociales -->
+                                <div class="mb-4">
+                                    <h5 class="fw-semibold mb-3" style="color: var(--color-logo);">
+                                        <i class="bi bi-share me-2"></i>Síguenos en Redes
+                                    </h5>
+                                    <div class="social-links d-flex gap-3">
+                                        <a href="#" class="social-icon facebook">
+                                            <i class="bi bi-facebook"></i>
+                                        </a>
+                                        <a href="#" class="social-icon instagram">
+                                            <i class="bi bi-instagram"></i>
+                                        </a>
+                                        <a href="#" class="social-icon twitter">
+                                            <i class="bi bi-twitter"></i>
+                                        </a>
+                                        <a href="https://wa.me/5215512345678" target="_blank" class="social-icon whatsapp">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </a>
+                                        <a href="#" class="social-icon youtube">
+                                            <i class="bi bi-youtube"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Ubicación -->
+                                <div>
+                                    <h5 class="fw-semibold mb-3" style="color: var(--color-logo);">
+                                        <i class="bi bi-geo-alt-fill me-2"></i>Nuestro Centro
+                                    </h5>
+                                    <div class="location-preview p-3 rounded" style="background-color: rgba(196, 105, 110, 0.05);">
+                                        <div class="d-flex align-items-start">
+                                            <i class="bi bi-building me-3 mt-1" style="color: var(--color-principal);"></i>
+                                            <div>
+                                                <h6 class="fw-semibold mb-1">KWestética Centro</h6>
+                                                <p class="small text-muted mb-2">Calle Principal 123, Colonia Centro<br>Ciudad de México, CDMX</p>
+                                                <a href="https://maps.google.com/?q=Calle+Principal+123+Ciudad+de+México" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-arrow-up-right-square me-1"></i>Ver en Maps
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Formulario de Contacto Mejorado -->
+                    <div class="col-lg-7">
+                        <div class="card form-card shadow-sm border-0 h-100">
+                            <div class="card-body p-4">
+                                <div class="text-center mb-4">
+                                    <h3 class="fw-bold mb-2" style="color: var(--color-logo);">Envíanos un Mensaje</h3>
+                                    <p class="text-muted">Completa el formulario y te responderemos en menos de 24 horas</p>
+                                </div>
+                                
+                                <form th:action="@{/contacto}" method="post" id="contactForm" class="needs-validation" novalidate>
+                                    <div class="row g-3">
+                                        <!-- Nombre -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="nombre" class="form-label fw-semibold">
+                                                    <i class="bi bi-person me-1" style="color: var(--color-principal);"></i>
+                                                    Nombre Completo *
+                                                </label>
+                                                <input type="text" class="form-control form-control-lg" id="nombre" name="nombre" required 
+                                                       placeholder="Ingresa tu nombre">
+                                                <div class="invalid-feedback">
+                                                    Por favor ingresa tu nombre completo
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Email -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email" class="form-label fw-semibold">
+                                                    <i class="bi bi-envelope me-1" style="color: var(--color-principal);"></i>
+                                                    Email *
+                                                </label>
+                                                <input type="email" class="form-control form-control-lg" id="email" name="email" required 
+                                                       placeholder="tu@correo.com">
+                                                <div class="invalid-feedback">
+                                                    Por favor ingresa un email válido
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Teléfono -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="telefono" class="form-label fw-semibold">
+                                                    <i class="bi bi-phone me-1" style="color: var(--color-principal);"></i>
+                                                    Teléfono
+                                                </label>
+                                                <input type="tel" class="form-control form-control-lg" id="telefono" name="telefono" 
+                                                       placeholder="(55) 1234-5678">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Asunto -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="asunto" class="form-label fw-semibold">
+                                                    <i class="bi bi-tag me-1" style="color: var(--color-principal);"></i>
+                                                    Asunto *
+                                                </label>
+                                                <select class="form-select form-select-lg" id="asunto" name="asunto" required>
+                                                    <option value="" selected disabled>Selecciona un asunto...</option>
+                                                    <option value="consulta">Consulta General</option>
+                                                    <option value="cita">Información de Citas</option>
+                                                    <option value="producto">Información de Productos</option>
+                                                    <option value="precio">Cotización de Servicios</option>
+                                                    <option value="sugerencia">Sugerencias</option>
+                                                    <option value="empleo">Oportunidades de Empleo</option>
+                                                    <option value="otro">Otro</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Por favor selecciona un asunto
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Mensaje -->
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="mensaje" class="form-label fw-semibold">
+                                                    <i class="bi bi-chat-text me-1" style="color: var(--color-principal);"></i>
+                                                    Tu Mensaje *
+                                                </label>
+                                                <textarea class="form-control form-control-lg" id="mensaje" name="mensaje" rows="5" required 
+                                                          placeholder="Describe en detalle tu consulta o mensaje..."></textarea>
+                                                <div class="invalid-feedback">
+                                                    Por favor escribe tu mensaje
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Newsletter -->
+                                        <div class="col-12">
+                                            <div class="form-check mb-4">
+                                                <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
+                                                <label class="form-check-label" for="newsletter">
+                                                    <i class="bi bi-bell me-1"></i>
+                                                    Me gustaría recibir noticias y promociones especiales por email
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Botón -->
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-semibold">
+                                                <i class="bi bi-send me-2"></i> Enviar Mensaje
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <!-- Mensajes de confirmación -->
+                                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show mt-4" role="alert">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span th:text="${mensaje}"></span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                
+                                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mt-4" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <span th:text="${error}"></span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Mejorada -->
+        <section class="py-5" style="background-color: rgba(210, 191, 181, 0.1);">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold mb-3" style="color: var(--color-logo);">Preguntas Frecuentes</h2>
+                    <p class="lead text-muted">Respuestas a las dudas más comunes sobre nuestros servicios</p>
+                </div>
+                
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="accordion faq-accordion" id="faqAccordion">
+                            <!-- FAQ 1 -->
+                            <div class="accordion-item border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                        <i class="bi bi-calendar-plus me-3" style="color: var(--color-principal);"></i>
+                                        <span>¿Cómo puedo agendar una cita?</span>
+                                    </button>
+                                </h2>
+                                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>Puedes agendar una cita de tres formas:</p>
+                                        <ol>
+                                            <li><strong>En línea:</strong> A través de nuestra página web en la sección <a th:href="@{/citas/nueva}" class="text-decoration-none">"Agendar Cita"</a></li>
+                                            <li><strong>Por teléfono:</strong> Llamándonos al <a href="tel:5512345678">(55) 1234-5678</a></li>
+                                            <li><strong>En persona:</strong> Visitándonos en nuestro local en Calle Principal 123</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- FAQ 2 -->
+                            <div class="accordion-item border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                        <i class="bi bi-credit-card me-3" style="color: var(--color-principal);"></i>
+                                        <span>¿Cuáles son los métodos de pago aceptados?</span>
+                                    </button>
+                                </h2>
+                                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>Aceptamos los siguientes métodos de pago:</p>
+                                        <ul>
+                                            <li>Tarjetas de crédito/débito (Visa, MasterCard, American Express)</li>
+                                            <li>Efectivo en pesos mexicanos</li>
+                                            <li>Transferencias bancarias interbancarias</li>
+                                            <li>Pago con aplicación móvil (Apple Pay, Google Pay)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- FAQ 3 -->
+                            <div class="accordion-item border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                        <i class="bi bi-calendar-x me-3" style="color: var(--color-principal);"></i>
+                                        <span>¿Puedo cancelar o reagendar mi cita?</span>
+                                    </button>
+                                </h2>
+                                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>Sí, puedes cancelar o reagendar tu cita con al menos 24 horas de anticipación.</p>
+                                        <p><strong>Para hacerlo:</strong></p>
+                                        <ul>
+                                            <li>Inicia sesión en tu cuenta y ve a la sección <a th:href="@{/citas}" class="text-decoration-none">"Mis Citas"</a></li>
+                                            <li>Selecciona la cita que deseas modificar</li>
+                                            <li>Elige "Cancelar" o "Reagendar" según corresponda</li>
+                                            <li>O llama al <a href="tel:5512345678">(55) 1234-5678</a> para asistencia</li>
+                                        </ul>
+                                        <div class="alert alert-warning mt-3" role="alert">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            Las cancelaciones con menos de 24 horas pueden estar sujetas a cargos.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- FAQ 4 -->
+                            <div class="accordion-item border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                        <i class="bi bi-box-seam me-3" style="color: var(--color-principal);"></i>
+                                        <span>¿Los productos tienen garantía?</span>
+                                    </button>
+                                </h2>
+                                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>Sí, todos nuestros productos cuentan con garantía del fabricante.</p>
+                                        <p><strong>Duración de la garantía:</strong></p>
+                                        <ul>
+                                            <li>Productos de belleza: 30 días</li>
+                                            <li>Equipos profesionales: 1 año</li>
+                                            <li>Cosméticos: 6 meses</li>
+                                        </ul>
+                                        <p>Para hacer válida la garantía, conserva tu ticket de compra y el producto en su empaque original.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Botón de ayuda adicional -->
+                        <div class="text-center mt-5">
+                            <p class="text-muted mb-3">¿No encuentras respuesta a tu pregunta?</p>
+                            <a href="#contactForm" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-question-circle me-2"></i>Contáctanos para más ayuda
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Final -->
+        <section class="py-5 text-center" style="background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%); color: white;">
+            <div class="container">
+                <h2 class="fw-bold mb-4">¿Lista para tu transformación?</h2>
+                <p class="lead mb-4">Agenda tu cita hoy y descubre la diferencia KWestética</p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a th:href="@{/citas/nueva}" class="btn btn-light btn-lg px-5">
+                        <i class="bi bi-calendar-check me-2"></i>Agendar Cita Ahora
+                    </a>
+                    <a href="tel:5512345678" class="btn btn-outline-light btn-lg px-5">
+                        <i class="bi bi-telephone me-2"></i>Llamar Ahora
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <div th:replace="~{fragments/footer :: footer}"></div>
+        
+
+        
+        <!-- Animaciones CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+        
+        <!-- Script para el formulario -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Validación del formulario
+                const contactForm = document.getElementById('contactForm');
+                if (contactForm) {
+                    // Bootstrap validation
+                    contactForm.addEventListener('submit', function(event) {
+                        if (!contactForm.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        contactForm.classList.add('was-validated');
+                    });
+                }
+                
+                // Animación para los elementos al hacer scroll
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                        }
+                    });
+                }, observerOptions);
+                
+                // Observar elementos para animación
+                document.querySelectorAll('.contact-card, .info-card, .form-card').forEach(card => {
+                    observer.observe(card);
+                });
+            });
+        </script>
+        
+        <!-- Estilos CSS Mejorados -->
+        <style>
+            :root {
+                --color-principal: #C4696E;
+                --color-secundario: #9D6B6C;
+                --color-logo: #52314C;
+                --color-details: #726658;
+                --color-bg: #D1BFB5;
+                --color-white: #FFFFFF;
+                --color-light: #F8F9FA;
+                --color-dark: #333333;
+                --color-gray: #6C757D;
+                --color-success: #198754;
+                --color-danger: #DC3545;
+                --color-warning: #FFC107;
+                --color-info: #0DCAF0;
+            }
+            
+            /* Hero Section Mejorada */
+            .contact-hero {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .contact-hero::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(196, 105, 110, 0.9) 0%, rgba(82, 49, 76, 0.9) 100%);
+                z-index: 1;
+            }
+            
+            .contact-hero .container {
+                position: relative;
+                z-index: 2;
+            }
+            
+            /* Tarjetas de Contacto */
+            .contact-card {
+                background: white;
+                border-radius: 15px;
+                padding: 2.5rem 2rem;
+                border: 1px solid rgba(0,0,0,0.08);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                transition: all 0.3s ease;
+            }
+            
+            .contact-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            }
+            
+            .contact-icon {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, rgba(196, 105, 110, 0.1) 0%, rgba(196, 105, 110, 0.2) 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto;
+                font-size: 2rem;
+                color: var(--color-principal);
+            }
+            
+            /* Cards de Información y Formulario */
+            .info-card, .form-card {
+                border-radius: 15px;
+                border: 1px solid rgba(0,0,0,0.08);
+                overflow: hidden;
+            }
+            
+            .form-card {
+                background: white;
+            }
+            
+            /* Inputs mejorados */
+            .form-control-lg, .form-select-lg {
+                border-radius: 10px;
+                border: 2px solid #e9ecef;
+                padding: 0.75rem 1rem;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+            }
+            
+            .form-control-lg:focus, .form-select-lg:focus {
+                border-color: var(--color-principal);
+                box-shadow: 0 0 0 0.25rem rgba(196, 105, 110, 0.25);
+            }
+            
+            /* Botones */
+            .btn-primary {
+                background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%);
+                border: none;
+                border-radius: 10px;
+                font-weight: 600;
+                padding: 0.75rem 2rem;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(196, 105, 110, 0.3);
+            }
+            
+            .btn-outline-primary {
+                border: 2px solid var(--color-principal);
+                color: var(--color-principal);
+                border-radius: 10px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-outline-primary:hover {
+                background: var(--color-principal);
+                color: white;
+                transform: translateY(-2px);
+            }
+            
+            /* Redes Sociales */
+            .social-links {
+                display: flex;
+                gap: 1rem;
+            }
+            
+            .social-icon {
+                width: 45px;
+                height: 45px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                color: white;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+            
+            .social-icon:hover {
+                transform: translateY(-3px);
+            }
+            
+            .social-icon.facebook {
+                background: #3b5998;
+            }
+            
+            .social-icon.instagram {
+                background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+            }
+            
+            .social-icon.twitter {
+                background: #1da1f2;
+            }
+            
+            .social-icon.whatsapp {
+                background: #25d366;
+            }
+            
+            .social-icon.youtube {
+                background: #ff0000;
+            }
+            
+            /* FAQ Accordion */
+            .faq-accordion .accordion-button {
+                background: white;
+                color: var(--color-logo);
+                font-weight: 600;
+                padding: 1.25rem;
+                border-radius: 10px !important;
+                border: 1px solid rgba(0,0,0,0.08);
+                box-shadow: none;
+            }
+            
+            .faq-accordion .accordion-button:not(.collapsed) {
+                background: rgba(196, 105, 110, 0.1);
+                color: var(--color-principal);
+                border-color: var(--color-principal);
+            }
+            
+            .faq-accordion .accordion-button::after {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23C4696E'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            }
+            
+            .faq-accordion .accordion-button:not(.collapsed)::after {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23C4696E'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            }
+            
+            .faq-accordion .accordion-body {
+                background: white;
+                border-radius: 0 0 10px 10px;
+                padding: 1.5rem;
+                border: 1px solid rgba(0,0,0,0.08);
+                border-top: none;
+            }
+            
+            /* Responsive */
+            @media (max-width: 768px) {
+                .contact-hero {
+                    padding: 80px 0;
+                }
+                
+                .contact-hero h1 {
+                    font-size: 2.5rem;
+                }
+                
+                .contact-card {
+                    padding: 2rem 1.5rem;
+                }
+                
+                .contact-icon {
+                    width: 70px;
+                    height: 70px;
+                    font-size: 1.75rem;
+                }
+                
+                .btn-lg {
+                    padding: 0.75rem 1.5rem;
+                    font-size: 1rem;
+                }
+                
+                .form-control-lg, .form-select-lg {
+                    padding: 0.625rem 0.875rem;
+                }
+                
+                .d-flex.gap-3 {
+                    flex-direction: column;
+                    gap: 1rem !important;
+                }
+                
+                .d-flex.gap-3 .btn {
+                    width: 100%;
+                }
+            }
+            
+            /* Animaciones */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .animate__fadeInUp {
+                animation-duration: 0.6s;
+            }
+        </style>
+    </body>
 </html>

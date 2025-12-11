@@ -5,19 +5,21 @@ package Proyecto.service;
  * @author darry
  */
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import Proyecto.model.CarritoCompras;
-import Proyecto.model.Usuario;
+import Proyecto.model.Cita;
 import Proyecto.model.EstadoCarrito;
 import Proyecto.model.ItemCarrito;
 import Proyecto.model.Producto;
-import Proyecto.model.Cita;
 import Proyecto.model.TipoItem;
+import Proyecto.model.Usuario;
 import Proyecto.repository.CarritoComprasRepository;
 import Proyecto.repository.ItemCarritoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CarritoService {
@@ -62,18 +64,64 @@ public class CarritoService {
     public ItemCarrito agregarCitaAlCarrito(Usuario usuario, Cita cita) {
         CarritoCompras carrito = obtenerCarritoActivo(usuario);
         
+        // Verificar si la cita ya está en el carrito
         Optional<ItemCarrito> itemExistente = itemCarritoRepository.findByCarritoAndCita(carrito, cita);
         
         if (itemExistente.isPresent()) {
-            return itemExistente.get(); // Ya existe en el carrito
+            // Si ya está, no hacemos nada (o podrías lanzar una excepción, según tu lógica de negocio)
+            // Como es una cita, normalmente no se agregaría dos veces, pero depende de tu sistema.
+            // En este caso, devolvemos el item existente.
+            return itemExistente.get();
         } else {
-            ItemCarrito nuevoItem = new ItemCarrito();
-            nuevoItem.setCarrito(carrito);
-            nuevoItem.setCita(cita);
-            nuevoItem.setCantidad(1);
-            nuevoItem.setTipo(TipoItem.CITA);
-            nuevoItem.setPrecioUnitario(cita.getTratamiento().getPrecio());
-            return itemCarritoRepository.save(nuevoItem);
+            ItemCarrito item = new ItemCarrito();
+            item.setCarrito(carrito);
+            item.setCita(cita);
+            item.setTipo(TipoItem.CITA);
+            item.setCantidad(1);
+            item.setPrecioUnitario(cita.getTratamiento().getPrecio());
+            
+            return itemCarritoRepository.save(item);
+        }
+    }
+    
+    // En CarritoService.java
+    public void eliminarItemDelCarrito(Usuario usuario, Long itemId) {
+        CarritoCompras carrito = obtenerCarritoActivo(usuario);
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findById(itemId);
+
+        if (itemOpt.isPresent() && itemOpt.get().getCarrito().getId().equals(carrito.getId())) {
+            itemCarritoRepository.delete(itemOpt.get());
+        } else {
+            throw new RuntimeException("Ítem no encontrado en el carrito del usuario");
+        }
+    }
+    
+    public void actualizarCantidadItem(Usuario usuario, Long itemId, int cantidad) {
+        CarritoCompras carrito = obtenerCarritoActivo(usuario);
+        Optional<ItemCarrito> itemOpt = itemCarritoRepository.findById(itemId);
+
+        if (itemOpt.isPresent() && itemOpt.get().getCarrito().getId().equals(carrito.getId())) {
+            ItemCarrito item = itemOpt.get();
+
+            // Validar que sea un producto (las citas no tienen cantidad ajustable)
+            if (item.getTipo() == TipoItem.PRODUCTO && item.getProducto() != null) {
+                // Validar que la cantidad no sea menor a 1
+                if (cantidad < 1) {
+                    throw new RuntimeException("La cantidad no puede ser menor a 1");
+                }
+
+                // Validar stock disponible
+                if (cantidad > item.getProducto().getStock()) {
+                    throw new RuntimeException("Stock insuficiente. Disponible: " + item.getProducto().getStock());
+                }
+
+                item.setCantidad(cantidad);
+                itemCarritoRepository.save(item);
+            } else {
+                throw new RuntimeException("Solo se puede ajustar la cantidad de productos");
+            }
+        } else {
+            throw new RuntimeException("Ítem no encontrado en el carrito del usuario");
         }
     }
     

@@ -1,180 +1,279 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
-<head>
-    <title>Panel de Administración - KVestética</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-</head>
-<body>
-    <div layout:fragment="content">
-        <!-- Header -->
-        <div class="row mb-4 fade-in">
-            <div class="col">
-                <h1 class="display-5 fw-bold text-color2">
-                    <i class="fas fa-tachometer-alt me-2"></i>Panel de Administración
-                </h1>
-                <p class="lead text-color4">Gestión integral de KVestética</p>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragments/header :: head('Panel de Administración - KWestética')}">
+        <!-- Este contenido será reemplazado por el fragmento head -->
+    </head>
+    
+    <body class="admin-body">
+        <!-- NO se define el fragmento aquí. El fragmento se usará desde fuera -->
+        <div class="admin-container d-flex">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+            <!-- Contenido Principal -->
+            <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa; min-height: 100vh;">
+                <!-- Header -->
+                <div class="admin-header mb-4">
+                    <h1 class="display-6 fw-bold mb-2" style="color: var(--color-logo);">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </h1>
+                    <p class="text-muted">Bienvenido al panel de administración - Resumen general del sistema</p>
+                </div>
+                
+                <!-- Grid de Estadísticas -->
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--color-principal);">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="${totalProductos}">0</h3>
+                                        <p class="text-muted mb-0">Productos</p>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-bag fs-4" style="color: var(--color-principal);"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <a th:href="@{/admin/productos}" class="text-decoration-none small">
+                                        <i class="bi bi-arrow-right me-1"></i>Gestionar productos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--color-secundario);">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="${totalTratamientos}">0</h3>
+                                        <p class="text-muted mb-0">Tratamientos</p>
+                                    </div>
+                                    <div class="bg-secondary bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-scissors fs-4" style="color: var(--color-secundario);"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <a th:href="@{/admin/tratamientos}" class="text-decoration-none small">
+                                        <i class="bi bi-arrow-right me-1"></i>Gestionar tratamientos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #9D6B6C;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="${totalUsuarios}">0</h3>
+                                        <p class="text-muted mb-0">Usuarios</p>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-people fs-4" style="color: #9D6B6C;"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <a th:href="@{/admin/usuarios}" class="text-decoration-none small">
+                                        <i class="bi bi-arrow-right me-1"></i>Gestionar usuarios
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #28a745;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="fw-bold mb-2" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 2)}">$0.00</h3>
+                                        <p class="text-muted mb-0">Ingresos Totales</p>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                        <i class="bi bi-cash-stack fs-4" style="color: #28a745;"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <a th:href="@{/admin/ventas}" class="text-decoration-none small">
+                                        <i class="bi bi-arrow-right me-1"></i>Ver reporte de ventas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Acciones Rápidas y Estadísticas -->
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    <a th:href="@{/admin/productos}" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0">
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                                            <i class="bi bi-plus-circle" style="color: var(--color-principal);"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Agregar Nuevo Producto</h6>
+                                            <p class="text-muted mb-0 small">Añade un nuevo producto al catálogo</p>
+                                        </div>
+                                        <i class="bi bi-chevron-right ms-auto"></i>
+                                    </a>
+                                    
+                                    <a th:href="@{/admin/tratamientos}" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0">
+                                        <div class="bg-secondary bg-opacity-10 p-2 rounded-circle me-3">
+                                            <i class="bi bi-plus-circle" style="color: var(--color-secundario);"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Agregar Nuevo Tratamiento</h6>
+                                            <p class="text-muted mb-0 small">Crea un nuevo tratamiento estético</p>
+                                        </div>
+                                        <i class="bi bi-chevron-right ms-auto"></i>
+                                    </a>
+                                    
+                                    <a th:href="@{/admin/ventas}" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0">
+                                        <div class="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                                            <i class="bi bi-receipt" style="color: #28a745;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Ver Reporte de Ventas</h6>
+                                            <p class="text-muted mb-0 small">Revisa el historial de ventas</p>
+                                        </div>
+                                        <i class="bi bi-chevron-right ms-auto"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0" style="color: var(--color-logo);">
+                                    <i class="bi bi-graph-up me-2"></i>Ventas Recientes
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${totalVentas == 0}" class="text-center py-5">
+                                    <i class="bi bi-cart-x" style="font-size: 3rem; color: #6c757d;"></i>
+                                    <h5 class="mt-3" style="color: var(--color-logo);">No hay ventas registradas</h5>
+                                    <p class="text-muted">Las ventas aparecerán aquí una vez que se realicen transacciones.</p>
+                                </div>
+                                
+                                <div th:if="${totalVentas > 0}">
+                                    <div class="d-flex align-items-center justify-content-between mb-4">
+                                        <div>
+                                            <h3 class="fw-bold mb-0" th:text="${totalVentas}">0</h3>
+                                            <p class="text-muted mb-0">Ventas completadas</p>
+                                        </div>
+                                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                            <i class="bi bi-check-circle-fill fs-4" style="color: #28a745;"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Aquí podrías agregar un gráfico o lista de ventas recientes -->
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 2)}">$0.00</strong> 
+                                        en ingresos generados
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <a th:href="@{/admin/ventas}" class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-bar-chart me-2"></i>Ver Reporte Completo
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información del Sistema -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="mb-3" style="color: var(--color-logo);">
+                                    <i class="bi bi-info-circle me-2"></i>Información del Sistema
+                                </h6>
+                                <div class="row text-center">
+                                    <div class="col-md-3 mb-3 mb-md-0">
+                                        <div class="p-3 rounded" style="background-color: rgba(157, 107, 108, 0.1);">
+                                            <i class="bi bi-calendar-check fs-4 d-block mb-2" style="color: #9D6B6C;"></i>
+                                            <span class="d-block fw-bold" th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy')}"></span>
+                                            <small class="text-muted">Fecha Actual</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3 mb-md-0">
+                                        <div class="p-3 rounded" style="background-color: rgba(82, 49, 76, 0.1);">
+                                            <i class="bi bi-clock fs-4 d-block mb-2" style="color: var(--color-logo);"></i>
+                                            <span class="d-block fw-bold" th:text="${#dates.format(#dates.createNow(), 'HH:mm')}"></span>
+                                            <small class="text-muted">Hora Actual</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3 mb-md-0">
+                                        <div class="p-3 rounded" style="background-color: rgba(196, 105, 110, 0.1);">
+                                            <i class="bi bi-shield-check fs-4 d-block mb-2" style="color: var(--color-principal);"></i>
+                                            <span class="d-block fw-bold">Activo</span>
+                                            <small class="text-muted">Estado del Sistema</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="p-3 rounded" style="background-color: rgba(209, 191, 181, 0.1);">
+                                            <i class="bi bi-person-badge fs-4 d-block mb-2" style="color: var(--color-details);"></i>
+                                            <span sec:authentication="name" class="d-block fw-bold"></span>
+                                            <small class="text-muted">Usuario Activo</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Estadísticas -->
-        <div class="row mb-4 fade-in">
-            <div class="col-md-3">
-                <div class="dashboard-card bg-color1">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="card-value" th:text="${totalProductos}">0</div>
-                            <div class="card-label">Productos</div>
-                        </div>
-                        <i class="fas fa-shopping-bag fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-card bg-color2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="card-value" th:text="${totalTratamientos}">0</div>
-                            <div class="card-label">Tratamientos</div>
-                        </div>
-                        <i class="fas fa-spa fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-card bg-color3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="card-value" th:text="${totalUsuarios}">0</div>
-                            <div class="card-label">Usuarios</div>
-                        </div>
-                        <i class="fas fa-users fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-card bg-color4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="card-value" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 2)}">0</div>
-                            <div class="card-label">Ingresos Totales</div>
-                        </div>
-                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Acciones Rápidas -->
-        <div class="row mb-4 fade-in">
-            <div class="col-md-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-cube fa-2x text-color1 mb-3"></i>
-                        <h5 class="card-title">Productos</h5>
-                        <p class="card-text text-muted">Gestionar catálogo de productos</p>
-                        <a th:href="@{/admin/productos}" class="btn btn-primary w-100">Gestionar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-spa fa-2x text-color1 mb-3"></i>
-                        <h5 class="card-title">Tratamientos</h5>
-                        <p class="card-text text-muted">Gestionar servicios de tratamientos</p>
-                        <a th:href="@{/admin/tratamientos}" class="btn btn-primary w-100">Gestionar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-users fa-2x text-color1 mb-3"></i>
-                        <h5 class="card-title">Usuarios</h5>
-                        <p class="card-text text-muted">Administrar usuarios del sistema</p>
-                        <a th:href="@{/admin/usuarios}" class="btn btn-primary w-100">Gestionar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-chart-bar fa-2x text-color1 mb-3"></i>
-                        <h5 class="card-title">Ventas</h5>
-                        <p class="card-text text-muted">Ver reportes de ventas</p>
-                        <a th:href="@{/admin/ventas}" class="btn btn-primary w-100">Ver Reportes</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Información Reciente -->
-        <div class="row fade-in">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-color2 text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Ventas Recientes</h5>
-                        <span class="badge bg-color3" th:text="${totalVentas}"></span>
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${totalVentas == 0}" class="text-center py-3">
-                            <i class="fas fa-receipt fa-2x text-muted mb-2"></i>
-                            <p class="text-muted mb-0">No hay ventas registradas</p>
-                        </div>
-                        <div th:if="${totalVentas > 0}" class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Total</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Las ventas se mostrarían aquí -->
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            Implementar lista de ventas recientes
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-color4 text-white">
-                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Sistema</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <strong><i class="fas fa-database me-2 text-color1"></i>Base de Datos:</strong>
-                            <span class="badge bg-success ms-2">Conectada</span>
-                        </div>
-                        <div class="mb-3">
-                            <strong><i class="fas fa-server me-2 text-color1"></i>Servidor:</strong>
-                            <span class="badge bg-success ms-2">En Línea</span>
-                        </div>
-                        <div class="mb-3">
-                            <strong><i class="fas fa-shield-alt me-2 text-color1"></i>Seguridad:</strong>
-                            <span class="badge bg-success ms-2">Activa</span>
-                        </div>
-                        <div>
-                            <strong><i class="fas fa-clock me-2 text-color1"></i>Última Actualización:</strong>
-                            <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
+        
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Script específico para admin -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Actualizar la hora cada minuto
+                function updateTime() {
+                    const now = new Date();
+                    const timeElement = document.querySelector('[th\\:text="${#dates.format(#dates.createNow(), \\'HH:mm\\')}"]');
+                    if (timeElement) {
+                        timeElement.textContent = now.toLocaleTimeString('es-MX', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false 
+                        });
+                    }
+                }
+                
+                updateTime();
+                setInterval(updateTime, 60000); // Actualizar cada minuto
+                
+                // Resaltar elemento activo en sidebar
+                const currentPath = window.location.pathname;
+                const navLinks = document.querySelectorAll('.sidebar .nav-link');
+                navLinks.forEach(link => {
+                    if (link.getAttribute('href') === currentPath) {
+                        link.classList.add('active');
+                        link.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                    }
+                });
+            });
+        </script>
+    </body>
 </html>

@@ -1,153 +1,183 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
-<head>
-    <title>Agendar Cita - KVestética</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Agendar Cita | KWestética')}">
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" as="style">
+    <style>
+        /* CSS crítico inline para evitar FOUC */
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+        }
+        
+        body {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(196, 105, 110, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--color-principal);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-    <div layout:fragment="content">
-        <div class="container mt-4">
+
+<body class="bg-light">
+    <!-- Loading screen -->
+    <div class="loading" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+    
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <main class="flex-grow-1">
+        <div class="container py-5">
+            <!-- Header más simple -->
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3" style="color: var(--color-logo);">Agendar Nueva Cita</h2>
+                <p class="text-muted">Selecciona tu tratamiento y horario preferido</p>
+            </div>
+            
             <div class="row justify-content-center">
-                <div class="col-lg-10">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-color2 text-white py-3">
-                            <h4 class="mb-0">
-                                <i class="fas fa-calendar-plus me-2"></i>Agendar Nueva Cita
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white border-0 py-4">
+                            <h4 class="mb-0 fw-semibold" style="color: var(--color-logo);">
+                                <i class="bi bi-calendar-plus me-2" style="color: var(--color-principal);"></i>
+                                Detalles de la Cita
                             </h4>
                         </div>
+                        
                         <div class="card-body p-4">
-                            <form th:action="@{/citas/nueva}" method="post" th:object="${cita}">
-                                <!-- Selección de Tratamiento -->
+                            <form th:action="@{/citas/nueva}" method="post" id="citaForm">
+                                <!-- Tratamiento -->
                                 <div class="mb-4">
-                                    <h5 class="fw-bold text-color2 mb-3">
-                                        <i class="fas fa-spa me-2"></i>Paso 1: Selecciona tu Tratamiento
+                                    <label for="tratamientoid" class="form-label fw-semibold">
+                                        <i class="bi bi-scissors me-1" style="color: var(--color-principal);"></i>
+                                        Tratamiento *
+                                    </label>
+                                    <select class="form-select form-select-lg" id="tratamientoid" name="tratamientoId" required>
+                                        <option value="">Selecciona un tratamiento...</option>
+                                        <option th:each="tratamiento : ${tratamientos}"
+                                                th:value="${tratamiento.id}"
+                                                th:text="${tratamiento.nombre + ' ($' + #numbers.formatDecimal(tratamiento.precio, 1, 2) + ')'}"
+                                                th:selected="${tratamientoSeleccionado != null and tratamiento.id == tratamientoSeleccionado}">
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">Elige el servicio que deseas recibir</small>
+                                </div>
+                                
+                                <!-- Información del tratamiento seleccionado -->
+                                <div id="tratamientoInfo" class="mb-4 p-3 rounded border" style="display: none; background-color: rgba(196, 105, 110, 0.05);">
+                                    <h6 class="fw-semibold mb-2" style="color: var(--color-logo);">
+                                        <i class="bi bi-info-circle me-1" style="color: var(--color-principal);"></i>
+                                        Información del Tratamiento
+                                    </h6>
+                                    <p id="tratamientoDescripcion" class="small mb-2"></p>
+                                    <div class="d-flex gap-3">
+                                        <span class="small">
+                                            <i class="bi bi-clock me-1" style="color: var(--color-details);"></i>
+                                            <strong>Duración:</strong> <span id="tratamientoDuracion"></span> min
+                                        </span>
+                                        <span class="small">
+                                            <i class="bi bi-currency-dollar me-1" style="color: var(--color-details);"></i>
+                                            <strong>Precio:</strong> $<span id="tratamientoPrecio"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Fecha y Hora -->
+                                <div class="mb-4">
+                                    <label for="fechaCita" class="form-label fw-semibold">
+                                        <i class="bi bi-calendar3 me-1" style="color: var(--color-principal);"></i>
+                                        Fecha y Hora *
+                                    </label>
+                                    <input type="datetime-local" class="form-control form-control-lg" 
+                                           id="fechaCita" name="fechaCita" required>
+                                    <small class="text-muted">Horarios disponibles: Lunes a Sábado, 9:00 AM - 8:00 PM</small>
+                                </div>
+                                
+                                <!-- Notas -->
+                                <div class="mb-4">
+                                    <label for="notas" class="form-label fw-semibold">
+                                        <i class="bi bi-chat-text me-1" style="color: var(--color-principal);"></i>
+                                        Notas Adicionales
+                                    </label>
+                                    <textarea class="form-control" id="notas" name="notas" rows="3" 
+                                              placeholder="¿Alguna preferencia especial o comentario?"></textarea>
+                                    <small class="text-muted">Esta información nos ayudará a prepararnos mejor para tu cita</small>
+                                </div>
+                                
+                                <!-- Lista de tratamientos -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3 fw-semibold" style="color: var(--color-logo);">
+                                        <i class="bi bi-list-check me-1" style="color: var(--color-principal);"></i>
+                                        Nuestros Tratamientos
                                     </h5>
-                                    <div class="row">
-                                        <div class="col-md-6" th:each="tratamiento : ${tratamientos}">
-                                            <div class="card mb-3 treatment-option" 
-                                                 th:classappend="${tratamientoSeleccionado == tratamiento.id} ? 'border-primary selected' : ''"
-                                                 th:onclick="|selectTreatment(${tratamiento.id})|"
-                                                 style="cursor: pointer;">
+                                    <div class="row g-3">
+                                        <div th:each="tratamiento : ${tratamientos}" class="col-md-6">
+                                            <div class="card h-100 border-0 shadow-sm hover-card" th:data-id="${tratamiento.id}">
                                                 <div class="card-body">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" 
-                                                               th:id="'tratamiento_' + ${tratamiento.id}"
-                                                               th:value="${tratamiento.id}" 
-                                                               th:field="*{tratamiento.id}">
-                                                        <label class="form-check-label fw-bold" 
-                                                               th:for="'tratamiento_' + ${tratamiento.id}"
-                                                               th:text="${tratamiento.nombre}">
-                                                        </label>
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <h6 class="fw-semibold mb-0" style="color: var(--color-logo);" th:text="${tratamiento.nombre}"></h6>
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                                                            $[[${#numbers.formatDecimal(tratamiento.precio, 1, 2)}]]
+                                                        </span>
                                                     </div>
-                                                    <p class="text-muted small mb-2" th:text="${tratamiento.descripcion}"></p>
+                                                    <p class="small text-muted mb-2" th:text="${#strings.abbreviate(tratamiento.descripcion, 80)}"></p>
                                                     <div class="d-flex justify-content-between align-items-center">
-                                                        <span class="badge bg-color4" 
-                                                              th:text="${tratamiento.duracionMinutos} + ' min'"></span>
-                                                        <span class="h6 text-color1 mb-0" 
-                                                              th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}"></span>
+                                                        <span class="small" style="color: var(--color-details);">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            [[${tratamiento.duracionMinutos}]] min
+                                                        </span>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                                th:onclick="'seleccionarTratamiento(' + ${tratamiento.id} + ')'">
+                                                            <i class="bi bi-check-lg me-1"></i>Seleccionar
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Selección de Fecha y Hora -->
-                                <div class="mb-4">
-                                    <h5 class="fw-bold text-color2 mb-3">
-                                        <i class="fas fa-clock me-2"></i>Paso 2: Selecciona Fecha y Hora
-                                    </h5>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label for="fechaCita" class="form-label fw-bold">Fecha de la Cita</label>
-                                            <input type="datetime-local" class="form-control" id="fechaCita" 
-                                                   name="fechaCita" required th:field="*{fechaCita}">
-                                            <small class="form-text text-muted">
-                                                Selecciona la fecha y hora que prefieras para tu cita
-                                            </small>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card bg-color5">
-                                                <div class="card-body">
-                                                    <h6 class="fw-bold text-color2">Horarios Disponibles</h6>
-                                                    <p class="small text-muted mb-2">
-                                                        <i class="fas fa-info-circle me-1"></i>
-                                                        Nuestro horario de atención es de Lunes a Sábado de 9:00 AM a 6:00 PM
-                                                    </p>
-                                                    <p class="small text-muted mb-0">
-                                                        <i class="fas fa-clock me-1"></i>
-                                                        Cada tratamiento tiene una duración específica
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Información Adicional -->
-                                <div class="mb-4">
-                                    <h5 class="fw-bold text-color2 mb-3">
-                                        <i class="fas fa-notes-medical me-2"></i>Paso 3: Información Adicional (Opcional)
-                                    </h5>
-                                    <div class="mb-3">
-                                        <label for="notas" class="form-label fw-bold">Notas Especiales</label>
-                                        <textarea class="form-control" id="notas" name="notas" rows="4" 
-                                                  placeholder="Por favor, comparte cualquier información relevante como alergias, condiciones médicas, preferencias específicas, o cualquier detalle que debamos conocer para brindarte el mejor servicio..."
-                                                  th:field="*{notas}"></textarea>
-                                        <small class="form-text text-muted">
-                                            Esta información nos ayuda a prepararnos para tu cita
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <!-- Resumen y Confirmación -->
-                                <div class="mb-4">
-                                    <h5 class="fw-bold text-color2 mb-3">
-                                        <i class="fas fa-clipboard-check me-2"></i>Resumen de tu Cita
-                                    </h5>
-                                    <div class="card bg-color5">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <strong>Tratamiento:</strong>
-                                                    <span id="selectedTreatmentName" class="text-muted">No seleccionado</span>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Duración:</strong>
-                                                    <span id="selectedTreatmentDuration" class="text-muted">-</span>
-                                                </div>
-                                            </div>
-                                            <div class="row mt-2">
-                                                <div class="col-md-6">
-                                                    <strong>Precio:</strong>
-                                                    <span id="selectedTreatmentPrice" class="text-color1">$0.00</span>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Fecha:</strong>
-                                                    <span id="selectedDateTime" class="text-muted">No seleccionada</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Botones de Acción -->
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                    <a th:href="@{/citas}" class="btn btn-secondary me-md-2">
-                                        <i class="fas fa-arrow-left me-2"></i>Volver a Mis Citas
+                                
+                                <!-- Botones -->
+                                <div class="d-flex justify-content-between pt-3 border-top">
+                                    <a th:href="@{/citas}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left me-1"></i>Cancelar
                                     </a>
-                                    <a th:href="@{/tratamientos}" class="btn btn-outline-primary me-md-2">
-                                        <i class="fas fa-spa me-2"></i>Ver Más Tratamientos
-                                    </a>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-calendar-check me-2"></i>Confirmar Cita
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="reset" class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                                        </button>
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                                            <i class="bi bi-calendar-check me-1"></i>Agendar Cita
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -155,83 +185,347 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div layout:fragment="scripts">
-        <script>
-            // Datos de tratamientos para el resumen
-            const tratamientos = {
-                <th:block th:each="tratamiento : ${tratamientos}">
-                    [[${tratamiento.id}]]: {
-                        nombre: "[[${tratamiento.nombre}]]",
-                        duracion: "[[${tratamiento.duracionMinutos}]] minutos",
-                        precio: "[[${#numbers.formatDecimal(tratamiento.precio, 1, 2)}]]"
-                    },
-                </th:block>
-            };
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/footer :: scripts}"></div>
 
-            // Seleccionar tratamiento
-            function selectTreatment(tratamientoId) {
-                const treatment = tratamientos[tratamientoId];
-                if (treatment) {
-                    document.getElementById('selectedTreatmentName').textContent = treatment.nombre;
-                    document.getElementById('selectedTreatmentDuration').textContent = treatment.duracion;
-                    document.getElementById('selectedTreatmentPrice').textContent = '$' + treatment.precio;
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    
+    <style>
+        /* Mantenemos TODOS los estéticos iguales */
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+            --color-white: #FFFFFF;
+            --color-light: #F8F9FA;
+            --color-dark: #333333;
+            --color-gray: #6C757D;
+            --color-success: #198754;
+            --color-danger: #DC3545;
+            --color-warning: #FFC107;
+            --color-info: #0DCAF0;
+        }
+        
+        /* Tarjeta principal */
+        .card {
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        
+        /* Inputs mejorados */
+        .form-select-lg, .form-control-lg {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        
+        .form-select-lg:focus, .form-control-lg:focus {
+            border-color: var(--color-principal);
+            box-shadow: 0 0 0 0.2rem rgba(196, 105, 110, 0.25);
+        }
+        
+        /* Tarjetas de tratamientos */
+        .hover-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+        
+        .hover-card.selected {
+            border: 1px solid var(--color-principal);
+            background-color: rgba(196, 105, 110, 0.03);
+        }
+        
+        /* Botones */
+        .btn-primary {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1.5rem;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-secundario);
+            border-color: var(--color-secundario);
+            transform: translateY(-1px);
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-principal);
+            border-color: var(--color-principal);
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+        
+        .btn-outline-secondary {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        /* Badge de precio */
+        .badge.bg-primary.bg-opacity-10 {
+            background-color: rgba(196, 105, 110, 0.1) !important;
+            color: var(--color-principal) !important;
+            font-weight: 500;
+            padding: 0.25rem 0.75rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1.25rem;
+            }
+            
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .d-flex.gap-2 {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+        
+        /* Optimización de carga */
+        img, iframe, video {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* Mejorar rendimiento de animaciones */
+        .hover-card {
+            will-change: transform;
+        }
+    </style>
+    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Función para ocultar loading screen
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    document.body.style.opacity = '1';
+                }, 300);
+            } else {
+                document.body.style.opacity = '1';
+            }
+        }
+        
+        // Función para mostrar loading screen
+        function showLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'flex';
+                loadingScreen.style.opacity = '1';
+                document.body.style.opacity = '0';
+            }
+        }
+        
+        // Prevenir múltiples envíos del formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar la página gradualmente
+            setTimeout(hideLoadingScreen, 500);
+            
+            const form = document.getElementById('citaForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (form && submitBtn) {
+                form.addEventListener('submit', function(e) {
+                    // Validación básica
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        form.classList.add('was-validated');
+                        return;
+                    }
                     
-                    // Marcar visualmente como seleccionado
-                    document.querySelectorAll('.treatment-option').forEach(option => {
-                        option.classList.remove('border-primary', 'selected');
-                    });
-                    event.currentTarget.classList.add('border-primary', 'selected');
-                }
-            }
-
-            // Actualizar fecha seleccionada
-            document.getElementById('fechaCita').addEventListener('change', function() {
-                const selectedDate = new Date(this.value);
-                const formattedDate = selectedDate.toLocaleDateString('es-ES', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    // Prevenir múltiples envíos
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Procesando...';
+                    showLoadingScreen();
+                    
+                    // Permitir que el formulario se envíe normalmente
+                    return true;
                 });
-                document.getElementById('selectedDateTime').textContent = formattedDate;
+            }
+            
+            // Inicializar Flatpickr con manejo de errores
+            try {
+                if (typeof flatpickr !== 'undefined') {
+                    flatpickr("#fechaCita", {
+                        enableTime: true,
+                        dateFormat: "Y-m-d\\TH:i",
+                        minDate: "today",
+                        locale: "es",
+                        disable: [
+                            function(date) {
+                                return (date.getDay() === 0);
+                            }
+                        ],
+                        onReady: function() {
+                            console.log('Flatpickr cargado correctamente');
+                        }
+                    });
+                } else {
+                    console.warn('Flatpickr no está disponible, usando input nativo');
+                }
+            } catch (error) {
+                console.error('Error al cargar Flatpickr:', error);
+                // El input datetime-local nativo funcionará
+            }
+            
+            // Inicializar tratamientos con manejo seguro
+            let tratamientos = [];
+            
+            try {
+                // Usamos try-catch para evitar errores si hay problemas con los datos Thymeleaf
+                const tratamientosData = [
+                    <th:block th:each="tratamiento, stat : ${tratamientos}">
+                    {
+                        id: [[${tratamiento.id}]],
+                        nombre: "[[${tratamiento.nombre}]]",
+                        descripcion: "[[${tratamiento.descripcion}]]",
+                        duracion: [[${tratamiento.duracionMinutos}]],
+                        precio: [[${tratamiento.precio}]]
+                    }[[${!stat.last} ? ',' : '']]
+                    </th:block>
+                ];
+                
+                // Filtrar elementos undefined/nulos
+                tratamientos = tratamientosData.filter(item => item && item.id);
+            } catch (e) {
+                console.warn('Error al procesar datos de tratamientos:', e);
+                tratamientos = [];
+            }
+            
+            window.seleccionarTratamiento = function(tratamientoId) {
+                try {
+                    const select = document.getElementById('tratamientoid');
+                    if (!select) return;
+                    
+                    select.value = tratamientoId;
+                    
+                    const tratamiento = tratamientos.find(t => t && t.id == tratamientoId);
+                    if (tratamiento) {
+                        const infoDiv = document.getElementById('tratamientoInfo');
+                        if (infoDiv) {
+                            infoDiv.style.display = 'block';
+                            infoDiv.style.opacity = '0';
+                            setTimeout(() => {
+                                infoDiv.style.opacity = '1';
+                            }, 10);
+                        }
+                        
+                        const descElement = document.getElementById('tratamientoDescripcion');
+                        const duracionElement = document.getElementById('tratamientoDuracion');
+                        const precioElement = document.getElementById('tratamientoPrecio');
+                        
+                        if (descElement) descElement.textContent = tratamiento.descripcion || '';
+                        if (duracionElement) duracionElement.textContent = tratamiento.duracion || '';
+                        if (precioElement) precioElement.textContent = (tratamiento.precio || 0).toFixed(2);
+                        
+                        // Resaltar la tarjeta seleccionada
+                        document.querySelectorAll('.hover-card').forEach(card => {
+                            if (card) {
+                                card.classList.remove('selected');
+                                const cardId = card.getAttribute('th:data-id');
+                                if (cardId && cardId == tratamientoId) {
+                                    card.classList.add('selected');
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error en seleccionarTratamiento:', e);
+                }
+            };
+            
+            // Inicializar si hay tratamiento seleccionado
+            try {
+                const tratamientoSeleccionado = [[${tratamientoSeleccionado}]];
+                if (tratamientoSeleccionado) {
+                    // Esperar un momento para asegurar que todo está cargado
+                    setTimeout(() => {
+                        seleccionarTratamiento(tratamientoSeleccionado);
+                    }, 100);
+                }
+            } catch (e) {
+                console.warn('Error al inicializar tratamiento seleccionado:', e);
+            }
+            
+            // Event listener para el select
+            const selectElement = document.getElementById('tratamientoid');
+            if (selectElement) {
+                selectElement.addEventListener('change', function() {
+                    if (this.value) {
+                        seleccionarTratamiento(this.value);
+                    } else {
+                        const infoDiv = document.getElementById('tratamientoInfo');
+                        if (infoDiv) {
+                            infoDiv.style.display = 'none';
+                        }
+                        document.querySelectorAll('.hover-card').forEach(card => {
+                            if (card) {
+                                card.classList.remove('selected');
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Mejorar experiencia en móviles
+            if ('ontouchstart' in window) {
+                document.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.style.fontSize = '16px'; // Previene zoom en iOS
+                });
+            }
+            
+            // Fallback si hay error en la carga
+            window.addEventListener('error', function(e) {
+                console.warn('Error detectado:', e);
+                // Forzar mostrar la página después de 3 segundos
+                setTimeout(hideLoadingScreen, 3000);
             });
-
-            // Establecer fecha mínima como hoy
-            const today = new Date().toISOString().slice(0, 16);
-            document.getElementById('fechaCita').min = today;
-
-            // Si hay un tratamiento pre-seleccionado, seleccionarlo
-            const tratamientoSeleccionado = [[${tratamientoSeleccionado}]];
-            if (tratamientoSeleccionado) {
-                selectTreatment(tratamientoSeleccionado);
-                document.querySelector(`input[value="${tratamientoSeleccionado}"]`).checked = true;
-            }
-        </script>
-
-        <style>
-            .treatment-option {
-                transition: all 0.3s ease;
-            }
-            
-            .treatment-option:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            }
-            
-            .treatment-option.selected {
-                border: 2px solid var(--color1);
-                background-color: rgba(157, 107, 108, 0.05);
-            }
-            
-            .form-check-input:checked {
-                background-color: var(--color1);
-                border-color: var(--color1);
-            }
-        </style>
-    </div>
+        });
+        
+        // Asegurar que la página se muestre incluso si hay errores
+        window.addEventListener('load', function() {
+            setTimeout(hideLoadingScreen, 1000);
+        });
+        
+        // Fallback final
+        setTimeout(hideLoadingScreen, 5000);
+        /*]]>*/
+    </script>
 </body>
 </html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head(tratamiento != null ? tratamiento.nombre + ' | KWestética' : 'Tratamiento | KWestética')}">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <!-- Contenido principal -->
+    <main class="flex-grow-1">
+        <div class="container py-4" style="min-height: 65vh;">
+            <!-- Solo mostrar contenido si tratamiento existe -->
+            <div th:if="${tratamiento != null}">
+                <div class="row g-4">
+                    <!-- Columna principal -->
+                    <div class="col-lg-8">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a th:href="@{/}">Inicio</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/tratamientos}">Tratamientos</a></li>
+                                <li class="breadcrumb-item active" th:text="${tratamiento.nombre}"></li>
+                            </ol>
+                        </nav>
+                        
+                        <!-- Imagen del tratamiento -->
+                        <div th:if="${tratamiento.imagenUrl} and ${tratamiento.imagenUrl != ''}" 
+                             class="mb-4 rounded overflow-hidden" style="height: 400px;">
+                            <img th:src="${tratamiento.imagenUrl}" 
+                                 alt="Imagen del tratamiento" 
+                                 class="img-fluid w-100 h-100 object-fit-cover">
+                        </div>
+                        <div th:unless="${tratamiento.imagenUrl} and ${tratamiento.imagenUrl != ''}" 
+                             class="mb-4 bg-primary-light d-flex align-items-center justify-content-center rounded" 
+                             style="height: 300px;">
+                            <i class="bi bi-scissors display-1 text-primary"></i>
+                        </div>
+                        
+                        <h1 th:text="${tratamiento.nombre}" style="color: #52314C;"></h1>
+                        <p class="text-muted" th:text="${tratamiento.categoria.nombre}"></p>
+                        
+                        <div class="my-4">
+                            <div class="d-flex align-items-center gap-4 mb-3">
+                                <h2 class="price mb-0" th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}" style="color: #C4696E;"></h2>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-clock me-2" style="color: #726658;"></i>
+                                    <span style="color: #726658;">Duración: <strong th:text="${tratamiento.duracionMinutos}"></strong> minutos</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 style="color: #52314C;">Descripción</h5>
+                            <p th:text="${tratamiento.descripcion}" class="text-gray"></p>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-block mb-4">
+                            <a th:href="@{/citas/nueva(tratamientoid=${tratamiento.id})}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-calendar-plus"></i> Agendar Cita
+                            </a>
+                            <a th:href="@{/servicios}" class="btn btn-outline-primary btn-lg ms-2">
+                                <i class="bi bi-list-ul"></i> Ver Todos los Servicios
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0" style="color: #52314C;">Información del Tratamiento</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-tag me-2 mt-1" style="color: #C4696E;"></i>
+                                        <div>
+                                            <strong style="color: #52314C;">Categoría:</strong><br>
+                                            <span th:text="${tratamiento.categoria.nombre}" class="text-gray"></span>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-clock me-2 mt-1" style="color: #C4696E;"></i>
+                                        <div>
+                                            <strong style="color: #52314C;">Duración:</strong><br>
+                                            <span th:text="${tratamiento.duracionMinutos} + ' minutos'" class="text-gray"></span>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-currency-dollar me-2 mt-1" style="color: #C4696E;"></i>
+                                        <div>
+                                            <strong style="color: #52314C;">Precio:</strong><br>
+                                            <span th:text="'$' + ${#numbers.formatDecimal(tratamiento.precio, 1, 2)}" class="text-gray"></span>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-check-circle me-2 mt-1" style="color: #198754;"></i>
+                                        <div>
+                                            <strong style="color: #52314C;">Disponibilidad:</strong><br>
+                                            <span class="text-success">Disponible</span>
+                                        </div>
+                                    </li>
+                                    <li th:if="${tratamiento.requiereConsulta}" class="mb-3 d-flex align-items-start">
+                                        <i class="bi bi-info-circle me-2 mt-1" style="color: #0DCAF0;"></i>
+                                        <div>
+                                            <strong style="color: #52314C;">Nota:</strong><br>
+                                            <span class="text-info">Requiere consulta previa</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                                
+                                <!-- Imagen pequeña en sidebar (opcional) -->
+                                <div th:if="${tratamiento.imagenUrl} and ${tratamiento.imagenUrl != ''}" 
+                                     class="mt-4 rounded overflow-hidden" style="height: 150px;">
+                                    <img th:src="${tratamiento.imagenUrl}" 
+                                         alt="Imagen del tratamiento" 
+                                         class="img-fluid w-100 h-100 object-fit-cover">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mensaje si el tratamiento no existe -->
+            <div th:unless="${tratamiento != null}" class="text-center py-5">
+                <i class="bi bi-exclamation-triangle" style="font-size: 4rem; color: #C4696E;"></i>
+                <h3 class="mt-3" style="color: #52314C;">Tratamiento no encontrado</h3>
+                <p class="text-muted">El tratamiento que buscas no está disponible.</p>
+                <a th:href="@{/tratamientos}" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-left"></i> Volver a Tratamientos
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+    <!-- Scripts -->
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <style>
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+        }
+        
+        .object-fit-cover {
+            object-fit: cover;
+        }
+        
+        .bg-primary-light {
+            background-color: rgba(196, 105, 110, 0.1) !important;
+        }
+        
+        .text-gray {
+            color: var(--color-details);
+        }
+        
+        .price {
+            color: var(--color-principal) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-secundario);
+            border-color: var(--color-secundario);
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+        
+        .card {
+            border-radius: 10px;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--color-principal);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--color-logo);
+        }
+    </style>
+</body>
+</html>

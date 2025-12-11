@@ -30,7 +30,9 @@ public class TratamientoController {
     public String listarTratamientos(
         @RequestParam(required = false) Long categoria,
         Model model) {
-
+        
+        model.addAttribute("activePage", "servicios");
+        
         List<Tratamiento> tratamientos;
         List<CategoriaTratamiento> categorias = categoriaService.obtenerActivas();
 

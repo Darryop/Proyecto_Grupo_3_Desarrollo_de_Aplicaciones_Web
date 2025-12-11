@@ -5,35 +5,45 @@ package Proyecto.controller;
  * @author darry
  */
 
-import Proyecto.model.Producto;
-import Proyecto.model.CategoriaProducto;
-import Proyecto.service.ProductoService;
-import Proyecto.service.CategoriaProductoService;
+import Proyecto.model.*;
+import Proyecto.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.util.List;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/productos")
 public class ProductoController {
-    
+
     @Autowired
     private ProductoService productoService;
     
     @Autowired
     private CategoriaProductoService categoriaService;
     
+    @Autowired
+    private CarritoService carritoService;
+    
+    @Autowired
+    private UsuarioService usuarioService;
+    
     @GetMapping
     public String listarProductos(
-        @RequestParam(required = false) String query,
-        @RequestParam(required = false) Long categoria,
-        Model model) {
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) Long categoria,
+            Model model) {
+        
+        model.addAttribute("activePage", "productos");
         
         List<Producto> productos;
+        List<CategoriaProducto> categorias = categoriaService.obtenerActivas();
+        
         if (query != null && !query.isEmpty()) {
             productos = productoService.buscarPorNombre(query);
         } else if (categoria != null) {
@@ -48,21 +58,22 @@ public class ProductoController {
             productos = productoService.obtenerActivos();
         }
         
-        List<CategoriaProducto> categorias = categoriaService.obtenerActivas();
-        
         model.addAttribute("productos", productos);
         model.addAttribute("categorias", categorias);
         model.addAttribute("busqueda", query);
         model.addAttribute("categoriaFiltro", categoria);
         
-        return "productos/lista"; // Cambiado para que coincida con la estructura
+        addCartCountToModel(model);
+        return "productos/lista";
     }
     
     @GetMapping("/{id}")
     public String verProducto(@PathVariable Long id, Model model) {
         Optional<Producto> productoOpt = productoService.obtenerPorId(id);
+        
         if (productoOpt.isPresent()) {
             model.addAttribute("producto", productoOpt.get());
+            addCartCountToModel(model);
             return "productos/detalle";
         } else {
             return "redirect:/productos";
@@ -72,11 +83,17 @@ public class ProductoController {
     @GetMapping("/categoria/{categoriaId}")
     public String productosPorCategoria(@PathVariable Long categoriaId, Model model) {
         Optional<CategoriaProducto> categoriaOpt = categoriaService.obtenerPorId(categoriaId);
+        
         if (categoriaOpt.isPresent()) {
             List<Producto> productos = productoService.obtenerPorCategoria(categoriaOpt.get());
+            List<CategoriaProducto> categorias = categoriaService.obtenerActivas();
+            
             model.addAttribute("productos", productos);
+            model.addAttribute("categorias", categorias);
             model.addAttribute("categoria", categoriaOpt.get());
             model.addAttribute("categoriaFiltro", categoriaId);
+            
+            addCartCountToModel(model);
             return "productos/lista";
         } else {
             return "redirect:/productos";
@@ -93,6 +110,18 @@ public class ProductoController {
         model.addAttribute("query", query);
         model.addAttribute("busqueda", query);
         
+        addCartCountToModel(model);
         return "productos/lista";
+    }
+    
+    private void addCartCountToModel(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            Usuario usuario = usuarioService.obtenerPorEmail(auth.getName()).orElse(null);
+            if (usuario != null) {
+                int carritoCount = carritoService.obtenerItemsDelCarrito(usuario).size();
+                model.addAttribute("carritoCount", carritoCount);
+            }
+        }
     }
 }

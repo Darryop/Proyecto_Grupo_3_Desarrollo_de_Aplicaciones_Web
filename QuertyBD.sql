@@ -15,6 +15,22 @@ CREATE TABLE usuarios (
     activo BOOLEAN DEFAULT TRUE
 );
 
+-- Tabla: roles (NUEVA - requerida por Spring Security)
+CREATE TABLE roles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    descripcion TEXT
+);
+
+-- Tabla: usuario_roles (NUEVA - relación many-to-many)
+CREATE TABLE usuario_roles (
+    usuario_id INT NOT NULL,
+    rol_id INT NOT NULL,
+    PRIMARY KEY (usuario_id, rol_id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE CASCADE
+);
+
 -- Tabla: categorias_productos
 CREATE TABLE categorias_productos (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -46,7 +62,7 @@ CREATE TABLE productos (
     FOREIGN KEY (categoria_id) REFERENCES categorias_productos(id)
 );
 
--- Tabla: tratamientos
+-- Tabla: tratamientos (ACTUALIZADA)
 CREATE TABLE tratamientos (
     id INT PRIMARY KEY AUTO_INCREMENT,
     codigo_tratamiento VARCHAR(50) UNIQUE NOT NULL,
@@ -55,6 +71,8 @@ CREATE TABLE tratamientos (
     precio DECIMAL(10,2) NOT NULL,
     duracion_minutos INT NOT NULL,
     categoria_id INT,
+    imagen_url VARCHAR(255),
+    requiere_consulta BOOLEAN DEFAULT FALSE,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (categoria_id) REFERENCES categorias_tratamientos(id)
 );
@@ -144,9 +162,21 @@ CREATE TABLE configuracion_citas (
     dias_disponibles JSON
 );
 
+-- Insertar roles PRIMERO (antes de los usuarios)
+INSERT INTO roles (nombre, descripcion) VALUES
+('ROLE_CLIENTE', 'Usuario cliente que puede comprar productos y agendar citas'),
+('ROLE_ADMIN', 'Administrador con acceso completo al sistema'),
+('ROLE_EMPLEADO', 'Empleado de la estética con permisos limitados');
+
 -- Insertar usuario administrador por defecto
 INSERT INTO usuarios (email, password, nombre, apellido, telefono, tipo, fecha_registro, activo) 
-VALUES ('admin@kvestetica.com', '1234', 'Administrador', 'Principal', '0000000000', 'ADMIN', NOW(), TRUE);
+VALUES ('admin@kvestetica.com', '$2y$10$9tcftrNn7bCwQZVnPk61guBg0WHMKGNR18zAnF30HxV9vzBjRfOXu', 'Administrador', 'Principal', '0000000000', 'ADMIN', NOW(), TRUE);
+
+-- Asignar rol de admin al usuario admin
+INSERT INTO usuario_roles (usuario_id, rol_id)
+SELECT u.id, r.id 
+FROM usuarios u, roles r 
+WHERE u.email = 'admin@kvestetica.com' AND r.nombre = 'ROLE_ADMIN';
 
 -- Insertar configuración por defecto para citas
 INSERT INTO configuracion_citas (max_citas_dia, horario_apertura, horario_cierre, duracion_minima_cita, dias_anticipacion, dias_disponibles) 
@@ -165,15 +195,15 @@ INSERT INTO categorias_tratamientos (nombre, descripcion) VALUES
 
 -- Insertar algunos productos de ejemplo
 INSERT INTO productos (codigo_producto, nombre, descripcion, precio, stock, categoria_id, imagen_url) VALUES
-('PROD-001', 'Crema Hidratante', 'Crema hidratante para piel seca', 25.99, 50, 1, '/images/crema-hidratante.jpg'),
-('PROD-002', 'Base de Maquillaje', 'Base de larga duración', 35.50, 30, 2, '/images/base-maquillaje.jpg'),
-('PROD-003', 'Aceite Corporal', 'Aceite nutritivo para el cuerpo', 18.75, 40, 3, '/images/aceite-corporal.jpg');
+('PROD-001', 'Crema Hidratante', 'Crema hidratante para piel seca', 25.99, 50, 1, 'https://i.pinimg.com/1200x/1f/57/6d/1f576d517e613f24239de6c798de81b0.jpg'),
+('PROD-002', 'Base de Maquillaje', 'Base de larga duración', 35.50, 30, 2, 'https://i.pinimg.com/1200x/f1/ef/6c/f1ef6c3bc5c9c5c05a591e701f986287.jpg'),
+('PROD-003', 'Aceite Corporal', 'Aceite nutritivo para el cuerpo', 18.75, 40, 3, 'https://i.pinimg.com/1200x/9f/e0/6f/9fe06f9e489e2080c4eb283fad0a1293.jpg');
 
--- Insertar algunos tratamientos de ejemplo
-INSERT INTO tratamientos (codigo_tratamiento, nombre, descripcion, precio, duracion_minutos, categoria_id) VALUES
-('TRAT-001', 'Limpieza Facial', 'Limpieza profunda del rostro', 50.00, 60, 1),
-('TRAT-002', 'Masaje Relajante', 'Masaje corporal relajante', 75.00, 90, 2),
-('TRAT-003', 'Depilación Láser', 'Sesión de depilación láser', 120.00, 45, 3);
+-- Insertar algunos tratamientos de ejemplo (ACTUALIZADO)
+INSERT INTO tratamientos (codigo_tratamiento, nombre, descripcion, precio, duracion_minutos, categoria_id, imagen_url, requiere_consulta) VALUES
+('TRAT-001', 'Limpieza Facial', 'Limpieza profunda del rostro', 50.00, 60, 1, 'https://i.pinimg.com/1200x/8c/9f/a7/8c9fa7dbc6e87d9a2d83c5bf0acf7874.jpg', FALSE),
+('TRAT-002', 'Masaje Relajante', 'Masaje corporal relajante', 75.00, 90, 2, 'https://i.pinimg.com/736x/97/04/cf/9704cfbb81bba3bd1f9570059245e093.jpg', FALSE),
+('TRAT-003', 'Depilación Láser', 'Sesión de depilación láser', 120.00, 45, 3, 'https://i.pinimg.com/736x/c8/21/09/c82109dbc84f0b4d8dd0b353fe3da949.jpg', TRUE);
 
 -- Crear usuario webAdmin
 CREATE USER IF NOT EXISTS 'webAdmin'@'localhost' IDENTIFIED BY '1234';

@@ -1,227 +1,530 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
-<head>
-    <title>Carrito de Compras - KVestética</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Carrito de Compras')}">
 </head>
-<body>
-    <div layout:fragment="content">
-        <div class="container mt-4">
-            <h1 class="mb-4">
-                <i class="fas fa-shopping-cart me-2 text-color1"></i>Mi Carrito de Compras
-            </h1>
 
-            <div th:if="${items.empty}">
-                <div class="alert alert-info text-center py-5">
-                    <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
-                    <h3 class="text-color2">Tu carrito está vacío</h3>
-                    <p class="lead text-muted mb-4">Explora nuestros productos y tratamientos para agregar items a tu carrito.</p>
-                    <div class="d-flex justify-content-center gap-3 flex-wrap">
-                        <a th:href="@{/productos}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-shopping-bag me-2"></i>Ver Productos
-                        </a>
-                        <a th:href="@{/tratamientos}" class="btn btn-outline-primary btn-lg">
-                            <i class="fas fa-spa me-2"></i>Ver Tratamientos
-                        </a>
-                    </div>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <div class="container">
+            <!-- Header del carrito -->
+            <div class="text-center mb-5">
+                <div class="rounded-circle bg-white shadow-sm d-inline-flex align-items-center justify-content-center p-4 mb-3"
+                     style="width: 80px; height: 80px;">
+                    <i class="bi bi-cart3 display-5" style="color: var(--color-principal);"></i>
                 </div>
+                <h1 class="fw-bold mb-3" style="color: var(--color-logo);">Tu Carrito de Compras</h1>
+                <p class="lead text-muted mb-0">Revisa y gestiona tus productos y servicios</p>
             </div>
 
-            <div th:unless="${items.empty}">
-                <div class="row">
+            <div th:if="${items != null and !items.isEmpty()}">
+                <div class="row g-4">
+                    <!-- Lista de items -->
                     <div class="col-lg-8">
-                        <!-- Items del Carrito -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-color2 text-white">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-list me-2"></i>Items en el Carrito
-                                    <span class="badge bg-color3 ms-2" th:text="${items.size()}"></span>
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div th:each="item : ${items}" class="cart-item mb-4 pb-4 border-bottom">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-2">
-                                            <div th:if="${item.tipo.name() == 'PRODUCTO'}">
-                                                <img th:src="${item.producto.imagenUrl}" 
-                                                     class="img-fluid rounded shadow-sm" 
-                                                     style="height: 80px; width: 80px; object-fit: cover;"
-                                                     onerror="this.src='https://via.placeholder.com/80?text=Producto'">
-                                            </div>
-                                            <div th:if="${item.tipo.name() == 'CITA'}" 
-                                                 class="text-center text-color1">
-                                                <i class="fas fa-calendar-alt fa-3x"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-4">
-                                            <h6 class="fw-bold text-color2" 
-                                                th:text="${item.tipo.name() == 'PRODUCTO'} ? ${item.producto.nombre} : ${item.cita.tratamiento.nombre}">
-                                            </h6>
-                                            <small class="text-muted" 
-                                                   th:text="${item.tipo.name() == 'PRODUCTO'} ? ${item.producto.descripcion} : 'Cita programada'">
-                                            </small>
-                                            <div th:if="${item.tipo.name() == 'CITA'}" class="mt-1">
-                                                <small class="text-muted">
-                                                    <i class="fas fa-clock me-1"></i>
-                                                    <span th:text="${#temporals.format(item.cita.fechaCita, 'dd/MM/yyyy HH:mm')}"></span>
-                                                </small>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-2">
-                                            <span class="h6 text-color1 mb-0" 
-                                                  th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario, 1, 2)}">
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="col-md-2">
-                                            <div th:if="${item.tipo.name() == 'PRODUCTO'}" 
-                                                 class="quantity-controls input-group input-group-sm" style="width: 120px;">
-                                                <button class="btn btn-outline-secondary" 
-                                                        th:onclick="|decrementarCantidad(${item.id})|"
-                                                        th:disabled="${item.cantidad <= 1}">-</button>
-                                                <input type="number" class="form-control text-center" 
-                                                       th:value="${item.cantidad}" min="1" 
-                                                       th:onchange="|actualizarCantidad(${item.id}, this.value)|">
-                                                <button class="btn btn-outline-secondary" 
-                                                        th:onclick="|incrementarCantidad(${item.id})|">+</button>
-                                            </div>
-                                            <div th:if="${item.tipo.name() == 'CITA'}" class="text-center">
-                                                <span class="badge bg-color4">1 Sesión</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-2 text-end">
-                                            <strong class="h6 text-color2" 
-                                                    th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario * item.cantidad, 1, 2)}">
-                                            </strong>
-                                        </div>
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-0 py-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle p-3 me-3" style="background-color: rgba(196, 105, 110, 0.1);">
+                                        <i class="bi bi-basket2" style="color: var(--color-principal); font-size: 1.5rem;"></i>
                                     </div>
-                                    
-                                    <div class="row mt-2">
-                                        <div class="col text-end">
-                                            <button class="btn btn-outline-danger btn-sm" 
-                                                    th:onclick="|eliminarItem(${item.id})|">
-                                                <i class="fas fa-trash me-1"></i>Eliminar
-                                            </button>
+                                    <div>
+                                        <h4 class="mb-1" style="color: var(--color-logo);">Tus Productos</h4>
+                                        <p class="text-muted small mb-0">[[${items.size()}]] artículo(s) en tu carrito</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    <div th:each="item : ${items}" class="list-group-item border-0 py-4 px-4 carrito-item" th:data-id="${item.id}">
+                                        <div class="row align-items-center">
+                                            <!-- Icono y tipo -->
+                                            <div class="col-auto">
+                                                <div class="position-relative">
+                                                    <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                                                         style="width: 60px; height: 60px; background-color: rgba(209, 191, 181, 0.3);">
+                                                        <i th:if="${item.tipo.name() == 'PRODUCTO'}" 
+                                                           class="bi bi-box-seam" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                                        <i th:if="${item.tipo.name() == 'CITA'}" 
+                                                           class="bi bi-calendar-check" style="color: var(--color-secundario); font-size: 1.5rem;"></i>
+                                                    </div>
+                                                    <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill px-2 py-1 carrito-cantidad-badge" 
+                                                         style="background-color: var(--color-principal); color: white; font-size: 0.7rem;">
+                                                        [[${item.cantidad}]]
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Detalles del item -->
+                                            <div class="col">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-semibold" style="color: var(--color-logo);">
+                                                            <span th:if="${item.tipo.name() == 'PRODUCTO'}">[[${item.producto.nombre}]]</span>
+                                                            <span th:if="${item.tipo.name() == 'CITA'}">[[${item.cita.tratamiento.nombre}]]</span>
+                                                        </h6>
+                                                        <p class="text-muted small mb-0" style="color: var(--color-details);">
+                                                            <span th:if="${item.tipo.name() == 'PRODUCTO'}">
+                                                                [[${#strings.abbreviate(item.producto.descripcion, 80)}]]
+                                                            </span>
+                                                            <span th:if="${item.tipo.name() == 'CITA'}">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                [[${#temporals.format(item.cita.fechaCita, 'dd MMM yyyy - HH:mm')}]]
+                                                            </span>
+                                                        </p>
+                                                        <div class="mt-2">
+                                                            <span class="fw-bold carrito-precio-unitario" style="color: var(--color-secundario);">
+                                                                $[[${#numbers.formatDecimal(item.precioUnitario, 1, 2)}]] c/u
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <div class="display-6 fw-bold mb-2 carrito-subtotal" style="color: var(--color-logo);">
+                                                            $[[${#numbers.formatDecimal(item.precioUnitario * item.cantidad, 1, 2)}]]
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Controles y acciones -->
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <div th:if="${item.tipo.name() == 'PRODUCTO'}" class="d-flex align-items-center">
+                                                        <button class="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                                style="width: 32px; height: 32px;"
+                                                                th:onclick="'updateQuantity(' + ${item.id} + ', -1)'">
+                                                            <i class="bi bi-dash"></i>
+                                                        </button>
+                                                        <span class="mx-3 fw-semibold carrito-cantidad" th:text="${item.cantidad}" style="color: var(--color-logo); min-width: 20px; text-align: center;"></span>
+                                                        <button class="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                                style="width: 32px; height: 32px;"
+                                                                th:onclick="'updateQuantity(' + ${item.id} + ', 1)'">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div th:if="${item.tipo.name() == 'CITA'}" class="text-muted small">
+                                                        <i class="bi bi-info-circle me-1"></i>Consulta única
+                                                    </div>
+                                                    
+                                                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center"
+                                                            th:onclick="'removeItem(' + ${item.id} + ')'">
+                                                        <i class="bi bi-trash me-1"></i>Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Botón seguir comprando -->
+                        <div class="d-flex justify-content-start">
+                            <a th:href="@{/}" class="btn btn-outline-primary d-flex align-items-center">
+                                <i class="bi bi-arrow-left me-2"></i> Seguir Comprando
+                            </a>
                         </div>
                     </div>
                     
+                    <!-- Resumen y pago -->
                     <div class="col-lg-4">
-                        <!-- Resumen del Pedido -->
-                        <div class="card cart-total sticky-top" style="top: 20px;">
-                            <div class="card-header bg-color4 text-white">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-receipt me-2"></i>Resumen del Pedido
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Subtotal:</span>
-                                    <span th:text="'$' + ${#numbers.formatDecimal(total, 1, 2)}"></span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Envío:</span>
-                                    <span>Gratis</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-3 border-top pt-2">
-                                    <strong>Total:</strong>
-                                    <strong class="h5 text-color1" 
-                                            th:text="'$' + ${#numbers.formatDecimal(total, 1, 2)}">
-                                    </strong>
+                        <div class="sticky-top" style="top: 20px;">
+                            <!-- Card de resumen -->
+                            <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+                                <div class="card-header py-4 text-center text-white" 
+                                     style="background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%);">
+                                    <h5 class="mb-2">
+                                        <i class="bi bi-receipt me-2"></i>Resumen del Pedido
+                                    </h5>
+                                    <small class="opacity-75">[[${items.size()}]] artículo(s)</small>
                                 </div>
                                 
-                                <div class="d-grid gap-2">
-                                    <a th:href="@{/ventas/procesar}" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-credit-card me-2"></i>Proceder al Pago
-                                    </a>
-                                    <button class="btn btn-outline-danger" th:onclick="vaciarCarrito()">
-                                        <i class="fas fa-trash me-2"></i>Vaciar Carrito
-                                    </button>
-                                    <a th:href="@{/productos}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-shopping-bag me-2"></i>Seguir Comprando
-                                    </a>
+                                <div class="card-body p-4">
+                                    <!-- Desglose -->
+                                    <div class="mb-4">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span style="color: var(--color-details);">Subtotal</span>
+                                            <span class="carrito-subtotal-total" style="color: var(--color-logo); font-weight: 500;">
+                                                $[[${#numbers.formatDecimal(total, 1, 2)}]]
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span style="color: var(--color-details);">Envío</span>
+                                            <span style="color: var(--color-success); font-weight: 500;">
+                                                Gratis
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span style="color: var(--color-details);">Impuestos</span>
+                                            <span style="color: var(--color-logo); font-weight: 500;">
+                                                Incluidos
+                                            </span>
+                                        </div>
+                                        <hr class="my-3" style="border-color: rgba(157, 107, 108, 0.2);">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-bold" style="color: var(--color-logo);">Total</span>
+                                            <div>
+                                                <div class="display-5 fw-bold carrito-total" style="color: var(--color-principal);">
+                                                    $[[${#numbers.formatDecimal(total, 1, 2)}]]
+                                                </div>
+                                                <small class="text-muted" style="color: var(--color-details);">
+                                                    Impuestos incluidos
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Botones de acción -->
+                                    <div class="d-grid gap-3">
+                                        <a th:href="@{/ventas/confirmacion}" 
+                                           class="btn btn-lg py-3 fw-bold border-0 shadow-sm"
+                                           style="background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%); 
+                                                  color: white;">
+                                            <i class="bi bi-lock-fill me-2"></i>Proceder al Pago
+                                        </a>
+                                        
+                                        <button class="btn btn-outline-danger btn-lg py-3 d-flex align-items-center justify-content-center"
+                                                onclick="vaciarCarrito()">
+                                            <i class="bi bi-trash me-2"></i>Vaciar Carrito
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Información adicional -->
+                                    <div class="mt-4">
+                                        <div class="alert border-0 py-2 px-3" 
+                                             style="background-color: rgba(157, 107, 108, 0.05);">
+                                            <div class="d-flex">
+                                                <i class="bi bi-shield-check me-2" style="color: var(--color-secundario);"></i>
+                                                <small style="color: var(--color-details);">
+                                                    Compra 100% segura. Tus datos están protegidos.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Métodos de pago aceptados -->
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center p-4">
+                                    <h6 class="mb-3 fw-semibold" style="color: var(--color-logo);">
+                                        <i class="bi bi-credit-card-2-back me-2"></i>Aceptamos
+                                    </h6>
+                                    <div class="d-flex justify-content-center gap-3">
+                                        <i class="bi bi-credit-card display-6" style="color: var(--color-principal);"></i>
+                                        <i class="bi bi-cash-coin display-6" style="color: var(--color-secundario);"></i>
+                                        <i class="bi bi-bank display-6" style="color: var(--color-logo);"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Carrito vacío -->
+            <div th:unless="${items != null and !items.isEmpty()}" class="text-center py-5">
+                <div class="card border-0 shadow-sm py-5">
+                    <div class="card-body">
+                        <i class="bi bi-cart-x display-1 mb-3" style="color: var(--color-principal);"></i>
+                        <h3 class="mt-3 mb-3" style="color: var(--color-logo);">Tu carrito está vacío</h3>
+                        <p class="text-muted mb-4">Agrega productos o servicios para comenzar a comprar.</p>
+                        <a th:href="@{/}" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-search me-2"></i>Explorar Productos
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div layout:fragment="scripts">
-        <script>
-            function actualizarCantidad(itemId, nuevaCantidad) {
-                if (nuevaCantidad < 1) {
-                    nuevaCantidad = 1;
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+    <!-- Scripts -->
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <style>
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+        }
+        
+        /* Animación para actualizaciones de cantidad */
+        .highlight-update {
+            animation: highlight 1s ease;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: rgba(196, 105, 110, 0.1); }
+            100% { background-color: transparent; }
+        }
+        
+        /* Estilos para botones */
+        .btn-outline-primary {
+            color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+        
+        .btn-outline-danger {
+            color: var(--color-danger);
+            border-color: var(--color-danger);
+        }
+        
+        .btn-outline-danger:hover {
+            background-color: var(--color-danger);
+            border-color: var(--color-danger);
+            color: white;
+        }
+        
+        /* Efectos hover para items */
+        .list-group-item {
+            transition: background-color 0.2s ease;
+        }
+        
+        .list-group-item:hover {
+            background-color: rgba(209, 191, 181, 0.1);
+        }
+        
+        /* Estilos para tarjetas */
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Mejoras responsivas */
+        @media (max-width: 768px) {
+            .display-5 {
+                font-size: 3rem;
+            }
+            
+            .display-6 {
+                font-size: 2.5rem;
+            }
+            
+            .sticky-top {
+                position: static !important;
+            }
+            
+            .list-group-item {
+                padding: 1.5rem 1rem !important;
+            }
+        }
+        
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-principal);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-secundario);
+        }
+    </style>
+
+    <!-- JavaScript ORIGINAL que funcionaba - Solo adapté los selectores -->
+    <script>
+        // Variables CSS para la paleta de colores
+        document.documentElement.style.setProperty('--color-principal', '#C4696E');
+        document.documentElement.style.setProperty('--color-secundario', '#9D6B6C');
+        document.documentElement.style.setProperty('--color-logo', '#52314C');
+        document.documentElement.style.setProperty('--color-details', '#726658');
+        document.documentElement.style.setProperty('--color-bg', '#D1BFB5');
+        
+        // FUNCIONES ORIGINALES DEL CARRITO QUE FUNCIONABAN
+        function updateQuantity(itemId, change) {
+            console.log('=== INICIO updateQuantity ===');
+            console.log('itemId:', itemId, 'change:', change);
+
+            // Encontrar el item por su data-id
+            const itemElement = document.querySelector(`.carrito-item[data-id="${itemId}"]`);
+            if (!itemElement) {
+                console.error('No se encontró el elemento para el item:', itemId);
+                return;
+            }
+
+            const cantidadSpan = itemElement.querySelector('.carrito-cantidad');
+            if (!cantidadSpan) {
+                console.error('No se encontró el span de cantidad');
+                return;
+            }
+
+            const cantidadActual = parseInt(cantidadSpan.textContent) || 1;
+            const nuevaCantidad = cantidadActual + change;
+
+            console.log('Cantidad actual:', cantidadActual, 'Nueva cantidad:', nuevaCantidad);
+
+            // Validar que la nueva cantidad sea al menos 1
+            if (nuevaCantidad < 1) {
+                alert('La cantidad no puede ser menor a 1');
+                return;
+            }
+
+            // Deshabilitar botones temporalmente
+            const buttons = itemElement.querySelectorAll('button');
+            buttons.forEach(btn => {
+                console.log('Deshabilitando botón:', btn);
+                btn.disabled = true;
+            });
+
+            // Mostrar indicador de carga
+            const cantidadOriginal = cantidadSpan.textContent;
+            cantidadSpan.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span>`;
+            console.log('Mostrando spinner...');
+
+            // Llamada al servidor para actualizar la cantidad
+            fetch(`/carrito/actualizar-cantidad/${itemId}?cantidad=${nuevaCantidad}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 }
-                
-                fetch('/carrito/actualizar/' + itemId + '?cantidad=' + nuevaCantidad, {
+            })
+            .then(response => {
+                console.log('Respuesta recibida, status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos recibidos del servidor:', data);
+
+                if (data.success) {
+                    // 1. Actualizar la cantidad en la interfaz
+                    cantidadSpan.textContent = nuevaCantidad;
+                    console.log('Cantidad actualizada en interfaz:', nuevaCantidad);
+
+                    // 2. Actualizar el badge de cantidad
+                    const badge = itemElement.querySelector('.carrito-cantidad-badge');
+                    if (badge) {
+                        badge.textContent = nuevaCantidad;
+                    }
+
+                    // 3. Actualizar el subtotal del item
+                    const subtotalElement = itemElement.querySelector('.carrito-subtotal');
+                    const precioUnitarioText = itemElement.querySelector('.carrito-precio-unitario').textContent;
+                    const precioUnitario = parseFloat(precioUnitarioText.replace('$', '').replace(' c/u', '')) || 0;
+                    const nuevoSubtotal = precioUnitario * nuevaCantidad;
+                    
+                    if (subtotalElement) {
+                        subtotalElement.textContent = '$' + nuevoSubtotal.toFixed(2);
+                        console.log('Subtotal actualizado:', subtotalElement.textContent);
+                    }
+
+                    // 4. Actualizar el subtotal total
+                    const subtotalTotalElement = document.querySelector('.carrito-subtotal-total');
+                    const totalElement = document.querySelector('.carrito-total');
+                    if (data.nuevoTotal !== undefined) {
+                        if (subtotalTotalElement) {
+                            subtotalTotalElement.textContent = '$' + parseFloat(data.nuevoTotal).toFixed(2);
+                        }
+                        if (totalElement) {
+                            totalElement.textContent = '$' + parseFloat(data.nuevoTotal).toFixed(2);
+                        }
+                        console.log('Totales actualizados:', data.nuevoTotal);
+                    }
+
+                    // 5. Aplicar efecto visual
+                    itemElement.classList.add('highlight-update');
+                    setTimeout(() => itemElement.classList.remove('highlight-update'), 1000);
+
+                    // 6. Mostrar notificación
+                    showNotification(data.message || 'Cantidad actualizada exitosamente', 'success');
+
+                } else {
+                    showNotification(data.message || 'Error al actualizar la cantidad', 'error');
+                    // Revertir a la cantidad anterior
+                    cantidadSpan.textContent = cantidadOriginal;
+                    console.log('Error del servidor, revertiendo cantidad a:', cantidadOriginal);
+                }
+            })
+            .catch(error => {
+                console.error('Error en la petición:', error);
+                showNotification('Error de conexión con el servidor', 'error');
+                cantidadSpan.textContent = cantidadOriginal;
+            })
+            .finally(() => {
+                // Rehabilitar botones
+                buttons.forEach(btn => {
+                    console.log('Habilitando botón:', btn);
+                    btn.disabled = false;
+                });
+                console.log('=== FIN updateQuantity ===');
+            });
+        }
+
+        function removeItem(itemId) {
+            if (confirm('¿Eliminar este artículo del carrito?')) {
+                // Llamada al servidor para eliminar el item
+                fetch('/carrito/eliminar/' + itemId, {
                     method: 'POST'
                 }).then(response => {
                     if (response.ok) {
                         location.reload();
                     } else {
-                        alert('Error al actualizar la cantidad');
+                        alert('Error al eliminar el artículo');
                     }
                 });
             }
+        }
 
-            function incrementarCantidad(itemId) {
-                const input = document.querySelector('input[onchange*="' + itemId + '"]');
-                if (input) {
-                    let nuevaCantidad = parseInt(input.value) + 1;
-                    actualizarCantidad(itemId, nuevaCantidad);
-                }
+        function vaciarCarrito() {
+            if (confirm('¿Vaciar todo el carrito?')) {
+                fetch('/carrito/vaciar', {
+                    method: 'POST'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al vaciar el carrito');
+                    }
+                });
             }
+        }
 
-            function decrementarCantidad(itemId) {
-                const input = document.querySelector('input[onchange*="' + itemId + '"]');
-                if (input) {
-                    let nuevaCantidad = parseInt(input.value) - 1;
-                    if (nuevaCantidad < 1) nuevaCantidad = 1;
-                    actualizarCantidad(itemId, nuevaCantidad);
-                }
-            }
+        function showNotification(message, type = 'info') {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            notification.style.zIndex = '1060';
+            notification.style.minWidth = '300px';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
 
-            function eliminarItem(itemId) {
-                if (confirm('¿Estás seguro de que quieres eliminar este item del carrito?')) {
-                    fetch('/carrito/eliminar/' + itemId, {
-                        method: 'POST'
-                    }).then(response => {
-                        if (response.ok) {
-                            location.reload();
-                        } else {
-                            alert('Error al eliminar el item');
-                        }
-                    });
-                }
-            }
+            document.body.appendChild(notification);
 
-            function vaciarCarrito() {
-                if (confirm('¿Estás seguro de que quieres vaciar todo el carrito?')) {
-                    fetch('/carrito/vaciar', {
-                        method: 'POST'
-                    }).then(response => {
-                        if (response.ok) {
-                            location.reload();
-                        } else {
-                            alert('Error al vaciar el carrito');
-                        }
-                    });
+            // Auto-eliminar después de 3 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
                 }
-            }
-        </script>
-    </div>
+            }, 3000);
+        }
+    </script>
 </body>
 </html>

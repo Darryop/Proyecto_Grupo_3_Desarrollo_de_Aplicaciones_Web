@@ -1,155 +1,388 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layouts/layout}">
-<head>
-    <title>Mis Citas - KVestética</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><!-- comment -->
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head('Mis Citas')}">
 </head>
-<body>
-    <div layout:fragment="content">
-        <div class="container mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="display-5 fw-bold text-color2">
-                        <i class="fas fa-calendar-alt me-2"></i>Mis Citas
-                    </h1>
-                    <p class="lead text-color4">Gestiona tus citas programadas en KVestética</p>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <div class="container">
+            <!-- Header de la página -->
+            <div class="text-center mb-5">
+                <div class="rounded-circle bg-white shadow-sm d-inline-flex align-items-center justify-content-center p-4 mb-3"
+                     style="width: 80px; height: 80px;">
+                    <i class="bi bi-calendar-heart display-5" style="color: var(--color-principal);"></i>
                 </div>
+                <h1 class="fw-bold mb-3" style="color: var(--color-logo);">Mis Citas Programadas</h1>
+                <p class="lead text-muted mb-4">Gestiona y revisa todas tus citas en KWestética</p>
                 <a th:href="@{/citas/nueva}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-plus me-2"></i>Agendar Nueva Cita
+                    <i class="bi bi-plus-circle me-2"></i>Agendar Nueva Cita
                 </a>
             </div>
 
-            <div th:if="${citas.empty}">
-                <div class="alert alert-info text-center py-5">
-                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
-                    <h3 class="text-color2">No tienes citas programadas</h3>
-                    <p class="lead text-muted mb-4">Agenda tu primera cita para disfrutar de nuestros tratamientos profesionales</p>
-                    <a th:href="@{/tratamientos}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-spa me-2"></i>Explorar Tratamientos
-                    </a>
-                </div>
-            </div>
-
-            <div th:unless="${citas.empty}">
-                <!-- Filtros por Estado -->
-                <div class="card filter-section mb-4">
-                    <div class="card-body">
-                        <h5 class="fw-bold mb-3">Filtrar por estado:</h5>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-secondary active">Todas</button>
-                            <button type="button" class="btn btn-outline-secondary">Pendientes</button>
-                            <button type="button" class="btn btn-outline-secondary">Confirmadas</button>
-                            <button type="button" class="btn btn-outline-secondary">Completadas</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lista de Citas -->
-                <div class="row">
-                    <div class="col-lg-6 mb-4" th:each="cita : ${citas}">
-                        <div class="card h-100" 
-                             th:classappend="${cita.estado.name() == 'PENDIENTE'} ? 'border-warning' : 
-                                             ${cita.estado.name() == 'CONFIRMADA'} ? 'border-success' : 
-                                             ${cita.estado.name() == 'COMPLETADA'} ? 'border-secondary' : 'border-danger'">
+            <!-- Lista de citas -->
+            <div th:if="${citas != null and !citas.isEmpty()}">
+                <div class="row g-4">
+                    <!-- Card para cada cita -->
+                    <div th:each="cita : ${citas}" class="col-lg-6 col-xl-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <!-- Header de la card con estado -->
+                            <div class="card-header bg-white border-0 pb-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <!-- Badge de estado mejorado -->
+                                        <span th:switch="${cita.estado.toString()}">
+                                            <span th:case="'PENDIENTE'" class="status-badge status-pending">
+                                                <i class="bi bi-clock me-1"></i>Pendiente
+                                            </span>
+                                            <span th:case="'CONFIRMADA'" class="status-badge status-confirmed">
+                                                <i class="bi bi-check-circle me-1"></i>Confirmada
+                                            </span>
+                                            <span th:case="'COMPLETADA'" class="status-badge status-completed">
+                                                <i class="bi bi-check-circle-fill me-1"></i>Completada
+                                            </span>
+                                            <span th:case="'CANCELADA'" class="status-badge status-cancelled">
+                                                <i class="bi bi-x-circle-fill me-1"></i>Cancelada
+                                            </span>
+                                            <span th:case="*" class="status-badge status-other">
+                                                <i class="bi bi-question-circle me-1"></i><span th:text="${cita.estado}"></span>
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted" th:text="${#temporals.format(cita.fechaCita, 'dd/MM/yyyy')}"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h5 class="card-title fw-bold text-color2" th:text="${cita.tratamiento.nombre}"></h5>
-                                    <span th:classappend="${cita.estado.name() == 'PENDIENTE'} ? 'badge bg-warning' : 
-                                                         ${cita.estado.name() == 'CONFIRMADA'} ? 'badge bg-success' : 
-                                                         ${cita.estado.name() == 'COMPLETADA'} ? 'badge bg-secondary' : 'badge bg-danger'"
-                                          th:text="${cita.estado.name()}">
+                                <!-- Icono y nombre del tratamiento -->
+                                <div class="d-flex align-items-start mb-4">
+                                    <div class="rounded-circle p-3 me-3" style="background-color: rgba(196, 105, 110, 0.1);">
+                                        <i class="bi bi-scissors" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-1" style="color: var(--color-logo);" th:text="${cita.tratamiento.nombre}"></h5>
+                                        <p class="text-muted small mb-0" style="color: var(--color-details);">
+                                            <i class="bi bi-clock me-1"></i>
+                                            <span th:text="${cita.tratamiento.duracionMinutos} + ' minutos'"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Detalles de la cita -->
+                                <div class="mb-4">
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="bi bi-calendar3 me-3" style="color: var(--color-principal);"></i>
+                                                <div>
+                                                    <small class="text-muted" style="color: var(--color-details);">Fecha</small>
+                                                    <div class="fw-semibold" style="color: var(--color-logo);">
+                                                        [[${#temporals.format(cita.fechaCita, 'dd MMMM yyyy')}]]
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="bi bi-clock me-3" style="color: var(--color-principal);"></i>
+                                                <div>
+                                                    <small class="text-muted" style="color: var(--color-details);">Hora</small>
+                                                    <div class="fw-semibold" style="color: var(--color-logo);">
+                                                        [[${#temporals.format(cita.fechaCita, 'HH:mm')}]]
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="bi bi-currency-dollar me-3" style="color: var(--color-principal);"></i>
+                                                <div>
+                                                    <small class="text-muted" style="color: var(--color-details);">Precio</small>
+                                                    <div class="fw-semibold" style="color: var(--color-secundario);">
+                                                        $[[${#numbers.formatDecimal(cita.tratamiento.precio, 1, 2)}]]
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Notas de la cita -->
+                                <div th:if="${cita.notas != null and !cita.notas.isEmpty()}" class="mb-4">
+                                    <h6 class="small fw-bold mb-2" style="color: var(--color-logo);">
+                                        <i class="bi bi-chat-text me-1"></i>Notas
+                                    </h6>
+                                    <div class="bg-light rounded p-3" style="border-left: 3px solid var(--color-secundario);">
+                                        <p class="mb-0 small" style="color: var(--color-details);" th:text="${cita.notas}"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Acciones -->
+                            <div class="card-footer bg-white border-0 pt-0">
+                                <div class="d-flex justify-content-between">
+                                    <!-- Botón de cancelar -->
+                                    <button th:if="${cita.estado.name() == 'PENDIENTE' or cita.estado.name() == 'CONFIRMADA'}"
+                                            class="btn btn-outline-danger btn-sm"
+                                            th:onclick="'cancelarCita(' + ${cita.id} + ')'">
+                                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                                    </button>
+                                    <div th:unless="${cita.estado.name() == 'PENDIENTE' or cita.estado.name() == 'CONFIRMADA'}" class="me-auto"></div>
+                                    
+                                    <!-- Botón de pagar -->
+                                    <a th:href="@{/carrito/agregar/cita/{id}(id=${cita.id})}" 
+                                       th:if="${cita.estado.name() == 'CONFIRMADA'}"
+                                       class="btn btn-primary btn-sm">
+                                        <i class="bi bi-credit-card me-1"></i>Pagar
+                                    </a>
+                                    
+                                    <!-- Información de estado completado/cancelado -->
+                                    <span th:if="${cita.estado.name() == 'COMPLETADA'}" class="badge bg-success bg-opacity-10 text-success align-self-center">
+                                        <i class="bi bi-check-circle me-1"></i>Completada
                                     </span>
-                                </div>
-                                
-                                <p class="card-text text-muted mb-3" th:text="${cita.tratamiento.descripcion}"></p>
-                                
-                                <div class="tratamiento-info mb-3">
-                                    <div class="mb-2">
-                                        <i class="fas fa-clock text-color1 me-2"></i>
-                                        <strong>Duración:</strong> 
-                                        <span th:text="${cita.tratamiento.duracionMinutos} + ' minutos'"></span>
-                                    </div>
-                                    <div class="mb-2">
-                                        <i class="fas fa-calendar text-color1 me-2"></i>
-                                        <strong>Fecha y Hora:</strong> 
-                                        <span th:text="${#temporals.format(cita.fechaCita, 'dd/MM/yyyy HH:mm')}"></span>
-                                    </div>
-                                    <div class="mb-2">
-                                        <i class="fas fa-dollar-sign text-color1 me-2"></i>
-                                        <strong>Precio:</strong> 
-                                        <span th:text="'$' + ${#numbers.formatDecimal(cita.tratamiento.precio, 1, 2)}"></span>
-                                    </div>
-                                    <div class="mb-2">
-                                        <i class="fas fa-tag text-color1 me-2"></i>
-                                        <strong>Categoría:</strong> 
-                                        <span th:text="${cita.tratamiento.categoria.nombre}"></span>
-                                    </div>
-                                </div>
-
-                                <div th:if="${cita.notas}" class="mb-3">
-                                    <strong>Notas:</strong>
-                                    <p th:text="${cita.notas}" class="mb-0 text-muted"></p>
-                                </div>
-
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        Creado: <span th:text="${#temporals.format(cita.fechaCreacion, 'dd/MM/yyyy')}"></span>
-                                    </small>
-                                    <div th:if="${cita.estado.name() == 'PENDIENTE'}">
-                                        <button class="btn btn-outline-danger btn-sm" 
-                                                th:onclick="|cancelarCita(${cita.id})|">
-                                            <i class="fas fa-times me-1"></i>Cancelar
-                                        </button>
-                                        <button class="btn btn-outline-primary btn-sm ms-2" 
-                                                th:onclick="|agregarAlCarrito(${cita.id})|">
-                                            <i class="fas fa-cart-plus me-1"></i>Agregar al Carrito
-                                        </button>
-                                    </div>
+                                    <span th:if="${cita.estado.name() == 'CANCELADA'}" class="badge bg-danger bg-opacity-10 text-danger align-self-center">
+                                        <i class="bi bi-x-circle me-1"></i>Cancelada
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Sin citas -->
+            <div th:if="${citas == null or citas.isEmpty()}" class="text-center py-5">
+                <div class="card border-0 shadow-sm py-5">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-x display-1 mb-3" style="color: var(--color-principal);"></i>
+                        <h3 class="mt-3 mb-3" style="color: var(--color-logo);">No tienes citas programadas</h3>
+                        <p class="text-muted mb-4">¡Agenda tu primera cita y descubre nuestros servicios de belleza y bienestar!</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a th:href="@{/citas/nueva}" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-calendar-plus me-2"></i>Agendar Mi Primera Cita
+                            </a>
+                            <a th:href="@{/servicios}" class="btn btn-outline-primary btn-lg px-4">
+                                <i class="bi bi-eye me-2"></i>Ver Servicios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <div layout:fragment="scripts">
-        <script>
-            function cancelarCita(citaId) {
-                if (confirm('¿Estás seguro de que quieres cancelar esta cita?')) {
-                    fetch('/citas/cancelar/' + citaId, {
-                        method: 'POST'
-                    }).then(response => {
-                        if (response.ok) {
-                            location.reload();
-                        } else {
-                            alert('Error al cancelar la cita');
-                        }
-                    });
-                }
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+    <!-- Scripts -->
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <style>
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+            --color-white: #FFFFFF;
+            --color-light: #F8F9FA;
+            --color-dark: #333333;
+            --color-gray: #6C757D;
+            --color-success: #198754;
+            --color-danger: #DC3545;
+            --color-warning: #FFC107;
+            --color-info: #0DCAF0;
+        }
+        
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* ===== NUEVOS ESTILOS PARA EL ESTADO ===== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1.5px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.12);
+            color: #856404;
+            border-color: rgba(255, 193, 7, 0.3);
+        }
+        
+        .status-confirmed {
+            background-color: rgba(25, 135, 84, 0.12);
+            color: #0f5132;
+            border-color: rgba(25, 135, 84, 0.3);
+        }
+        
+        .status-completed {
+            background-color: rgba(13, 202, 240, 0.12);
+            color: #055160;
+            border-color: rgba(13, 202, 240, 0.3);
+        }
+        
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.12);
+            color: #721c24;
+            border-color: rgba(220, 53, 69, 0.3);
+        }
+        
+        .status-other {
+            background-color: rgba(108, 117, 125, 0.12);
+            color: #343a40;
+            border-color: rgba(108, 117, 125, 0.3);
+        }
+        
+        /* Efecto hover sutil */
+        .status-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        /* ===== FIN ESTILOS PARA EL ESTADO ===== */
+        
+        .btn-primary {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--color-secundario);
+            border-color: var(--color-secundario);
+        }
+        
+        .btn-outline-danger {
+            color: var(--color-danger);
+            border-color: var(--color-danger);
+        }
+        
+        .btn-outline-danger:hover {
+            background-color: var(--color-danger);
+            border-color: var(--color-danger);
+            color: white;
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .display-5 {
+                font-size: 3rem;
             }
+            
+            .btn-lg {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .card-body {
+                padding: 1.25rem;
+            }
+            
+            .status-badge {
+                padding: 5px 12px;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Animación para las cards */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .col-lg-6, .col-xl-4 {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
 
-            function agregarAlCarrito(citaId) {
-                fetch('/carrito/agregar/cita/' + citaId, {
+    <script>
+        // Variables CSS para la paleta de colores
+        document.documentElement.style.setProperty('--color-principal', '#C4696E');
+        document.documentElement.style.setProperty('--color-secundario', '#9D6B6C');
+        document.documentElement.style.setProperty('--color-logo', '#52314C');
+        document.documentElement.style.setProperty('--color-details', '#726658');
+        document.documentElement.style.setProperty('--color-bg', '#D1BFB5');
+        document.documentElement.style.setProperty('--color-success', '#198754');
+        document.documentElement.style.setProperty('--color-danger', '#DC3545');
+        document.documentElement.style.setProperty('--color-warning', '#FFC107');
+        document.documentElement.style.setProperty('--color-info', '#0DCAF0');
+        
+        function cancelarCita(citaId) {
+            if (confirm('¿Estás seguro de cancelar esta cita?')) {
+                fetch(`/citas/cancelar/${citaId}`, {
                     method: 'POST'
                 }).then(response => {
                     if (response.ok) {
-                        alert('Cita agregada al carrito exitosamente');
-                    // Opcional: redirigir al carrito
-                        window.location.href = '/carrito';
+                        // Mostrar notificación de éxito
+                        showNotification('Cita cancelada correctamente', 'success');
+                        setTimeout(() => location.reload(), 1000);
                     } else {
-                        alert('Error al agregar la cita al carrito');
+                        showNotification('Error al cancelar la cita', 'error');
                     }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error de conexión con el servidor', 'error');
                 });
             }
-        </script>
-    </div>
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            notification.style.zIndex = '1060';
+            notification.style.minWidth = '300px';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto-eliminar después de 3 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+    </script>
 </body>
 </html>

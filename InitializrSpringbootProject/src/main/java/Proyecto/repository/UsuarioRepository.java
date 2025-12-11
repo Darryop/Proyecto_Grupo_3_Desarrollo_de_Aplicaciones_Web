@@ -6,19 +6,23 @@ package Proyecto.repository;
  */
 
 import Proyecto.model.Usuario;
-import Proyecto.model.TipoUsuario;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
+import org.springframework.data.jpa.repository.Query;
 
-@Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    
-   Optional<Usuario> findByEmail(String email);
-    List<Usuario> findByTipo(TipoUsuario tipo);
+    Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByEmailAndActivoTrue(String email);
     boolean existsByEmail(String email);
     List<Usuario> findByActivoTrue();
     List<Usuario> findByNombreContainingOrApellidoContaining(String nombre, String apellido);
     
+    // NUEVO MÉTODO: Cargar usuarios con sus roles
+    @Query("SELECT DISTINCT u FROM Usuario u LEFT JOIN FETCH u.roles")
+    List<Usuario> findAllWithRoles();
+    
+    // Método para buscar por rol
+    @Query("SELECT DISTINCT u FROM Usuario u JOIN u.roles r WHERE r.nombre = :rolNombre")
+    List<Usuario> findByRoles_Nombre(String rolNombre);
 }

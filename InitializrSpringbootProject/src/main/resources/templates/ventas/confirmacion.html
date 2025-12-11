@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Confirmar Compra - KVestetica')}">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <div th:replace="~{fragments/header :: navbar}"></div>
+    
+    <!-- Contenido principal -->
+    <main class="flex-grow-1 py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <!-- Header destacado -->
+                    <div class="text-center mb-5">
+                        <div class="rounded-circle bg-white shadow-sm d-inline-flex align-items-center justify-content-center p-4 mb-3"
+                             style="width: 80px; height: 80px;">
+                            <i class="bi bi-check-circle-fill display-5" style="color: var(--color-principal);"></i>
+                        </div>
+                        <h1 class="fw-bold mb-3" style="color: var(--color-logo);">Confirmar Tu Compra</h1>
+                        <p class="lead text-muted mb-0">Revisa los detalles y completa tu pedido con seguridad</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Columna izquierda - Resumen -->
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-white border-0 py-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle p-3 me-3" style="background-color: rgba(196, 105, 110, 0.1);">
+                                            <i class="bi bi-bag-check" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="mb-1" style="color: var(--color-logo);">Resumen del Pedido</h4>
+                                            <p class="text-muted small mb-0">[[${items.size()}]] item(s) en tu compra</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body p-0">
+                                    <!-- Items de la compra -->
+                                    <div class="list-group list-group-flush">
+                                        <div th:each="item, stat : ${items}" class="list-group-item border-0 py-4">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <div class="position-relative">
+                                                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                                                             style="width: 60px; height: 60px; background-color: rgba(209, 191, 181, 0.3);">
+                                                            <i th:if="${item.tipo.name() == 'PRODUCTO'}" 
+                                                               class="bi bi-box-seam" style="color: var(--color-principal); font-size: 1.5rem;"></i>
+                                                            <i th:if="${item.tipo.name() == 'CITA'}" 
+                                                               class="bi bi-calendar-check" style="color: var(--color-secundario); font-size: 1.5rem;"></i>
+                                                        </div>
+                                                        <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill px-2 py-1" 
+                                                             style="background-color: var(--color-principal); color: white; font-size: 0.7rem;">
+                                                            [[${item.cantidad}]]
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-semibold" style="color: var(--color-logo);">
+                                                                <span th:if="${item.tipo.name() == 'PRODUCTO'}">[[${item.producto.nombre}]]</span>
+                                                                <span th:if="${item.tipo.name() == 'CITA'}">[[${item.cita.tratamiento.nombre}]]</span>
+                                                            </h6>
+                                                            <p class="text-muted small mb-0" style="color: var(--color-details);">
+                                                                <span th:if="${item.tipo.name() == 'PRODUCTO'}">
+                                                                    [[${#strings.abbreviate(item.producto.descripcion, 80)}]]
+                                                                </span>
+                                                                <span th:if="${item.tipo.name() == 'CITA'}">
+                                                                    <i class="bi bi-clock me-1"></i>
+                                                                    [[${#temporals.format(item.cita.fechaCita, 'dd MMM yyyy - HH:mm')}]]
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <div class="fw-bold" style="color: var(--color-secundario);">
+                                                                $[[${#numbers.formatDecimal(item.precioUnitario, 1, 2)}]]
+                                                            </div>
+                                                            <div class="small text-muted">
+                                                                $[[${#numbers.formatDecimal(item.precioUnitario * item.cantidad, 1, 2)}]]
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-white border-0 py-4">
+                                    <div class="alert border-0 py-3" style="background-color: rgba(157, 107, 108, 0.05); border-left: 4px solid var(--color-secundario);">
+                                        <div class="d-flex">
+                                            <i class="bi bi-info-circle me-3 mt-1" style="color: var(--color-secundario);"></i>
+                                            <div>
+                                                <small style="color: var(--color-details);">
+                                                    Recibirás un correo con la confirmación. Para citas, te enviaremos un recordatorio 24 horas antes.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Columna derecha - Pago -->
+                        <div class="col-lg-4">
+                            <div class="sticky-top" style="top: 20px;">
+                                <!-- Tarjeta de pago -->
+                                <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+                                    <div class="card-header py-4 text-center text-white" 
+                                         style="background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%);">
+                                        <h5 class="mb-2">
+                                            <i class="bi bi-credit-card me-2"></i>Total a Pagar
+                                        </h5>
+                                        <div class="display-3 fw-bold mb-0">$[[${#numbers.formatDecimal(total, 1, 2)}]]</div>
+                                        <small class="opacity-75">Impuestos incluidos</small>
+                                    </div>
+                                    
+                                    <div class="card-body p-4">
+                                        <!-- Formulario de pago -->
+                                        <form th:action="@{/ventas/procesar}" method="post" class="needs-validation" novalidate>
+                                            <!-- Método de pago -->
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold mb-3" style="color: var(--color-logo);">
+                                                    <i class="bi bi-credit-card-2-front me-2"></i>Método de Pago
+                                                </label>
+                                                <div class="row g-2">
+                                                    <div th:each="metodo : ${metodosPago}" class="col-12">
+                                                        <input type="radio" class="btn-check" name="metodoPago" 
+                                                               th:id="${'metodo-' + metodo}" th:value="${metodo}" required>
+                                                        <label class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between metodo-pago-label"
+                                                               th:for="${'metodo-' + metodo}" 
+                                                               style="border-color: var(--color-principal);">
+                                                            <span th:text="${metodo}"></span>
+                                                            <i class="bi bi-check-lg opacity-0"></i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="invalid-feedback mt-2" style="color: var(--color-principal);">
+                                                    Selecciona un método de pago.
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Términos -->
+                                            <div class="form-check mb-4">
+                                                <input class="form-check-input" type="checkbox" id="terminos" required 
+                                                       style="border-color: var(--color-secundario);">
+                                                <label class="form-check-label small" for="terminos" style="color: var(--color-details);">
+                                                    Acepto los 
+                                                    <a href="/terminos" class="text-decoration-none fw-semibold" style="color: var(--color-principal);">
+                                                        términos y condiciones
+                                                    </a>
+                                                </label>
+                                            </div>
+                                            
+                                            <!-- Botones de acción -->
+                                            <div class="d-grid gap-3">
+                                                <button type="submit" class="btn btn-lg py-3 fw-bold border-0 shadow-sm"
+                                                        style="background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%); 
+                                                               color: white;">
+                                                    <i class="bi bi-lock-fill me-2"></i>Confirmar y Pagar
+                                                </button>
+                                                <a th:href="@{/carrito}" 
+                                                   class="btn btn-outline-secondary btn-lg py-3 border-2"
+                                                   style="border-color: var(--color-details); color: var(--color-logo);">
+                                                    <i class="bi bi-arrow-left me-2"></i>Volver al Carrito
+                                                </a>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                
+                                <!-- Garantías -->
+                                <div class="row g-2 text-center">
+                                    <div class="col-4">
+                                        <div class="border rounded p-3 h-100" style="border-color: rgba(157, 107, 108, 0.2);">
+                                            <i class="bi bi-shield-check display-6 mb-2" style="color: var(--color-secundario);"></i>
+                                            <div class="small" style="color: var(--color-details);">Pago Seguro</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="border rounded p-3 h-100" style="border-color: rgba(157, 107, 108, 0.2);">
+                                            <i class="bi bi-truck display-6 mb-2" style="color: var(--color-secundario);"></i>
+                                            <div class="small" style="color: var(--color-details);">Envío Rápido</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="border rounded p-3 h-100" style="border-color: rgba(157, 107, 108, 0.2);">
+                                            <i class="bi bi-arrow-counterclockwise display-6 mb-2" style="color: var(--color-secundario);"></i>
+                                            <div class="small" style="color: var(--color-details);">Garantía</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+    <!-- Scripts -->
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <style>
+        :root {
+            --color-principal: #C4696E;
+            --color-secundario: #9D6B6C;
+            --color-logo: #52314C;
+            --color-details: #726658;
+            --color-bg: #D1BFB5;
+        }
+        
+        .list-group-item {
+            transition: background-color 0.2s ease;
+        }
+        
+        .list-group-item:hover {
+            background-color: rgba(209, 191, 181, 0.1);
+        }
+        
+        /* Estilos corregidos para los métodos de pago */
+        .metodo-pago-label {
+            color: var(--color-principal) !important;
+            border: 2px solid var(--color-principal);
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .metodo-pago-label:hover {
+            background-color: rgba(196, 105, 110, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn-check:checked + .metodo-pago-label {
+            background-color: var(--color-principal) !important;
+            border-color: var(--color-principal) !important;
+            color: white !important;
+        }
+        
+        .btn-check:checked + .metodo-pago-label .bi-check-lg {
+            opacity: 1 !important;
+            color: white !important;
+        }
+        
+        /* Botones principales */
+        .btn-lg {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-lg:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+        }
+        
+        .form-check-input:focus {
+            border-color: var(--color-principal);
+            box-shadow: 0 0 0 0.25rem rgba(196, 105, 110, 0.25);
+        }
+        
+        /* Animación suave para la aparición */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .card {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        /* Estilos para scroll personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-principal);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-secundario);
+        }
+        
+        /* Mejoras responsivas */
+        @media (max-width: 768px) {
+            .display-3 {
+                font-size: 2.5rem;
+            }
+            
+            .sticky-top {
+                position: static !important;
+            }
+        }
+        
+        /* Efecto de borde animado para las tarjetas */
+        .card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-principal) 0%, var(--color-secundario) 100%);
+        }
+    </style>
+
+    <script>
+        // Variables CSS para la paleta de colores
+        document.documentElement.style.setProperty('--color-principal', '#C4696E');
+        document.documentElement.style.setProperty('--color-secundario', '#9D6B6C');
+        document.documentElement.style.setProperty('--color-logo', '#52314C');
+        document.documentElement.style.setProperty('--color-details', '#726658');
+        document.documentElement.style.setProperty('--color-bg', '#D1BFB5');
+        
+        // Selección de método de pago con Bootstrap 5
+        document.addEventListener('DOMContentLoaded', function() {
+            // Añadir clase checked a los labels cuando se selecciona un radio
+            const radioButtons = document.querySelectorAll('input[name="metodoPago"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Asegurar que el texto del label sea visible
+                    const label = document.querySelector('label[for="' + this.id + '"]');
+                    if (label) {
+                        // Remover estilos que puedan ocultar el texto
+                        label.style.color = '';
+                    }
+                });
+            });
+            
+            // Efecto hover para botones
+            const confirmBtn = document.querySelector('button[type="submit"]');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                    this.style.boxShadow = '0 8px 25px rgba(196, 105, 110, 0.3)';
+                });
+                
+                confirmBtn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                });
+            }
+            
+            // Validación del formulario
+            (function () {
+                'use strict';
+                const forms = document.querySelectorAll('.needs-validation');
+                Array.prototype.slice.call(forms).forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            })();
+        });
+    </script>
+</body>
+</html>
